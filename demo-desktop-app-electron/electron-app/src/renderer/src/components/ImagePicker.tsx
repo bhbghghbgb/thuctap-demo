@@ -20,7 +20,7 @@ export default function ImagePicker({
   value,
   onChange,
   label,
-  size = 100,
+  size = 100
 }: Props) {
   const [loading, setLoading] = useState(false)
   const url = useAssetUrl(projectDir, value)
@@ -64,8 +64,8 @@ export default function ImagePicker({
           flexShrink: 0,
           '&:hover': {
             borderColor: 'primary.main',
-            background: 'rgba(110,231,183,0.04)',
-          },
+            background: 'rgba(110,231,183,0.04)'
+          }
         }}
       >
         {loading ? (
@@ -88,7 +88,7 @@ export default function ImagePicker({
                 background: 'rgba(0,0,0,0.6)',
                 color: '#fff',
                 padding: '2px',
-                '&:hover': { background: 'rgba(248,113,113,0.8)' },
+                '&:hover': { background: 'rgba(248,113,113,0.8)' }
               }}
             >
               <ClearIcon sx={{ fontSize: 12 }} />
@@ -108,7 +108,7 @@ export default function ImagePicker({
                   mt: 0.5,
                   textAlign: 'center',
                   px: 0.5,
-                  lineHeight: 1.2,
+                  lineHeight: 1.2
                 }}
               >
                 {label}

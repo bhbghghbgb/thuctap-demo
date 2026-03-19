@@ -10,7 +10,7 @@ import {
   FormControlLabel,
   Slider,
   Tooltip,
-  Chip,
+  Chip
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import PublicIcon from '@mui/icons-material/Public'
@@ -26,8 +26,7 @@ interface Props {
 }
 
 export default function SettingsPanel({ open, onClose, hasProject }: Props) {
-  const { globalSettings, projectSettings, resolved, updateGlobal, updateProject } =
-    useSettings()
+  const { globalSettings, projectSettings, resolved, updateGlobal, updateProject } = useSettings()
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -65,8 +64,8 @@ export default function SettingsPanel({ open, onClose, hasProject }: Props) {
           width: 380,
           background: '#13161f',
           borderLeft: '1px solid rgba(255,255,255,0.06)',
-          p: 0,
-        },
+          p: 0
+        }
       }}
     >
       {/* Header */}
@@ -76,7 +75,7 @@ export default function SettingsPanel({ open, onClose, hasProject }: Props) {
           alignItems: 'center',
           px: 2.5,
           py: 2,
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          borderBottom: '1px solid rgba(255,255,255,0.06)'
         }}
       >
         <Typography variant="h6" sx={{ flex: 1, fontSize: '1rem' }}>
@@ -129,8 +128,8 @@ export default function SettingsPanel({ open, onClose, hasProject }: Props) {
                   setProjOverride({
                     autoSave: {
                       mode: globalSettings.autoSave.mode,
-                      intervalSeconds: globalSettings.autoSave.intervalSeconds,
-                    },
+                      intervalSeconds: globalSettings.autoSave.intervalSeconds
+                    }
                   })
                 }
                 onDisable={() => clearProjOverride('autoSave')}
@@ -148,17 +147,16 @@ export default function SettingsPanel({ open, onClose, hasProject }: Props) {
                           mode,
                           intervalSeconds:
                             projectSettings?.autoSave?.intervalSeconds ??
-                            globalSettings.autoSave.intervalSeconds,
-                        },
+                            globalSettings.autoSave.intervalSeconds
+                        }
                       })
                     }
                     onIntervalChange={(s) =>
                       setProjOverride({
                         autoSave: {
-                          mode:
-                            projectSettings?.autoSave?.mode ?? globalSettings.autoSave.mode,
-                          intervalSeconds: s,
-                        },
+                          mode: projectSettings?.autoSave?.mode ?? globalSettings.autoSave.mode,
+                          intervalSeconds: s
+                        }
                       })
                     }
                   />
@@ -193,7 +191,7 @@ export default function SettingsPanel({ open, onClose, hasProject }: Props) {
 function SectionHeader({
   icon,
   label,
-  subtitle,
+  subtitle
 }: {
   icon: React.ReactNode
   label: string
@@ -207,7 +205,7 @@ function SectionHeader({
         gap: 1,
         px: 2.5,
         pt: 2.5,
-        pb: 0.5,
+        pb: 0.5
       }}
     >
       <Box sx={{ color: 'primary.main', display: 'flex' }}>{icon}</Box>
@@ -219,7 +217,11 @@ function SectionHeader({
           {label}
         </Typography>
         {subtitle && (
-          <Typography variant="caption" color="text.disabled" sx={{ display: 'block', fontSize: '0.7rem' }}>
+          <Typography
+            variant="caption"
+            color="text.disabled"
+            sx={{ display: 'block', fontSize: '0.7rem' }}
+          >
             {subtitle}
           </Typography>
         )}
@@ -234,7 +236,7 @@ function OverrideRow({
   effectiveLabel,
   onEnable,
   onDisable,
-  children,
+  children
 }: {
   label: string
   active: boolean
@@ -284,7 +286,7 @@ function AutoSaveSetting({
   mode,
   intervalSec,
   onModeChange,
-  onIntervalChange,
+  onIntervalChange
 }: {
   mode: AutoSaveMode
   intervalSec: number
@@ -301,7 +303,14 @@ function AutoSaveSetting({
         exclusive
         onChange={(_, v) => v && onModeChange(v as AutoSaveMode)}
         size="small"
-        sx={{ '& .MuiToggleButton-root': { py: 0.5, px: 1.5, fontSize: '0.75rem', textTransform: 'none' } }}
+        sx={{
+          '& .MuiToggleButton-root': {
+            py: 0.5,
+            px: 1.5,
+            fontSize: '0.75rem',
+            textTransform: 'none'
+          }
+        }}
       >
         <ToggleButton value="off">Off</ToggleButton>
         <ToggleButton value="on-edit">On edit</ToggleButton>
@@ -322,7 +331,7 @@ function AutoSaveSetting({
             marks={[
               { value: 5, label: '5s' },
               { value: 60, label: '60s' },
-              { value: 300, label: '5m' },
+              { value: 300, label: '5m' }
             ]}
             sx={{ mt: 1 }}
           />
@@ -332,22 +341,10 @@ function AutoSaveSetting({
   )
 }
 
-function PrefillSetting({
-  value,
-  onChange,
-}: {
-  value: boolean
-  onChange: (v: boolean) => void
-}) {
+function PrefillSetting({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
   return (
     <FormControlLabel
-      control={
-        <Switch
-          size="small"
-          checked={value}
-          onChange={(_, checked) => onChange(checked)}
-        />
-      }
+      control={<Switch size="small" checked={value} onChange={(_, checked) => onChange(checked)} />}
       label={
         <Box>
           <Typography variant="body2">Prefill names</Typography>

@@ -15,7 +15,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogContentText,
-  DialogActions,
+  DialogActions
 } from '@mui/material'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import AddIcon from '@mui/icons-material/Add'
@@ -49,7 +49,7 @@ export default function HomePage() {
     const { filePath, data } = result
     const projectDir = filePath.replace(/[/\\][^/\\]+$/, '')
     navigate(`/project/${data.templateId}`, {
-      state: { filePath, projectDir, data },
+      state: { filePath, projectDir, data }
     })
   }
 
@@ -87,12 +87,12 @@ export default function HomePage() {
       appData:
         template.gameType === 'group-sort'
           ? { groups: [], items: [], _groupCounter: 0, _itemCounter: 0 }
-          : {},
+          : {}
     }
 
     await window.electronAPI.saveProject(newProject, projectPath)
     navigate(`/project/${template.id}`, {
-      state: { filePath: projectPath, projectDir: folder, data: newProject },
+      state: { filePath: projectPath, projectDir: folder, data: newProject }
     })
   }
 
@@ -101,7 +101,7 @@ export default function HomePage() {
     const result = await window.electronAPI.openProjectFile(filePath)
     if (!result) return
     navigate(`/project/${result.data.templateId}`, {
-      state: { filePath: result.filePath, projectDir: folder, data: result.data },
+      state: { filePath: result.filePath, projectDir: folder, data: result.data }
     })
   }
 
@@ -116,7 +116,7 @@ export default function HomePage() {
         gap: 5,
         maxWidth: 1000,
         mx: 'auto',
-        width: '100%',
+        width: '100%'
       }}
     >
       {/* Hero */}
@@ -129,7 +129,7 @@ export default function HomePage() {
               background: 'linear-gradient(135deg, #6ee7b7 0%, #a78bfa 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-              fontWeight: 700,
+              fontWeight: 700
             }}
           >
             Minigame Builder
@@ -191,7 +191,7 @@ export default function HomePage() {
             mt: 2,
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-            gap: 2,
+            gap: 2
           }}
         >
           {templates.map((t) => (
@@ -280,7 +280,7 @@ export default function HomePage() {
 
 function GameTemplateCard({
   template,
-  onSelect,
+  onSelect
 }: {
   template: GameTemplate
   onSelect: (t: GameTemplate) => void
@@ -293,8 +293,8 @@ function GameTemplateCard({
         transition: 'transform 0.15s, box-shadow 0.15s',
         '&:hover': {
           transform: 'translateY(-2px)',
-          boxShadow: '0 8px 32px rgba(110,231,183,0.12)',
-        },
+          boxShadow: '0 8px 32px rgba(110,231,183,0.12)'
+        }
       }}
     >
       <CardActionArea onClick={() => onSelect(template)} sx={{ p: 1 }}>
@@ -307,7 +307,7 @@ function GameTemplateCard({
               'linear-gradient(135deg, rgba(110,231,183,0.12) 0%, rgba(167,139,250,0.12) 100%)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
+            justifyContent: 'center'
           }}
         >
           <SportsEsportsIcon sx={{ fontSize: 56, color: 'primary.main', opacity: 0.6 }} />
@@ -319,7 +319,7 @@ function GameTemplateCard({
               display: 'flex',
               alignItems: 'flex-start',
               justifyContent: 'space-between',
-              gap: 1,
+              gap: 1
             }}
           >
             <Typography variant="h6" sx={{ fontSize: '1rem', lineHeight: 1.3 }}>

@@ -1,33 +1,21 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import {
   GlobalSettings,
   ProjectSettings,
   ResolvedSettings,
-  DEFAULT_GLOBAL_SETTINGS,
+  DEFAULT_GLOBAL_SETTINGS
 } from '../types'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function mergeSettings(
-  global: GlobalSettings,
-  project?: ProjectSettings | null
-): ResolvedSettings {
+function mergeSettings(global: GlobalSettings, project?: ProjectSettings | null): ResolvedSettings {
   if (!project) return global
   return {
     autoSave: {
       mode: project.autoSave?.mode ?? global.autoSave.mode,
-      intervalSeconds:
-        project.autoSave?.intervalSeconds ?? global.autoSave.intervalSeconds,
+      intervalSeconds: project.autoSave?.intervalSeconds ?? global.autoSave.intervalSeconds
     },
-    prefillNames:
-      project.prefillNames != null ? project.prefillNames : global.prefillNames,
+    prefillNames: project.prefillNames != null ? project.prefillNames : global.prefillNames
   }
 }
 
@@ -37,9 +25,9 @@ function deepMergeDefaults(saved: object): GlobalSettings {
     autoSave: {
       mode: s.autoSave?.mode ?? DEFAULT_GLOBAL_SETTINGS.autoSave.mode,
       intervalSeconds:
-        s.autoSave?.intervalSeconds ?? DEFAULT_GLOBAL_SETTINGS.autoSave.intervalSeconds,
+        s.autoSave?.intervalSeconds ?? DEFAULT_GLOBAL_SETTINGS.autoSave.intervalSeconds
     },
-    prefillNames: s.prefillNames ?? DEFAULT_GLOBAL_SETTINGS.prefillNames,
+    prefillNames: s.prefillNames ?? DEFAULT_GLOBAL_SETTINGS.prefillNames
   }
 }
 
@@ -70,8 +58,7 @@ const SettingsContext = createContext<SettingsContextValue | null>(null)
 // ── Provider ──────────────────────────────────────────────────────────────────
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
-  const [globalSettings, setGlobalSettings] =
-    useState<GlobalSettings>(DEFAULT_GLOBAL_SETTINGS)
+  const [globalSettings, setGlobalSettings] = useState<GlobalSettings>(DEFAULT_GLOBAL_SETTINGS)
   const [projectSettings, setProjectSettings] = useState<ProjectSettings | null>(null)
   const [ready, setReady] = useState(false)
 
@@ -90,7 +77,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       const next: GlobalSettings = {
         ...prev,
         ...patch,
-        autoSave: { ...prev.autoSave, ...(patch.autoSave ?? {}) },
+        autoSave: { ...prev.autoSave, ...(patch.autoSave ?? {}) }
       }
       // Debounce persist
       if (persistTimer.current) clearTimeout(persistTimer.current)
@@ -116,7 +103,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         ready,
         updateGlobal,
         updateProject,
-        setProjectSettings,
+        setProjectSettings
       }}
     >
       {children}

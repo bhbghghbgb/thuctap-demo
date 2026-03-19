@@ -5,7 +5,9 @@ export interface ElectronAPI {
   // Folder / project management
   checkFolderStatus: (folderPath: string) => Promise<'empty' | 'has-project' | 'non-empty'>
   chooseProjectFolder: () => Promise<string | null>
-  openProjectFile: (filePath?: string) => Promise<{ filePath: string; data: import('../renderer/src/types').ProjectFile } | null>
+  openProjectFile: (
+    filePath?: string
+  ) => Promise<{ filePath: string; data: import('../renderer/src/types').ProjectFile } | null>
   saveProject: (data: object, projectPath: string) => Promise<boolean>
 
   // Assets

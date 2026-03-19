@@ -13,7 +13,7 @@ export default function AppShell({ children }: Props) {
         flexDirection: 'column',
         height: '100vh',
         overflow: 'hidden',
-        background: '#0f1117',
+        background: '#0f1117'
       }}
     >
       {/* Electron traffic lights spacer (macOS hiddenInset) */}
@@ -22,7 +22,7 @@ export default function AppShell({ children }: Props) {
           height: '28px',
           flexShrink: 0,
           WebkitAppRegion: 'drag',
-          background: 'transparent',
+          background: 'transparent'
         }}
       />
 

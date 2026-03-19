@@ -6,7 +6,10 @@ const cache = new Map<string, string>()
  * Resolves a project-relative asset path (e.g. "assets/cat.png") to a
  * displayable file:// URL so <img> tags work in the Electron renderer.
  */
-export function useAssetUrl(projectDir: string, relativePath: string | null | undefined): string | null {
+export function useAssetUrl(
+  projectDir: string,
+  relativePath: string | null | undefined
+): string | null {
   const [url, setUrl] = useState<string | null>(null)
 
   useEffect(() => {
@@ -19,7 +22,7 @@ export function useAssetUrl(projectDir: string, relativePath: string | null | un
       setUrl(cache.get(key)!)
       return
     }
-    window.electronAPI.resolveAssetUrl(projectDir, relativePath).then(resolved => {
+    window.electronAPI.resolveAssetUrl(projectDir, relativePath).then((resolved) => {
       cache.set(key, resolved)
       setUrl(resolved)
     })

@@ -10,13 +10,13 @@ export interface GameTemplate {
 
 // ── Group Sort game data ──────────────────────────────────────────────────────
 export interface GroupSortGroup {
-  id: string       // e.g. "group-1", "group-2"
+  id: string // e.g. "group-1", "group-2"
   name: string
   imagePath: string | null
 }
 
 export interface GroupSortItem {
-  id: string       // e.g. "item-1", "item-2"
+  id: string // e.g. "item-1", "item-2"
   name: string
   imagePath: string | null
   groupId: string
@@ -35,13 +35,13 @@ export interface GroupSortAppData {
 /** How auto-save is triggered */
 export type AutoSaveMode =
   | 'off'
-  | 'on-edit'      // save after every change (debounced ~1s)
-  | 'interval'     // save every N seconds
+  | 'on-edit' // save after every change (debounced ~1s)
+  | 'interval' // save every N seconds
 
 export interface GlobalSettings {
   autoSave: {
     mode: AutoSaveMode
-    intervalSeconds: number  // used when mode === 'interval', default 30
+    intervalSeconds: number // used when mode === 'interval', default 30
   }
   /** Prefill group/item names like "Group 1", "Item 1" on creation */
   prefillNames: boolean
@@ -62,9 +62,9 @@ export type ResolvedSettings = GlobalSettings
 export const DEFAULT_GLOBAL_SETTINGS: GlobalSettings = {
   autoSave: {
     mode: 'on-edit',
-    intervalSeconds: 30,
+    intervalSeconds: 30
   },
-  prefillNames: true,
+  prefillNames: true
 }
 
 // ── Project file (saved as .mgproj) ──────────────────────────────────────────
@@ -74,7 +74,7 @@ export interface ProjectFile {
   name: string
   createdAt: string
   updatedAt: string
-  settings?: ProjectSettings   // optional per-project overrides
+  settings?: ProjectSettings // optional per-project overrides
   appData: GroupSortAppData
 }
 

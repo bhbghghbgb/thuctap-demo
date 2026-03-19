@@ -19,7 +19,7 @@ import {
   DialogActions,
   TextField,
   Snackbar,
-  Alert,
+  Alert
 } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import SaveIcon from '@mui/icons-material/Save'
@@ -51,7 +51,7 @@ export default function ProjectPage() {
       filePath: locationState.filePath,
       projectDir: locationState.projectDir,
       isDirty: false,
-      data: locationState.data,
+      data: locationState.data
     }
   })
 
@@ -70,7 +70,10 @@ export default function ProjectPage() {
     }
   }, [project?.data.settings, setProjectSettings])
 
-  const [snack, setSnack] = useState<{ msg: string; severity: 'success' | 'error' | 'info' } | null>(null)
+  const [snack, setSnack] = useState<{
+    msg: string
+    severity: 'success' | 'error' | 'info'
+  } | null>(null)
   const [exportMenuAnchor, setExportMenuAnchor] = useState<null | HTMLElement>(null)
   const [renameOpen, setRenameOpen] = useState(false)
   const [renameValue, setRenameValue] = useState('')
@@ -129,8 +132,8 @@ export default function ProjectPage() {
           data: {
             ...prev.data,
             appData,
-            updatedAt: new Date().toISOString(),
-          },
+            updatedAt: new Date().toISOString()
+          }
         }
         triggerOnEditSave(next)
         return next
@@ -157,7 +160,7 @@ export default function ProjectPage() {
         templateId: project.data.templateId,
         appData: project.data.appData,
         projectDir: project.projectDir,
-        mode,
+        mode
       })
       if (result.canceled) return
       showSnack(`Exported successfully to: ${result.path}`)
@@ -171,7 +174,7 @@ export default function ProjectPage() {
     const updated: ProjectState = {
       ...project,
       isDirty: true,
-      data: { ...project.data, name: renameValue.trim() },
+      data: { ...project.data, name: renameValue.trim() }
     }
     setProject(updated)
     setRenameOpen(false)
@@ -218,7 +221,7 @@ export default function ProjectPage() {
           py: 1.5,
           borderBottom: '1px solid rgba(255,255,255,0.06)',
           flexShrink: 0,
-          background: '#13161f',
+          background: '#13161f'
         }}
       >
         <Tooltip title="Back to home">
@@ -235,7 +238,7 @@ export default function ProjectPage() {
               fontWeight: 600,
               overflow: 'hidden',
               textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
+              whiteSpace: 'nowrap'
             }}
           >
             {project.data.name}
@@ -309,11 +312,7 @@ export default function ProjectPage() {
       </Box>
 
       {/* ── Settings panel ── */}
-      <SettingsPanel
-        open={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-        hasProject={true}
-      />
+      <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} hasProject={true} />
 
       {/* ── Export menu ── */}
       <Menu
