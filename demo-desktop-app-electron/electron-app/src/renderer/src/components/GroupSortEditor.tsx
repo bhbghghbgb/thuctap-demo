@@ -15,7 +15,7 @@ import {
   Select,
   TextField,
   Tooltip,
-  Typography,
+  Typography
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import CategoryIcon from '@mui/icons-material/Category'
@@ -40,7 +40,7 @@ function normalizeData(data: GroupSortAppData): GroupSortAppData {
   return {
     ...data,
     _groupCounter: data._groupCounter ?? 0,
-    _itemCounter: data._itemCounter ?? 0,
+    _itemCounter: data._itemCounter ?? 0
   }
 }
 
@@ -58,7 +58,7 @@ export default function GroupSortEditor({ appData: rawData, projectDir, onChange
     const newGroup: GroupSortGroup = {
       id,
       name: resolved.prefillNames ? `Group ${counter}` : '',
-      imagePath: null,
+      imagePath: null
     }
     onChange({ ...appData, _groupCounter: counter, groups: [...groups, newGroup] })
   }
@@ -67,7 +67,7 @@ export default function GroupSortEditor({ appData: rawData, projectDir, onChange
     (id: string, patch: Partial<GroupSortGroup>) => {
       onChange({
         ...appData,
-        groups: groups.map((g) => (g.id === id ? { ...g, ...patch } : g)),
+        groups: groups.map((g) => (g.id === id ? { ...g, ...patch } : g))
       })
     },
     [appData, groups, onChange]
@@ -78,21 +78,22 @@ export default function GroupSortEditor({ appData: rawData, projectDir, onChange
       onChange({
         ...appData,
         groups: groups.filter((g) => g.id !== id),
-        items: items.map((item) => (item.groupId === id ? { ...item, groupId: '' } : item)),
+        items: items.map((item) => (item.groupId === id ? { ...item, groupId: '' } : item))
       })
     },
     [appData, groups, items, onChange]
   )
 
   // ── Items CRUD ───────────────────────────────────────────────────────────────
-  const addItem = () => {
+  const addItem = (groupId?: string) => {
     const counter = appData._itemCounter + 1
     const id = `item-${counter}`
+    const targetGroupId = groupId || groups[0]?.id || ''
     const newItem: GroupSortItem = {
       id,
       name: resolved.prefillNames ? `Item ${counter}` : '',
       imagePath: null,
-      groupId: groups[0]?.id ?? '',
+      groupId: targetGroupId
     }
     onChange({ ...appData, _itemCounter: counter, items: [...items, newItem] })
   }
@@ -101,7 +102,7 @@ export default function GroupSortEditor({ appData: rawData, projectDir, onChange
     (id: string, patch: Partial<GroupSortItem>) => {
       onChange({
         ...appData,
-        items: items.map((i) => (i.id === id ? { ...i, ...patch } : i)),
+        items: items.map((i) => (i.id === id ? { ...i, ...patch } : i))
       })
     },
     [appData, items, onChange]
@@ -123,7 +124,7 @@ export default function GroupSortEditor({ appData: rawData, projectDir, onChange
 
   const itemsPerGroup = groups.map((g) => ({
     group: g,
-    count: items.filter((i) => i.groupId === g.id).length,
+    count: items.filter((i) => i.groupId === g.id).length
   }))
 
   return (
@@ -138,7 +139,7 @@ export default function GroupSortEditor({ appData: rawData, projectDir, onChange
           flexDirection: 'column',
           background: '#13161f',
           p: 2,
-          gap: 1,
+          gap: 1
         }}
       >
         <Typography
@@ -164,9 +165,7 @@ export default function GroupSortEditor({ appData: rawData, projectDir, onChange
           icon={<ExtensionIcon fontSize="small" />}
           label="Items"
           badge={items.length}
-          badgeColor={
-            unassignedItems.length > 0 || unnamedItems.length > 0 ? 'error' : 'default'
-          }
+          badgeColor={unassignedItems.length > 0 || unnamedItems.length > 0 ? 'error' : 'default'}
         />
 
         <SidebarTab
@@ -201,7 +200,7 @@ export default function GroupSortEditor({ appData: rawData, projectDir, onChange
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  gap: 1,
+                  gap: 1
                 }}
               >
                 <Typography
@@ -211,7 +210,7 @@ export default function GroupSortEditor({ appData: rawData, projectDir, onChange
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
-                    flex: 1,
+                    flex: 1
                   }}
                 >
                   {group.name || '(unnamed)'}
@@ -245,7 +244,7 @@ export default function GroupSortEditor({ appData: rawData, projectDir, onChange
               unnamedGroups.length > 0 && `${unnamedGroups.length} group(s) missing a name`,
               unnamedItems.length > 0 && `${unnamedItems.length} item(s) missing a name`,
               unassignedItems.length > 0 &&
-                `${unassignedItems.length} item(s) not assigned to a group`,
+                `${unassignedItems.length} item(s) not assigned to a group`
             ]
               .filter(Boolean)
               .join(' · ')}
@@ -267,7 +266,7 @@ export default function GroupSortEditor({ appData: rawData, projectDir, onChange
             items={items}
             groups={groups}
             projectDir={projectDir}
-            onAdd={addItem}
+            onAdd={() => addItem()}
             onUpdate={updateItem}
             onDelete={deleteItem}
           />
@@ -298,7 +297,7 @@ function SidebarTab({
   icon,
   label,
   badge,
-  badgeColor,
+  badgeColor
 }: {
   active: boolean
   onClick: () => void
@@ -325,8 +324,8 @@ function SidebarTab({
         transition: 'all 0.15s',
         '&:hover': {
           background: active ? 'rgba(110,231,183,0.1)' : 'rgba(255,255,255,0.04)',
-          color: active ? 'primary.main' : 'text.primary',
-        },
+          color: active ? 'primary.main' : 'text.primary'
+        }
       }}
     >
       {icon}
@@ -350,7 +349,7 @@ function GroupsTab({
   projectDir,
   onAdd,
   onUpdate,
-  onDelete,
+  onDelete
 }: {
   groups: GroupSortGroup[]
   projectDir: string
@@ -360,9 +359,7 @@ function GroupsTab({
 }) {
   return (
     <Box>
-      <Box
-        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}
-      >
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
         <Box>
           <Typography variant="h6">Groups</Typography>
           <Typography variant="caption" color="text.secondary">
@@ -405,7 +402,7 @@ function GroupCard({
   projectDir,
   onUpdate,
   onDelete,
-  autoFocus,
+  autoFocus
 }: {
   group: GroupSortGroup
   index: number
@@ -426,7 +423,7 @@ function GroupCard({
         borderRadius: 2,
         background: '#1a1d27',
         transition: 'border-color 0.15s',
-        '&:hover': { borderColor: 'rgba(255,255,255,0.12)' },
+        '&:hover': { borderColor: 'rgba(255,255,255,0.12)' }
       }}
     >
       <IndexBadge index={index} color="primary" />
@@ -468,7 +465,7 @@ function ItemsTab({
   projectDir,
   onAdd,
   onUpdate,
-  onDelete,
+  onDelete
 }: {
   items: GroupSortItem[]
   groups: GroupSortGroup[]
@@ -479,9 +476,7 @@ function ItemsTab({
 }) {
   return (
     <Box>
-      <Box
-        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}
-      >
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
         <Box>
           <Typography variant="h6">Items</Typography>
           <Typography variant="caption" color="text.secondary">
@@ -538,7 +533,7 @@ function ItemCard({
   projectDir,
   onUpdate,
   onDelete,
-  autoFocus,
+  autoFocus
 }: {
   item: GroupSortItem
   index: number
@@ -564,8 +559,8 @@ function ItemCard({
         background: '#1a1d27',
         transition: 'border-color 0.15s',
         '&:hover': {
-          borderColor: !assignedGroup ? 'rgba(251,191,36,0.6)' : 'rgba(255,255,255,0.12)',
-        },
+          borderColor: !assignedGroup ? 'rgba(251,191,36,0.6)' : 'rgba(255,255,255,0.12)'
+        }
       }}
     >
       <IndexBadge index={index} color="secondary" />
@@ -606,11 +601,7 @@ function ItemCard({
           ))}
         </Select>
         {!assignedGroup && (
-          <Typography
-            variant="caption"
-            color="warning.main"
-            sx={{ mt: 0.5, fontSize: '0.65rem' }}
-          >
+          <Typography variant="caption" color="warning.main" sx={{ mt: 0.5, fontSize: '0.65rem' }}>
             Unassigned
           </Typography>
         )}
@@ -639,13 +630,13 @@ function OverviewTab({
   onUpdateGroup,
   onUpdateItem,
   onDeleteGroup,
-  onDeleteItem,
+  onDeleteItem
 }: {
   groups: GroupSortGroup[]
   items: GroupSortItem[]
   projectDir: string
   onAddGroup: () => void
-  onAddItem: () => void
+  onAddItem: (groupId?: string) => void
   onUpdateGroup: (id: string, patch: Partial<GroupSortGroup>) => void
   onUpdateItem: (id: string, patch: Partial<GroupSortItem>) => void
   onDeleteGroup: (id: string) => void
@@ -653,9 +644,7 @@ function OverviewTab({
 }) {
   return (
     <Box>
-      <Box
-        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}
-      >
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
         <Box>
           <Typography variant="h6">Overview</Typography>
           <Typography variant="caption" color="text.secondary">
@@ -670,7 +659,7 @@ function OverviewTab({
             startIcon={<AddIcon />}
             variant="contained"
             size="small"
-            onClick={onAddItem}
+            onClick={() => onAddItem()}
             disabled={groups.length === 0}
           >
             Add Item
@@ -682,7 +671,7 @@ function OverviewTab({
         <EmptyState
           icon={<ViewQuiltIcon sx={{ fontSize: 48, opacity: 0.3 }} />}
           title="Nothing here yet"
-          description='Add groups first, then populate them with items.'
+          description="Add groups first, then populate them with items."
         />
       ) : (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -701,7 +690,7 @@ function OverviewTab({
                     border: '1px solid rgba(110,231,183,0.2)',
                     borderRadius: 2,
                     background: 'rgba(110,231,183,0.04)',
-                    mb: 1,
+                    mb: 1
                   }}
                 >
                   <IndexBadge index={gIdx} color="primary" />
@@ -729,6 +718,16 @@ function OverviewTab({
                     sx={{ height: 20, fontSize: '0.65rem' }}
                   />
 
+                  <Button
+                    startIcon={<AddIcon />}
+                    variant="contained"
+                    size="small"
+                    onClick={() => onAddItem(group.id)}
+                    sx={{ ml: 'auto' }}
+                  >
+                    Add Item
+                  </Button>
+
                   <Tooltip title="Delete group">
                     <IconButton
                       size="small"
@@ -749,7 +748,7 @@ function OverviewTab({
                       px: 2,
                       borderRadius: 1.5,
                       border: '1px dashed rgba(255,255,255,0.06)',
-                      color: 'text.disabled',
+                      color: 'text.disabled'
                     }}
                   >
                     <Typography variant="caption">No items in this group yet</Typography>
@@ -768,7 +767,7 @@ function OverviewTab({
                           border: '1px solid rgba(255,255,255,0.06)',
                           borderRadius: 2,
                           background: '#1a1d27',
-                          '&:hover': { borderColor: 'rgba(255,255,255,0.12)' },
+                          '&:hover': { borderColor: 'rgba(255,255,255,0.12)' }
                         }}
                       >
                         <IndexBadge index={iIdx} color="secondary" />
@@ -832,7 +831,7 @@ function OverviewTab({
                         gap: 2,
                         border: '1px solid rgba(251,191,36,0.3)',
                         borderRadius: 2,
-                        background: '#1a1d27',
+                        background: '#1a1d27'
                       }}
                     >
                       <IndexBadge index={iIdx} color="secondary" />
@@ -898,17 +897,14 @@ function IndexBadge({ index, color }: { index: number; color: 'primary' | 'secon
         width: 26,
         height: 26,
         borderRadius: '50%',
-        background:
-          color === 'primary'
-            ? 'rgba(110,231,183,0.12)'
-            : 'rgba(167,139,250,0.12)',
+        background: color === 'primary' ? 'rgba(110,231,183,0.12)' : 'rgba(167,139,250,0.12)',
         color: color === 'primary' ? 'primary.main' : 'secondary.main',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         fontSize: '0.72rem',
         fontWeight: 700,
-        flexShrink: 0,
+        flexShrink: 0
       }}
     >
       {index + 1}
@@ -925,7 +921,7 @@ function NameField({
   value,
   onChange,
   placeholder,
-  autoFocus,
+  autoFocus
 }: {
   label: string
   value: string
@@ -967,7 +963,7 @@ function NameField({
 function EmptyState({
   icon,
   title,
-  description,
+  description
 }: {
   icon: React.ReactNode
   title: string
@@ -984,7 +980,7 @@ function EmptyState({
         gap: 1.5,
         color: 'text.disabled',
         border: '1px dashed rgba(255,255,255,0.08)',
-        borderRadius: 3,
+        borderRadius: 3
       }}
     >
       {icon}
