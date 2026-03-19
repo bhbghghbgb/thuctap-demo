@@ -579,9 +579,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rolldown/plugin-babel@npm:^0.2.0":
-  version: 0.2.1
-  resolution: "@rolldown/plugin-babel@npm:0.2.1"
+"@rolldown/plugin-babel@npm:^0.2.2":
+  version: 0.2.2
+  resolution: "@rolldown/plugin-babel@npm:0.2.2"
   dependencies:
     picomatch: "npm:^4.0.3"
   peerDependencies:
@@ -597,7 +597,7 @@ __metadata:
       optional: true
     vite:
       optional: true
-  checksum: 10c0/b58539302de92a5105da903b8c13c57dfc49dc5550db9b5781292d0a355c1e2cf10148e5cdaf5a130fe90037c8b0942dea667a51140d44a6fa4c08d600e419cd
+  checksum: 10c0/d00d6afd831c1efa5eac8bbe9eb4c78abfe731c744ffac99d2246e78a94ac8546ee26d0a304541143427e59a846c96d3d5728da540293d02c37bcbe3972428b3
   languageName: node
   linkType: hard
 
@@ -2861,7 +2861,7 @@ __metadata:
     "@dnd-kit/core": "npm:^6.3.1"
     "@dnd-kit/utilities": "npm:^3.2.2"
     "@eslint/js": "npm:^9.39.4"
-    "@rolldown/plugin-babel": "npm:^0.2.0"
+    "@rolldown/plugin-babel": "npm:^0.2.2"
     "@tailwindcss/vite": "npm:^4.2.1"
     "@types/babel__core": "npm:^7.20.5"
     "@types/node": "npm:^25.5.0"

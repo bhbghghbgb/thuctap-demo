@@ -23,16 +23,31 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
-    "electron-updater": "^6.3.9"
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.9",
+    "@mui/material": "^7.3.9",
+    "@tailwindcss/vite": "^4.2.2",
+    "archiver": "^7.0.1",
+    "electron-updater": "^6.3.9",
+    "react-router-dom": "^7.13.1",
+    "tailwindcss": "^4.2.2",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.0",
     "@electron-toolkit/eslint-config-prettier": "^3.0.0",
     "@electron-toolkit/eslint-config-ts": "^3.1.0",
     "@electron-toolkit/tsconfig": "^2.0.0",
-    "@types/node": "^22.19.1",
-    "@types/react": "^19.2.7",
+    "@rolldown/plugin-babel": "^0.2.2",
+    "@types/archiver": "^7.0.0",
+    "@types/babel__core": "^7",
+    "@types/node": "^25.5.0",
+    "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.1",
+    "@types/uuid": "^11.0.0",
+    "@vitejs/plugin-react": "^6.0.0",
+    "babel-plugin-react-compiler": "^1.0.0",
     "electron": "^39.2.6",
     "electron-builder": "^26.0.12",
     "electron-vite": "^5.0.0",
@@ -44,6 +59,14 @@
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "typescript": "^5.9.3",
-    "vite": "^7.2.6"
+    "vite": "^8.0.0"
+  },
+  "build": {
+    "extraResources": [
+      {
+        "from": "templates",
+        "to": "templates"
+      }
+    ]
   }
 }
