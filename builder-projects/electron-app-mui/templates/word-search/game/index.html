@@ -26,6 +26,12 @@
       }
 
       .overlay-content {
+        --hero-text: #111827;
+        --hero-subtle: rgba(0, 0, 0, 0.72);
+        --panel-bg: rgba(255, 255, 255, 0.82);
+        --panel-text: #374151;
+        --panel-accent: #16a34a;
+        --track-bg: rgba(0, 0, 0, 0.08);
         position: relative;
         width: 100%;
         min-height: 100dvh;
@@ -44,6 +50,7 @@
       .game-title {
         margin: 0 0 8px;
         text-align: center;
+        color: var(--hero-text);
       }
 
       .game-helper {
@@ -51,6 +58,7 @@
         text-align: center;
         font-size: 14px;
         white-space: nowrap;
+        color: var(--hero-subtle);
       }
 
       .progress-panel {
@@ -58,7 +66,7 @@
         margin: 0 auto 4px;
         padding: 10px 12px;
         border-radius: 12px;
-        background: rgba(255, 255, 255, 0.82);
+        background: var(--panel-bg);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       }
 
@@ -72,18 +80,18 @@
       }
 
       .progress-count {
-        color: #374151;
+        color: var(--panel-text);
       }
 
       .progress-state {
-        color: #16a34a;
+        color: var(--panel-accent);
       }
 
       .progress-track {
         margin-top: 8px;
         width: 100%;
         height: 10px;
-        background: rgba(0, 0, 0, 0.08);
+        background: var(--track-bg);
         border-radius: 999px;
         overflow: hidden;
       }
@@ -532,6 +540,30 @@
         };
       }
 
+      function applyTextTheme(overlayContent, isDark) {
+        overlayContent.style.setProperty("--hero-text", isDark ? "#ffffff" : "#111827");
+        overlayContent.style.setProperty(
+          "--hero-subtle",
+          isDark ? "rgba(255, 255, 255, 0.82)" : "rgba(0, 0, 0, 0.72)"
+        );
+        overlayContent.style.setProperty(
+          "--panel-bg",
+          isDark ? "rgba(17, 24, 39, 0.62)" : "rgba(255, 255, 255, 0.82)"
+        );
+        overlayContent.style.setProperty(
+          "--panel-text",
+          isDark ? "rgba(255, 255, 255, 0.9)" : "#374151"
+        );
+        overlayContent.style.setProperty(
+          "--panel-accent",
+          isDark ? "#86efac" : "#16a34a"
+        );
+        overlayContent.style.setProperty(
+          "--track-bg",
+          isDark ? "rgba(255, 255, 255, 0.18)" : "rgba(0, 0, 0, 0.08)"
+        );
+      }
+
       function getCellFromPoint(clientX, clientY) {
         const target = document.elementFromPoint(clientX, clientY);
         return target && target.closest("[data-word-cell='true']");
@@ -551,14 +583,13 @@
 
         titleNode.textContent = data.title;
         helperNode.textContent = data.helperText;
+        applyTextTheme(overlayContent, false);
 
         if (data.backgroundImagePath) {
           overlayContent.style.background =
             "url('" + data.backgroundImagePath.replace(/'/g, "\\'") + "') center / cover no-repeat";
           getBrightness(data.backgroundImagePath, (brightness) => {
-            overlayContent.style.color = brightness < 128 ? "#fff" : "#000";
-            helperNode.style.color =
-              brightness < 128 ? "rgba(255, 255, 255, 0.82)" : "rgba(0, 0, 0, 0.72)";
+            applyTextTheme(overlayContent, brightness < 128);
           });
         }
 
