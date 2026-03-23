@@ -35,9 +35,10 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import GroupSortEditor from '../components/GroupSortEditor'
 import QuizEditor from '../components/QuizEditor'
 import SettingsPanel from '../components/SettingsPanel'
+import WordSearchEditor from '../components/WordSearchEditor'
 import { useSettings } from '../context/SettingsContext'
 import { useHistory } from '../hooks/useHistory'
-import { AnyAppData, GameTemplate, ProjectFile, ProjectMeta } from '../types'
+import { AnyAppData, GameTemplate, ProjectFile, ProjectMeta, WordSearchAppData } from '../types'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function buildTitle(templateName: string, projectName: string, filePath: string) {
@@ -56,12 +57,24 @@ function buildProjectFile(meta: ProjectMeta, appData: AnyAppData): ProjectFile {
   }
 }
 
+function normalizeWordSearchData(appData: AnyAppData): WordSearchAppData | null {
+  if (!('items' in appData) || !('gridSize' in appData) || !('backgroundImagePath' in appData)) {
+    return null
+  }
+  return appData as WordSearchAppData
+}
+
+function resolveTemplateId(templateId: string): string {
+  return templateId === 'quiz' ? 'plane-quiz' : templateId
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function ProjectPage() {
   const { templateId } = useParams<{ templateId: string }>()
   const location = useLocation()
   const navigate = useNavigate()
   const { resolved, setProjectSettings } = useSettings()
+  const effectiveTemplateId = templateId ? resolveTemplateId(templateId) : null
 
   const locationState = location.state as {
     filePath: string
@@ -75,7 +88,7 @@ export default function ProjectPage() {
       ? {
           filePath: locationState.filePath,
           projectDir: locationState.projectDir,
-          templateId: locationState.data.templateId,
+          templateId: resolveTemplateId(locationState.data.templateId),
           name: locationState.data.name,
           createdAt: locationState.data.createdAt,
           updatedAt: locationState.data.updatedAt,
@@ -106,12 +119,12 @@ export default function ProjectPage() {
 
   // Update window title whenever meta or appData changes
   useEffect(() => {
-    if (!meta || !templateId) return
-    const tName = templates.find((t) => t.id === templateId)?.name ?? templateId
+    if (!meta || !effectiveTemplateId) return
+    const tName = templates.find((t) => t.id === effectiveTemplateId)?.name ?? effectiveTemplateId
     const title = buildTitle(tName, meta.name, meta.filePath)
     document.title = title
     window.electronAPI.setTitle(title)
-  }, [meta, templateId, templates])
+  }, [effectiveTemplateId, meta, templates])
 
   const [snack, setSnack] = useState<{
     msg: string
@@ -289,7 +302,7 @@ export default function ProjectPage() {
     return () => window.removeEventListener('keydown', handler)
   }, [history, handleSave, handleSaveAs])
 
-  if (!meta || !templateId) {
+  if (!meta || !effectiveTemplateId) {
     return (
       <Box sx={{ p: 4, textAlign: 'center' }}>
         <Typography color="error">No project data. Go back and try again.</Typography>
@@ -298,7 +311,19 @@ export default function ProjectPage() {
     )
   }
 
-  const templateName = templates.find((t) => t.id === templateId)?.name ?? templateId
+  const activeTemplate = templates.find((t) => t.id === meta.templateId) ?? null
+  const templateName = activeTemplate?.name ?? effectiveTemplateId
+  const activeGameType = activeTemplate?.gameType ?? effectiveTemplateId
+  const wordSearchData =
+    activeGameType === 'word-search' ? normalizeWordSearchData(history.present) : null
+  const wordSearchValidWords =
+    wordSearchData?.items.filter((item) => item.word.trim()).length ?? 0
+  const wordSearchDuplicateCount = wordSearchData
+    ? wordSearchData.items.filter((item, index, arr) => {
+        const normalized = item.word.trim()
+        return normalized && arr.findIndex((candidate) => candidate.word.trim() === normalized) !== index
+      }).length
+    : 0
   const autoSaveLabel =
     resolved.autoSave.mode === 'off'
       ? null
@@ -337,18 +362,33 @@ export default function ProjectPage() {
         />
 
         <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
-          <Typography
-            variant="h6"
-            sx={{
-              fontSize: '0.95rem',
-              fontWeight: 600,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap'
-            }}
-          >
-            {meta.name}
-          </Typography>
+          <Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                fontSize: '0.95rem',
+                fontWeight: 600,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {meta.name}
+            </Typography>
+            {activeGameType === 'word-search' && (
+              <Typography
+                variant="caption"
+                sx={{
+                  color: 'text.secondary',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                Build a word puzzle with clue images, then export a playable folder.
+              </Typography>
+            )}
+          </Box>
           <Tooltip title="Rename project">
             <IconButton
               size="small"
@@ -432,16 +472,73 @@ export default function ProjectPage() {
       </Box>
 
       {/* ── Editor ── */}
+      {activeGameType === 'word-search' && wordSearchData && (
+        <Box
+          sx={{
+            px: 3,
+            py: 1.25,
+            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            background:
+              'linear-gradient(135deg, rgba(251,191,36,0.08) 0%, rgba(110,231,183,0.06) 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 2,
+            flexWrap: 'wrap'
+          }}
+        >
+          <Box>
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+              Word Search Workspace
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Tip: drop an image on Add Word to create a clue card faster.
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+            <Chip
+              size="small"
+              color={wordSearchValidWords === 0 ? 'warning' : 'primary'}
+              label={`${wordSearchValidWords} word${wordSearchValidWords !== 1 ? 's' : ''}`}
+            />
+            <Chip
+              size="small"
+              variant="outlined"
+              label={`grid ${wordSearchData.gridSize}x${wordSearchData.gridSize}`}
+            />
+            <Chip
+              size="small"
+              variant="outlined"
+              label={wordSearchData.backgroundImagePath ? 'background ready' : 'no background'}
+            />
+            {wordSearchDuplicateCount > 0 && (
+              <Chip
+                size="small"
+                color="warning"
+                label={`${wordSearchDuplicateCount} duplicate${wordSearchDuplicateCount !== 1 ? 's' : ''}`}
+              />
+            )}
+          </Box>
+        </Box>
+      )}
+
       <Box sx={{ flex: 1, overflow: 'hidden' }}>
-        {templateId === 'group-sort' && (
+        {activeGameType === 'group-sort' && (
           <GroupSortEditor
             appData={history.present as any}
             projectDir={meta.projectDir}
             onChange={handleAppDataChange}
           />
         )}
-        {templateId === 'plane-quiz' && (
+        {(activeGameType === 'quiz' || activeGameType === 'plane-quiz') && (
           <QuizEditor
+            appData={history.present as any}
+            projectDir={meta.projectDir}
+            onChange={handleAppDataChange}
+          />
+        )}
+        {activeGameType === 'word-search' && (
+          <WordSearchEditor
             appData={history.present as any}
             projectDir={meta.projectDir}
             onChange={handleAppDataChange}
@@ -462,14 +559,28 @@ export default function ProjectPage() {
           <ListItemIcon>
             <DriveFileMoveIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText primary="Export to folder" secondary="Copies game + assets" />
+          <ListItemText
+            primary="Export to folder"
+            secondary={
+              activeGameType === 'word-search'
+                ? 'Creates a playable word-search folder with image clues'
+                : 'Copies game + assets'
+            }
+          />
         </MenuItem>
         <Divider />
         <MenuItem onClick={() => handleExport('zip')}>
           <ListItemIcon>
             <FolderZipIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText primary="Export as ZIP" secondary="Single archive" />
+          <ListItemText
+            primary="Export as ZIP"
+            secondary={
+              activeGameType === 'word-search'
+                ? 'Packages the word-search game into one archive'
+                : 'Single archive'
+            }
+          />
         </MenuItem>
       </Menu>
 

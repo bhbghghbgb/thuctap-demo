@@ -11,6 +11,10 @@ let mainWindow: BrowserWindow | null = null
 // ── Settings ──────────────────────────────────────────────────────────────────
 const settingsPath = path.join(app.getPath('userData'), 'settings.json')
 
+function resolveTemplateId(templateId: string): string {
+  return templateId === 'quiz' ? 'plane-quiz' : templateId
+}
+
 function readSettings(): Record<string, unknown> {
   try {
     if (fs.existsSync(settingsPath)) return JSON.parse(fs.readFileSync(settingsPath, 'utf-8'))
@@ -32,9 +36,12 @@ function getTemplatesDir() {
 
 /** Returns the game directory for a template — supports both new (game/) and legacy (root) layout */
 function getGameDir(templateId: string): string {
+  const resolvedTemplateId = resolveTemplateId(templateId)
   const templatesDir = getTemplatesDir()
-  const gameSubdir = path.join(templatesDir, templateId, 'game')
-  return fs.existsSync(gameSubdir) ? gameSubdir : path.join(templatesDir, templateId)
+  const gameSubdir = path.join(templatesDir, resolvedTemplateId, 'game')
+  return fs.existsSync(gameSubdir)
+    ? gameSubdir
+    : path.join(templatesDir, resolvedTemplateId)
 }
 
 function checkFolderStatus(folderPath: string): 'empty' | 'has-project' | 'non-empty' {
@@ -54,7 +61,7 @@ function copyDirSync(src: string, dest: string) {
   }
 }
 
-/** Recursively collect all values of keys named 'imagePath' that start with 'assets/' */
+/** Recursively collect all asset paths referenced by project data */
 function collectUsedAssets(obj: unknown, out = new Set<string>()): Set<string> {
   if (!obj || typeof obj !== 'object') return out
   if (Array.isArray(obj)) {
@@ -62,8 +69,15 @@ function collectUsedAssets(obj: unknown, out = new Set<string>()): Set<string> {
     return out
   }
   for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
-    if (k === 'imagePath' && typeof v === 'string' && v.startsWith('assets/')) out.add(v)
-    else collectUsedAssets(v, out)
+    if (
+      (k === 'imagePath' || k === 'backgroundImagePath') &&
+      typeof v === 'string' &&
+      v.startsWith('assets/')
+    ) {
+      out.add(v)
+    } else {
+      collectUsedAssets(v, out)
+    }
   }
   return out
 }
@@ -236,7 +250,15 @@ ipcMain.handle('open-project-file', async (_e, filePath?: string) => {
     resolved = result.filePaths[0]
   }
   const content = fs.readFileSync(resolved, 'utf-8')
-  return { filePath: resolved, data: JSON.parse(content) }
+  const data = JSON.parse(content)
+  return {
+    filePath: resolved,
+    data: {
+      ...data,
+      templateId:
+        typeof data.templateId === 'string' ? resolveTemplateId(data.templateId) : data.templateId
+    }
+  }
 })
 
 ipcMain.handle('save-project', async (_e, projectData: object, projectPath: string) => {

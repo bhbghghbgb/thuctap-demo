@@ -45,6 +45,10 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(mos / 12)} year${Math.floor(mos / 12) > 1 ? 's' : ''} ago`
 }
 
+function resolveTemplateId(templateId: string): string {
+  return templateId === 'quiz' ? 'plane-quiz' : templateId
+}
+
 async function readRecentProjects(): Promise<RecentProject[]> {
   const s = (await window.electronAPI.settingsReadGlobal()) as Record<string, unknown>
   return (s.recentProjects as RecentProject[] | undefined) ?? []
@@ -88,15 +92,20 @@ export default function HomePage() {
   const openProject = useCallback(
     async (filePath: string, data: ReturnType<typeof JSON.parse>) => {
       const projectDir = filePath.replace(/[/\\][^/\\]+$/, '')
+      const normalizedTemplateId = resolveTemplateId(data.templateId)
+      const normalizedData = { ...data, templateId: normalizedTemplateId }
       await addRecentProject({
         filePath,
         projectDir,
-        templateId: data.templateId,
-        templateName: templates.find((t) => t.id === data.templateId)?.name ?? data.templateId,
-        projectName: data.name,
+        templateId: normalizedTemplateId,
+        templateName:
+          templates.find((t) => t.id === normalizedTemplateId)?.name ?? normalizedTemplateId,
+        projectName: normalizedData.name,
         lastOpened: new Date().toISOString()
       })
-      navigate(`/project/${data.templateId}`, { state: { filePath, projectDir, data } })
+      navigate(`/project/${normalizedTemplateId}`, {
+        state: { filePath, projectDir, data: normalizedData }
+      })
     },
     [templates, navigate]
   )
@@ -128,10 +137,18 @@ export default function HomePage() {
     const initialAppData =
       template.gameType === 'group-sort'
         ? { groups: [], items: [], _groupCounter: 0, _itemCounter: 0 }
-        : template.gameType === 'plane-quiz'
+        : template.gameType === 'quiz' || template.gameType === 'plane-quiz'
           ? { questions: [], _questionCounter: 0 }
-          : template.gameType === 'group-sort'
-        ?{} :{}
+          : template.gameType === 'word-search'
+            ? {
+                title: 'Word Search Game',
+                helperText: 'Find every hidden word in the puzzle.',
+                gridSize: 12,
+                backgroundImagePath: null,
+                items: [],
+                _itemCounter: 0
+              }
+          : {}
     const newProject = {
       version: '1.0.0',
       templateId: template.id,
