@@ -20,12 +20,12 @@ function readSettings(): Record<string, unknown> {
   }
   return {}
 }
-function writeSettings(data: object) {
+function writeSettings(data: object): void {
   fs.writeFileSync(settingsPath, JSON.stringify(data, null, 2), 'utf-8')
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function getTemplatesDir() {
+function getTemplatesDir(): string {
   return isDev
     ? path.join(process.cwd(), 'templates')
     : path.join(process.resourcesPath, 'templates')
@@ -46,7 +46,7 @@ function checkFolderStatus(folderPath: string): 'empty' | 'has-project' | 'non-e
   return 'non-empty'
 }
 
-function copyDirSync(src: string, dest: string) {
+function copyDirSync(src: string, dest: string): void {
   fs.mkdirSync(dest, { recursive: true })
   for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
     const s = path.join(src, entry.name)
@@ -74,7 +74,7 @@ function collectUsedAssets(obj: unknown, out = new Set<string>()): Set<string> {
 }
 
 /** Delete files in <projectDir>/assets/ that are not in the used set */
-function purgeUnusedAssets(projectDir: string, projectData: object) {
+function purgeUnusedAssets(projectDir: string, projectData: object): void {
   const assetsDir = path.join(projectDir, 'assets')
   if (!fs.existsSync(assetsDir)) return
   const usedPaths = collectUsedAssets(projectData)
@@ -133,13 +133,13 @@ function normalizeAssetPaths(obj: unknown, projectDir: string): unknown {
 ipcMain.handle(
   'preview-project',
   async (
-    _e,
+    _,
     opts: {
       templateId: string
       appData: object
       projectDir: string
     }
-  ) => {
+  ): Promise<{ success: boolean }> => {
     const { templateId, appData, projectDir } = opts
     const gameDir = getGameDir(templateId)
     const htmlPath = path.join(gameDir, 'index.html')
@@ -170,7 +170,7 @@ ipcMain.handle(
 )
 
 // ── Window ────────────────────────────────────────────────────────────────────
-function createWindow() {
+function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
@@ -269,21 +269,19 @@ ipcMain.handle('save-project', async (_e, projectData: object, projectPath: stri
 })
 
 /** Save As: pick folder, copy assets, write file. Returns new paths or null if canceled. */
-ipcMain.handle(
-  'save-project-as',
-  async (_e, _opts: { projectData: object; oldProjectDir: string }) => {
-    const result = await dialog.showOpenDialog(mainWindow!, {
-      properties: ['openDirectory', 'createDirectory'],
-      title: 'Save Project As — Choose New Folder'
-    })
-    if (result.canceled) return null
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ipcMain.handle('save-project-as', async (_) => {
+  const result = await dialog.showOpenDialog(mainWindow!, {
+    properties: ['openDirectory', 'createDirectory'],
+    title: 'Save Project As — Choose New Folder'
+  })
+  if (result.canceled) return null
 
-    const newFolder = result.filePaths[0]
-    const status = checkFolderStatus(newFolder)
-    // Return status so renderer can confirm overwrite if needed
-    return { folder: newFolder, status }
-  }
-)
+  const newFolder = result.filePaths[0]
+  const status = checkFolderStatus(newFolder)
+  // Return status so renderer can confirm overwrite if needed
+  return { folder: newFolder, status }
+})
 
 /** Actually perform the save-as copy after the renderer has confirmed */
 ipcMain.handle(
@@ -397,7 +395,7 @@ async function exportToZip(
   gameDir: string,
   projectDir: string,
   zipPath: string
-) {
+): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     const output = fs.createWriteStream(zipPath)
     const archive = archiver('zip', { zlib: { level: 9 } })

@@ -1,10 +1,11 @@
+import React from 'react'
 import { HashRouter, Route, Routes } from 'react-router-dom'
 import AppShell from './components/AppShell'
 import { SettingsProvider } from './context/SettingsContext'
 import HomePage from './pages/HomePage'
 import ProjectPage from './pages/ProjectPage'
 
-export default function App() {
+export default function App(): React.ReactElement {
   return (
     <SettingsProvider>
       <HashRouter>

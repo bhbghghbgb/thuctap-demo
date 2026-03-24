@@ -3,7 +3,7 @@
  * Keep this file free of game-specific logic.
  */
 import { Badge, Box, TextField, Typography } from '@mui/material'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { JSX, useCallback, useEffect, useRef, useState } from 'react'
 
 // ── SidebarTab ────────────────────────────────────────────────────────────────
 export function SidebarTab({
@@ -20,7 +20,7 @@ export function SidebarTab({
   label: string
   badge: number
   badgeColor: 'default' | 'error' | 'primary'
-}) {
+}): JSX.Element {
   return (
     <Box
       onClick={onClick}
@@ -71,7 +71,7 @@ export function IndexBadge({
 }: {
   index: number
   color: 'primary' | 'secondary' | 'warning'
-}) {
+}): JSX.Element {
   const bg =
     color === 'primary'
       ? 'rgba(110,231,183,0.12)'
@@ -122,7 +122,7 @@ export function NameField({
   autoFocus?: boolean
   multiline?: boolean
   sx?: object
-}) {
+}): JSX.Element {
   const didSelect = useRef(false)
   const handleRef = useCallback(
     (input: HTMLInputElement | null) => {
@@ -162,7 +162,7 @@ export function EmptyState({
   icon: React.ReactNode
   title: string
   description: string
-}) {
+}): JSX.Element {
   return (
     <Box
       sx={{
@@ -202,19 +202,19 @@ export function DroppableZone({
   onFileDrop: (filePath: string) => void
   children: React.ReactNode
   sx?: object
-}) {
+}): JSX.Element {
   const [over, setOver] = useState(false)
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = (e: React.DragEvent): void => {
     if (e.dataTransfer.types.includes('Files')) {
       e.preventDefault()
       setOver(true)
     }
   }
-  const handleDragLeave = (e: React.DragEvent) => {
+  const handleDragLeave = (e: React.DragEvent): void => {
     if (!e.currentTarget.contains(e.relatedTarget as Node)) setOver(false)
   }
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = (e: React.DragEvent): void => {
     e.preventDefault()
     setOver(false)
     const file = Array.from(e.dataTransfer.files).find((f) => f.type.startsWith('image/'))
@@ -251,7 +251,7 @@ export function StickyHeader({
   title: string
   description?: string
   actions?: React.ReactNode
-}) {
+}): JSX.Element {
   return (
     <Box
       sx={{
@@ -322,12 +322,16 @@ export function StickyHeader({
  * onTier(2) = Ctrl+Shift+N (mid unit)
  * onTier(3) = Ctrl+Shift+Alt+N (highest unit)
  */
-export function useEditorShortcuts(onTier: (tier: 1 | 2 | 3) => void) {
+// eslint-disable-next-line react-refresh/only-export-components
+export function useEditorShortcuts(onTier: (tier: 1 | 2 | 3) => void): void {
   const cbRef = useRef(onTier)
-  cbRef.current = onTier
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
+    cbRef.current = onTier
+  }, [onTier])
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent): void => {
       const ctrl = e.ctrlKey || e.metaKey
       if (!ctrl || e.key.toLowerCase() !== 'n') return
       // Skip if focus is inside a text input/textarea to avoid hijacking typing

@@ -57,7 +57,7 @@ const SettingsContext = createContext<SettingsContextValue | null>(null)
 
 // ── Provider ──────────────────────────────────────────────────────────────────
 
-export function SettingsProvider({ children }: { children: React.ReactNode }) {
+export function SettingsProvider({ children }: { children: React.ReactNode }): React.ReactElement {
   const [globalSettings, setGlobalSettings] = useState<GlobalSettings>(DEFAULT_GLOBAL_SETTINGS)
   const [projectSettings, setProjectSettings] = useState<ProjectSettings | null>(null)
   const [ready, setReady] = useState(false)
@@ -113,6 +113,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSettings(): SettingsContextValue {
   const ctx = useContext(SettingsContext)
   if (!ctx) throw new Error('useSettings must be used inside <SettingsProvider>')

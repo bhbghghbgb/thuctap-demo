@@ -26,7 +26,7 @@ import {
   Tooltip,
   Typography
 } from '@mui/material'
-import { useCallback, useEffect, useState } from 'react'
+import { JSX, useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GAME_REGISTRY } from '../games/registry'
 import { GameTemplate, RecentProject } from '../types'
@@ -56,7 +56,7 @@ async function writeRecentProjects(list: RecentProject[]): Promise<void> {
   await window.electronAPI.settingsWriteGlobal({ ...s, recentProjects: list })
 }
 
-async function addRecentProject(entry: RecentProject) {
+async function addRecentProject(entry: RecentProject): Promise<void> {
   const existing = await readRecentProjects()
   const filtered = existing.filter((r) => r.filePath !== entry.filePath)
   await writeRecentProjects([entry, ...filtered].slice(0, 10))
@@ -68,7 +68,7 @@ type FolderDialogState =
   | null
 
 // ── Component ─────────────────────────────────────────────────────────────────
-export default function HomePage() {
+export default function HomePage(): JSX.Element {
   const navigate = useNavigate()
   const [templates, setTemplates] = useState<GameTemplate[]>([])
   const [loading, setLoading] = useState(true)
@@ -102,13 +102,13 @@ export default function HomePage() {
     [templates, navigate]
   )
 
-  const handleOpenExisting = async () => {
+  const handleOpenExisting = async (): Promise<void> => {
     const result = await window.electronAPI.openProjectFile()
     if (!result) return
     await openProject(result.filePath, result.data)
   }
 
-  const handleNewProject = async (template: GameTemplate) => {
+  const handleNewProject = async (template: GameTemplate): Promise<void> => {
     const folder = await window.electronAPI.chooseProjectFolder()
     if (!folder) return
     const status = await window.electronAPI.checkFolderStatus(folder)
@@ -123,7 +123,7 @@ export default function HomePage() {
     await createNewProject(folder, template)
   }
 
-  const createNewProject = async (folder: string, template: GameTemplate) => {
+  const createNewProject = async (folder: string, template: GameTemplate): Promise<void> => {
     const projectPath = `${folder}/project.mgproj`
     const now = new Date().toISOString()
     const initialAppData = GAME_REGISTRY[template.id]?.createInitialData() ?? {}
@@ -140,20 +140,20 @@ export default function HomePage() {
     await openProject(projectPath, newProject)
   }
 
-  const handleOpenFromFolder = async (folder: string) => {
+  const handleOpenFromFolder = async (folder: string): Promise<void> => {
     const filePath = `${folder}/project.mgproj`
     const result = await window.electronAPI.openProjectFile(filePath)
     if (!result) return
     await openProject(result.filePath, result.data)
   }
 
-  const removeRecent = async (filePath: string) => {
+  const removeRecent = async (filePath: string): Promise<void> => {
     const updated = recent.filter((r) => r.filePath !== filePath)
     setRecent(updated)
     await writeRecentProjects(updated)
   }
 
-  const openRecent = async (entry: RecentProject) => {
+  const openRecent = async (entry: RecentProject): Promise<void> => {
     const result = await window.electronAPI.openProjectFile(entry.filePath)
     if (!result) {
       alert(`Could not open "${entry.projectName}". The file may have been moved or deleted.`)
@@ -417,7 +417,7 @@ export default function HomePage() {
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Please choose an empty folder so your project files don't get mixed up with other
+            Please choose an empty folder so your project files don&apos;t get mixed up with other
             things.
           </DialogContentText>
           <Typography
@@ -452,7 +452,7 @@ function GameTemplateCard({
 }: {
   template: GameTemplate
   onSelect: (t: GameTemplate) => void
-}) {
+}): JSX.Element {
   return (
     <Card
       sx={{

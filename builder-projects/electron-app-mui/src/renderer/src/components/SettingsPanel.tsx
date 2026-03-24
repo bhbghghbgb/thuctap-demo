@@ -15,6 +15,7 @@ import {
   Tooltip,
   Typography
 } from '@mui/material'
+import React from 'react'
 import { useSettings } from '../context/SettingsContext'
 import { AutoSaveMode, ProjectSettings } from '../types'
 
@@ -25,7 +26,7 @@ interface Props {
   hasProject?: boolean
 }
 
-export default function SettingsPanel({ open, onClose, hasProject }: Props) {
+export default function SettingsPanel({ open, onClose, hasProject }: Props): React.ReactElement {
   const { globalSettings, projectSettings, resolved, updateGlobal, updateProject } = useSettings()
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -37,7 +38,7 @@ export default function SettingsPanel({ open, onClose, hasProject }: Props) {
     return false
   }
 
-  const clearProjOverride = (key: keyof ProjectSettings) => {
+  const clearProjOverride = (key: keyof ProjectSettings): void => {
     if (!projectSettings) return
     const next = { ...projectSettings }
     if (key === 'autoSave') next.autoSave = null
@@ -45,7 +46,7 @@ export default function SettingsPanel({ open, onClose, hasProject }: Props) {
     updateProject(next)
   }
 
-  const setProjOverride = (patch: ProjectSettings) => {
+  const setProjOverride = (patch: ProjectSettings): void => {
     updateProject({ ...projectSettings, ...patch })
   }
 
@@ -196,7 +197,7 @@ function SectionHeader({
   icon: React.ReactNode
   label: string
   subtitle?: string
-}) {
+}): React.ReactElement {
   return (
     <Box
       sx={{
@@ -244,7 +245,7 @@ function OverrideRow({
   onEnable: () => void
   onDisable: () => void
   children?: React.ReactNode
-}) {
+}): React.ReactElement {
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: active ? 1.5 : 0 }}>
@@ -292,7 +293,7 @@ function AutoSaveSetting({
   intervalSec: number
   onModeChange: (m: AutoSaveMode) => void
   onIntervalChange: (s: number) => void
-}) {
+}): React.ReactElement {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
       <Typography variant="body2" color="text.secondary">
@@ -341,7 +342,13 @@ function AutoSaveSetting({
   )
 }
 
-function PrefillSetting({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
+function PrefillSetting({
+  value,
+  onChange
+}: {
+  value: boolean
+  onChange: (v: boolean) => void
+}): React.ReactElement {
   return (
     <FormControlLabel
       control={<Switch size="small" checked={value} onChange={(_, checked) => onChange(checked)} />}
@@ -349,7 +356,7 @@ function PrefillSetting({ value, onChange }: { value: boolean; onChange: (v: boo
         <Box>
           <Typography variant="body2">Prefill names</Typography>
           <Typography variant="caption" color="text.secondary">
-            New groups/items get a default name like "Group 1"
+            New groups/items get a default name like &quot;Group 1&quot;
           </Typography>
         </Box>
       }

@@ -14,7 +14,7 @@ import {
   Tooltip,
   Typography
 } from '@mui/material'
-import { useCallback, useState } from 'react'
+import { JSX, useCallback, useState } from 'react'
 import {
   DroppableZone,
   EmptyState,
@@ -40,16 +40,20 @@ function normalize(d: PairMatchingAppData): PairMatchingAppData {
   return { ...d, _itemCounter: d._itemCounter ?? 0, items: d.items ?? [] }
 }
 
-export default function PairMatchingEditor({ appData: raw, projectDir, onChange }: Props) {
+export default function PairMatchingEditor({
+  appData: raw,
+  projectDir,
+  onChange
+}: Props): JSX.Element {
   const data = normalize(raw)
   const [tab, setTab] = useState<Tab>('pairs')
   const { resolved } = useSettings()
   const { items } = data
 
-  const nextItemId = () => {
+  const nextItemId = useCallback(() => {
     const c = data._itemCounter + 1
     return { id: `item-${c}`, counter: c }
-  }
+  }, [data._itemCounter])
 
   const addItem = useCallback(
     (initialImage?: string) => {
@@ -62,7 +66,7 @@ export default function PairMatchingEditor({ appData: raw, projectDir, onChange 
       }
       onChange({ ...data, _itemCounter: counter, items: [...items, i] })
     },
-    [data, items, resolved.prefillNames, onChange]
+    [data, items, resolved.prefillNames, onChange, nextItemId]
   )
 
   const addItemFromDrop = useCallback(
@@ -76,7 +80,7 @@ export default function PairMatchingEditor({ appData: raw, projectDir, onChange 
       }
       onChange({ ...data, _itemCounter: counter, items: [...items, i] })
     },
-    [data, items, projectDir, resolved.prefillNames, onChange]
+    [data, items, projectDir, resolved.prefillNames, onChange, nextItemId]
   )
 
   const updateItem = useCallback(
@@ -180,7 +184,7 @@ function PairsTab({
   onAddFromDrop: (fp: string) => void
   onUpdate: (id: string, p: Partial<PairMatchingItem>) => void
   onDelete: (id: string) => void
-}) {
+}): JSX.Element {
   return (
     <Box>
       <StickyHeader
@@ -238,7 +242,7 @@ function PairCard({
   autoFocus?: boolean
   onUpdate: (id: string, p: Partial<PairMatchingItem>) => void
   onDelete: (id: string) => void
-}) {
+}): JSX.Element {
   return (
     <Paper
       elevation={0}
@@ -303,7 +307,7 @@ function SettingsTab({
   data: PairMatchingAppData
   projectDir: string
   onChange: (d: PairMatchingAppData) => void
-}) {
+}): JSX.Element {
   return (
     <Box>
       <StickyHeader

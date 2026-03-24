@@ -1,7 +1,7 @@
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
 import ClearIcon from '@mui/icons-material/Clear'
 import { Box, CircularProgress, IconButton, Tooltip, Typography } from '@mui/material'
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useAssetUrl } from '../hooks/useAssetUrl'
 
 interface Props {
@@ -20,12 +20,12 @@ export default function ImagePicker({
   onChange,
   label,
   size = 100
-}: Props) {
+}: Props): React.ReactElement {
   const [loading, setLoading] = useState(false)
   const [dragOver, setDragOver] = useState(false)
   const url = useAssetUrl(projectDir, value)
 
-  const importFile = async (filePath: string) => {
+  const importFile = async (filePath: string): Promise<void> => {
     setLoading(true)
     try {
       const relativePath = await window.electronAPI.importImage(filePath, projectDir, entityId)
@@ -35,25 +35,25 @@ export default function ImagePicker({
     }
   }
 
-  const handleClick = async () => {
+  const handleClick = async (): Promise<void> => {
     const picked = await window.electronAPI.pickImage()
     if (picked) await importFile(picked)
   }
 
-  const handleClear = (e: React.MouseEvent) => {
+  const handleClear = (e: React.MouseEvent): void => {
     e.stopPropagation()
     onChange(null)
   }
 
   // ── Drag & drop support ──────────────────────────────────────────────────
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = (e: React.DragEvent): void => {
     if (e.dataTransfer.types.includes('Files')) {
       e.preventDefault()
       setDragOver(true)
     }
   }
-  const handleDragLeave = () => setDragOver(false)
-  const handleDrop = async (e: React.DragEvent) => {
+  const handleDragLeave = (): void => setDragOver(false)
+  const handleDrop = async (e: React.DragEvent): Promise<void> => {
     e.preventDefault()
     setDragOver(false)
     const file = Array.from(e.dataTransfer.files).find((f) => f.type.startsWith('image/'))

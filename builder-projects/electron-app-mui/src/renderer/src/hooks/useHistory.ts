@@ -27,7 +27,6 @@ export function useHistory<T>(initial: T): HistoryState<T> {
       setPast((p) => [...p.slice(-(MAX_HISTORY - 1)), present])
       setPresent(next)
       setFuture([])
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
     [present]
   )
@@ -40,7 +39,6 @@ export function useHistory<T>(initial: T): HistoryState<T> {
       setPresent(prev)
       return p.slice(0, -1)
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [present])
 
   const redo = useCallback(() => {
@@ -51,7 +49,6 @@ export function useHistory<T>(initial: T): HistoryState<T> {
       setPresent(next)
       return f.slice(1)
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [present])
 
   const reset = useCallback((next: T) => {

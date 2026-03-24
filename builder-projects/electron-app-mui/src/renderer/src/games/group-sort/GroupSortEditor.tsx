@@ -20,7 +20,7 @@ import {
   Tooltip,
   Typography
 } from '@mui/material'
-import { useCallback, useState } from 'react'
+import { JSX, useCallback, useState } from 'react'
 import {
   DroppableZone,
   EmptyState,
@@ -46,21 +46,25 @@ function normalize(d: GroupSortAppData): GroupSortAppData {
   return { ...d, _groupCounter: d._groupCounter ?? 0, _itemCounter: d._itemCounter ?? 0 }
 }
 
-export default function GroupSortEditor({ appData: raw, projectDir, onChange }: Props) {
+export default function GroupSortEditor({
+  appData: raw,
+  projectDir,
+  onChange
+}: Props): JSX.Element {
   const data = normalize(raw)
   const [tab, setTab] = useState<Tab>('groups')
   const { resolved } = useSettings()
   const { groups, items } = data
 
   // ── CRUD helpers ──────────────────────────────────────────────────────────
-  const nextGroupId = () => {
+  const nextGroupId = useCallback(() => {
     const c = data._groupCounter + 1
     return { id: `group-${c}`, counter: c }
-  }
-  const nextItemId = () => {
+  }, [data._groupCounter])
+  const nextItemId = useCallback(() => {
     const c = data._itemCounter + 1
     return { id: `item-${c}`, counter: c }
-  }
+  }, [data._itemCounter])
 
   const addGroup = useCallback(
     (initialImage?: string) => {
@@ -72,7 +76,7 @@ export default function GroupSortEditor({ appData: raw, projectDir, onChange }: 
       }
       onChange({ ...data, _groupCounter: counter, groups: [...groups, g] })
     },
-    [data, groups, resolved.prefillNames, onChange]
+    [data, groups, resolved.prefillNames, onChange, nextGroupId]
   )
 
   const addGroupFromDrop = useCallback(
@@ -86,7 +90,7 @@ export default function GroupSortEditor({ appData: raw, projectDir, onChange }: 
       }
       onChange({ ...data, _groupCounter: counter, groups: [...groups, g] })
     },
-    [data, groups, projectDir, resolved.prefillNames, onChange]
+    [data, groups, projectDir, resolved.prefillNames, onChange, nextGroupId]
   )
 
   const updateGroup = useCallback(
@@ -120,7 +124,7 @@ export default function GroupSortEditor({ appData: raw, projectDir, onChange }: 
       }
       onChange({ ...data, _itemCounter: counter, items: [...items, i] })
     },
-    [data, items, groups, resolved.prefillNames, onChange]
+    [data, items, groups, resolved.prefillNames, onChange, nextItemId]
   )
 
   const addItemFromDrop = useCallback(
@@ -136,7 +140,7 @@ export default function GroupSortEditor({ appData: raw, projectDir, onChange }: 
       }
       onChange({ ...data, _itemCounter: counter, items: [...items, i] })
     },
-    [data, items, groups, projectDir, resolved.prefillNames, onChange]
+    [data, items, groups, projectDir, resolved.prefillNames, onChange, nextItemId]
   )
 
   const updateItem = useCallback(
@@ -346,7 +350,7 @@ function GroupsTab({
   onAddFromDrop: (fp: string) => void
   onUpdate: (id: string, p: Partial<GroupSortGroup>) => void
   onDelete: (id: string) => void
-}) {
+}): JSX.Element {
   return (
     <Box>
       <StickyHeader
@@ -404,7 +408,7 @@ function GroupCard({
   autoFocus?: boolean
   onUpdate: (id: string, p: Partial<GroupSortGroup>) => void
   onDelete: (id: string) => void
-}) {
+}): JSX.Element {
   return (
     <Paper
       elevation={0}
@@ -466,7 +470,7 @@ function ItemsTab({
   onAddFromDrop: (fp: string) => void
   onUpdate: (id: string, p: Partial<GroupSortItem>) => void
   onDelete: (id: string) => void
-}) {
+}): JSX.Element {
   return (
     <Box>
       <StickyHeader
@@ -533,7 +537,7 @@ function ItemCard({
   autoFocus?: boolean
   onUpdate: (id: string, p: Partial<GroupSortItem>) => void
   onDelete: (id: string) => void
-}) {
+}): JSX.Element {
   const assigned = groups.find((g) => g.id === item.groupId)
   return (
     <Paper
@@ -626,7 +630,7 @@ function OverviewTab({
   onUpdateItem: (id: string, p: Partial<GroupSortItem>) => void
   onDeleteGroup: (id: string) => void
   onDeleteItem: (id: string) => void
-}) {
+}): JSX.Element {
   // "Add Item" in the header → last group
   const lastGroupId = groups[groups.length - 1]?.id
 

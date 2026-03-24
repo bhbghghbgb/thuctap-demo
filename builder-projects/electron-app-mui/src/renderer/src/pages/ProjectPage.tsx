@@ -30,7 +30,7 @@ import {
   Tooltip,
   Typography
 } from '@mui/material'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { JSX, useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import SettingsPanel from '../components/SettingsPanel'
 import { useSettings } from '../context/SettingsContext'
@@ -39,8 +39,8 @@ import { useHistory } from '../hooks/useHistory'
 import { AnyAppData, GameTemplate, ProjectFile, ProjectMeta } from '../types'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function buildTitle(templateName: string, projectName: string, filePath: string) {
-  return `[${templateName}] ${projectName} — ${filePath}`
+function buildTitle(templateId: string, projectName: string, filePath: string): string {
+  return `[${templateId}] ${projectName} — ${filePath}`
 }
 
 function buildProjectFile(meta: ProjectMeta, appData: AnyAppData): ProjectFile {
@@ -56,7 +56,7 @@ function buildProjectFile(meta: ProjectMeta, appData: AnyAppData): ProjectFile {
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
-export default function ProjectPage() {
+export default function ProjectPage(): JSX.Element {
   const { templateId } = useParams<{ templateId: string }>()
   const location = useLocation()
   const navigate = useNavigate()
@@ -112,6 +112,12 @@ export default function ProjectPage() {
     window.electronAPI.setTitle(title)
   }, [meta, templateId, templates])
 
+  useEffect(() => {
+    metaRef.current = meta
+    appDataRef.current = history.present
+    isDirtyRef.current = isDirty
+  }, [meta, history.present, isDirty])
+
   const [snack, setSnack] = useState<{
     msg: string
     severity: 'success' | 'error' | 'info'
@@ -123,8 +129,11 @@ export default function ProjectPage() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [saveAsConfirmFolder, setSaveAsConfirmFolder] = useState<string | null>(null)
 
-  const showSnack = (msg: string, severity: 'success' | 'error' | 'info' = 'success') =>
-    setSnack({ msg, severity })
+  const showSnack = useCallback(
+    (msg: string, severity: 'success' | 'error' | 'info' = 'success'): void =>
+      setSnack({ msg, severity }),
+    []
+  )
 
   // ── Save ─────────────────────────────────────────────────────────────────
   const doSave = useCallback(async (currentMeta: ProjectMeta, appData: AnyAppData) => {
@@ -133,15 +142,34 @@ export default function ProjectPage() {
     setIsDirty(false)
   }, [])
 
+  const performSaveAs = useCallback(
+    async (folder: string): Promise<void> => {
+      if (!meta) return
+      try {
+        const newLoc = await window.electronAPI.doSaveAs({
+          projectData: buildProjectFile(meta, history.present),
+          oldProjectDir: meta.projectDir,
+          newFolder: folder
+        })
+        setMeta((prev) =>
+          prev ? { ...prev, filePath: newLoc.filePath, projectDir: newLoc.projectDir } : prev
+        )
+        setIsDirty(false)
+        setSaveAsConfirmFolder(null)
+        showSnack(`Saved to: ${newLoc.projectDir}`)
+      } catch (e) {
+        showSnack(`Save As failed: ${e}`, 'error')
+      }
+    },
+    [meta, history.present, showSnack]
+  )
+
   // ── Auto-save ─────────────────────────────────────────────────────────────
   const onEditTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const metaRef = useRef(meta)
-  metaRef.current = meta
   const appDataRef = useRef(history.present)
-  appDataRef.current = history.present
   const isDirtyRef = useRef(isDirty)
-  isDirtyRef.current = isDirty
 
   useEffect(() => {
     if (intervalRef.current) clearInterval(intervalRef.current)
@@ -171,7 +199,7 @@ export default function ProjectPage() {
     [history, resolved.autoSave.mode, doSave]
   )
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async (): Promise<void> => {
     if (!meta) return
     try {
       await doSave(meta, history.present)
@@ -179,10 +207,10 @@ export default function ProjectPage() {
     } catch (e) {
       showSnack(`Save failed: ${e}`, 'error')
     }
-  }
+  }, [meta, history.present, doSave, showSnack])
 
   // ── Save As ───────────────────────────────────────────────────────────────
-  const handleSaveAs = async () => {
+  const handleSaveAs = useCallback(async (): Promise<void> => {
     if (!meta) return
     const result = await window.electronAPI.saveProjectAs({
       projectData: buildProjectFile(meta, history.present),
@@ -197,29 +225,10 @@ export default function ProjectPage() {
       }
     }
     await performSaveAs(result.folder)
-  }
-
-  const performSaveAs = async (folder: string) => {
-    if (!meta) return
-    try {
-      const newLoc = await window.electronAPI.doSaveAs({
-        projectData: buildProjectFile(meta, history.present),
-        oldProjectDir: meta.projectDir,
-        newFolder: folder
-      })
-      setMeta((prev) =>
-        prev ? { ...prev, filePath: newLoc.filePath, projectDir: newLoc.projectDir } : prev
-      )
-      setIsDirty(false)
-      setSaveAsConfirmFolder(null)
-      showSnack(`Saved to: ${newLoc.projectDir}`)
-    } catch (e) {
-      showSnack(`Save As failed: ${e}`, 'error')
-    }
-  }
+  }, [meta, history.present, showSnack, performSaveAs])
 
   // ── Export / Preview ───────────────────────────────────────────────────────
-  const handleExport = async (mode: 'folder' | 'zip') => {
+  const handleExport = async (mode: 'folder' | 'zip'): Promise<void> => {
     setExportAnchor(null)
     if (!meta) return
     try {
@@ -236,7 +245,7 @@ export default function ProjectPage() {
     }
   }
 
-  const handlePreview = async () => {
+  const handlePreview = async (): Promise<void> => {
     if (!meta) return
     try {
       await window.electronAPI.previewProject({
@@ -251,7 +260,7 @@ export default function ProjectPage() {
   }
 
   // ── Rename ────────────────────────────────────────────────────────────────
-  const handleRename = async () => {
+  const handleRename = async (): Promise<void> => {
     if (!meta || !renameValue.trim()) return
     const updated = { ...meta, name: renameValue.trim() }
     setMeta(updated)
@@ -265,7 +274,7 @@ export default function ProjectPage() {
 
   // ── Keyboard shortcuts ────────────────────────────────────────────────────
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
+    const handler = (e: KeyboardEvent): void => {
       const ctrl = e.ctrlKey || e.metaKey
       if (ctrl && e.key === 'z' && !e.shiftKey) {
         e.preventDefault()

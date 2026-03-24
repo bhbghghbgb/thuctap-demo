@@ -14,7 +14,7 @@ import {
   Tooltip,
   Typography
 } from '@mui/material'
-import { useCallback } from 'react'
+import { JSX, useCallback } from 'react'
 import {
   DroppableZone,
   EmptyState,
@@ -37,7 +37,11 @@ function normalize(d: BalloonLetterPickerAppData): BalloonLetterPickerAppData {
   return { ...d, _wordCounter: d._wordCounter ?? 0, words: d.words ?? [] }
 }
 
-export default function BalloonLetterPickerEditor({ appData: raw, projectDir, onChange }: Props) {
+export default function BalloonLetterPickerEditor({
+  appData: raw,
+  projectDir,
+  onChange
+}: Props): JSX.Element {
   const data = normalize(raw)
   const { resolved } = useSettings()
   const { words } = data
@@ -225,7 +229,7 @@ export default function BalloonLetterPickerEditor({ appData: raw, projectDir, on
   )
 }
 
-function SummaryRow({ label, value }: { label: string; value: number }) {
+function SummaryRow({ label, value }: { label: string; value: number }): JSX.Element {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
       <Typography variant="caption" sx={{ color: 'text.secondary' }}>
@@ -257,7 +261,7 @@ function WordCard({
   onUpdate: (id: string, p: Partial<BalloonWord>) => void
   onDelete: (id: string) => void
   onImageChange: (id: string, relativePath: string | null) => void
-}) {
+}): JSX.Element {
   const wordText = word.word.trim().toUpperCase()
   const isInvalid = wordText && !/^[A-Z]+$/.test(wordText)
 

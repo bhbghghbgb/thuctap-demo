@@ -21,7 +21,7 @@ import {
   Tooltip,
   Typography
 } from '@mui/material'
-import { useCallback } from 'react'
+import React, { useCallback } from 'react'
 import {
   DroppableZone,
   EmptyState,
@@ -49,7 +49,11 @@ function normalize(d: QuizAppData): QuizAppData {
   }
 }
 
-export default function QuizEditor({ appData: raw, projectDir, onChange }: Props) {
+export default function QuizEditor({
+  appData: raw,
+  projectDir,
+  onChange
+}: Props): React.ReactElement {
   const data = normalize(raw)
   const { resolved } = useSettings()
   const { questions } = data
@@ -293,7 +297,7 @@ export default function QuizEditor({ appData: raw, projectDir, onChange }: Props
   )
 }
 
-function SummaryRow({ label, value }: { label: string; value: number }) {
+function SummaryRow({ label, value }: { label: string; value: number }): React.ReactElement {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
       <Typography variant="caption" sx={{ color: 'text.secondary' }}>
@@ -329,7 +333,7 @@ function QuestionCard({
   onAddAnswer: (qid: string) => void
   onUpdateAnswer: (qid: string, aid: string, p: Partial<QuizAnswer>) => void
   onDeleteAnswer: (qid: string, aid: string) => void
-}) {
+}): React.ReactElement {
   const hasNoCorrect = !question.answers.some((a) => a.isCorrect)
   const isSingle = !question.multipleCorrect
 
