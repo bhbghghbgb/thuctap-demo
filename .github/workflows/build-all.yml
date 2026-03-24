@@ -21,6 +21,9 @@ jobs:
             game_id: "group-sort"
           - project_path: "template-projects/plane-quiz"
             game_id: "plane-quiz"
+          - project_path: "template-projects/balloon-letter-picker"
+            game_id: "balloon-letter-picker"
+            
           # Add more Project A's (Templates) here:
           # - project_path: "apps/mini-game-2"
           #   game_id: "memory-match"
