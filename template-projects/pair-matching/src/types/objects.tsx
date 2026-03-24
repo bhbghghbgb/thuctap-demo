@@ -1,13 +1,27 @@
 // --- Định nghĩa kiểu dữ liệu ---
 // types.ts
-export interface GameItem {
-  id: string | number;
-  image: string;
+export interface CardItem {
+  id: string;
+  imageSrc: string;
   keyword: string;
-  minAppearances?: number;
+  isFlipped: boolean;
+  isMatched: boolean;
 }
 
-export interface AppData {
-  items: GameItem[];
-  cardBack: string;
+export interface GameData {
+  items: {
+    imageSrc: string;
+    keyword: string;
+  }[];
+  minPairs?: number;
+  cardBackImage?: string;
+}
+
+export interface GameState {
+  cards: CardItem[];
+  selectedCardId: string | null;
+  lockBoard: boolean;
+  matchedCount: number;
+  totalPairs: number;
+  message: { type: "success" | "error" | null; text: string };
 }

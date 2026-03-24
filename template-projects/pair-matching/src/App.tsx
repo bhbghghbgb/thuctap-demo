@@ -1,10 +1,10 @@
 import "./App.css";
-import MatchingGameDemo from "./components/MatchingGameDemo";
+import MatchingGame from "./components/MatchingGame";
 
 function App() {
   return (
     <>
-      <MatchingGameDemo />
+      <MatchingGame />
     </>
   );
 }
