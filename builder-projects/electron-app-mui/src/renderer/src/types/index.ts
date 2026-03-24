@@ -3,15 +3,7 @@ export interface GameTemplate {
   id: string
   name: string
   description: string
-<<<<<<< HEAD
-  gameType: 'group-sort' | 'quiz' | 'word-search' | string
-=======
-  gameType: 'group-sort' | 'plane-quiz' | string
-<<<<<<< HEAD
->>>>>>> 3ce010ca3538d05241544dc0b6a1a78eedb40e7c
-=======
->>>>>>> origin/main
->>>>>>> origin/word-search
+  gameType: 'group-sort' | 'quiz' | 'plane-quiz' | 'word-search' | string
   version: string
   thumbnailUrl: string | null // file:// URL resolved by main process, or null
 }
