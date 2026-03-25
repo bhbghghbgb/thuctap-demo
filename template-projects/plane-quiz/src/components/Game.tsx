@@ -75,6 +75,9 @@ const Game: React.FC = () => {
   const [resultMessage, setResultMessage] = useState('');
   const [resultType, setResultType] = useState<'success' | 'error' | 'win'>('success');
   const speedLevels = [1, 2, 4, 6];
+
+  const currentGameSpeedRef = useRef<number>(1);
+  const currentBaseSpeedRef = useRef<number>(2);
   
   // Speed control states
   const [gameSpeed, setGameSpeed] = useState<number>(1);
@@ -340,6 +343,8 @@ const Game: React.FC = () => {
     setBaseGameSpeed(2);
     setAnsweredCorrectCount(0);
     setIsPaused(false);
+    currentGameSpeedRef.current = 1;
+    currentBaseSpeedRef.current = 2;
     cloudsRef.current = [];
     cloudSubPixelXRef.current.clear();
     backgroundXRef.current = 0;
@@ -366,6 +371,7 @@ const Game: React.FC = () => {
   // Hàm thay đổi tốc độ
   const changeSpeed = (speed: number) => {
     setGameSpeed(speed);
+    currentGameSpeedRef.current = speed;
     setIsPaused(false);
   };
 
@@ -377,14 +383,18 @@ const Game: React.FC = () => {
     const currentIndex = speedLevels.indexOf(gameSpeed);
     const nextIndex = (currentIndex + 1) % speedLevels.length;
     const newSpeed = speedLevels[nextIndex];
-    changeSpeed(newSpeed);
+    setGameSpeed(newSpeed);
+    currentGameSpeedRef.current = newSpeed; // Cập nhật ngay
+    setIsPaused(false);
   };
 
   const decreaseSpeed = () => {
     const currentIndex = speedLevels.indexOf(gameSpeed);
     const prevIndex = (currentIndex - 1 + speedLevels.length) % speedLevels.length;
     const newSpeed = speedLevels[prevIndex];
-    changeSpeed(newSpeed);
+    setGameSpeed(newSpeed);
+    currentGameSpeedRef.current = newSpeed; // Cập nhật ngay
+    setIsPaused(false);
   };
 
   // Kích hoạt iframe (bất tử)
@@ -707,7 +717,10 @@ const Game: React.FC = () => {
       const newSpeed = minSpeed + (maxSpeed - minSpeed) * progress;
       const finalSpeed = Math.min(maxSpeed, Math.max(minSpeed, newSpeed));
       setBaseGameSpeed(finalSpeed);
+      currentBaseSpeedRef.current = finalSpeed;
+
       
+
       createExplosion(cloud.x, cloud.y, cloud.width, cloud.height);
       
       setTimeout(() => {
@@ -771,9 +784,11 @@ const Game: React.FC = () => {
   updatePlayer();
 
   // Sử dụng baseGameSpeed (tăng dần) cho tốc độ game
-  const currentGameSpeed = baseGameSpeed;
-  const currentBackgroundSpeed = BASE_BACKGROUND_SPEED * currentGameSpeed;
-  const currentCloudSpeed = BASE_CLOUD_SPEED * currentGameSpeed;
+  const currentBaseSpeed = currentBaseSpeedRef.current;
+  const currentMultiplier = currentGameSpeedRef.current;
+  const totalGameSpeed = currentBaseSpeed * currentMultiplier;
+  const currentBackgroundSpeed = BASE_BACKGROUND_SPEED * totalGameSpeed;
+  const currentCloudSpeed = BASE_CLOUD_SPEED * totalGameSpeed;
   
   backgroundXRef.current -= currentBackgroundSpeed;
   if (backgroundXRef.current <= -canvasSize.width) {
@@ -785,7 +800,7 @@ const Game: React.FC = () => {
     const answerTexts = getAnswerTexts(currentQuestion);
     const availableAnswers = answerTexts.filter(a => !existingAnswers.includes(a));
     
-    const spawnChance = 0.015 * Math.min(currentGameSpeed, 3);
+    const spawnChance = 0.015 * Math.min(totalGameSpeed, 3);
     if (availableAnswers.length > 0 && Math.random() < spawnChance) {
       const randomIndex = Math.floor(Math.random() * availableAnswers.length);
       const newCloud = createCloud(availableAnswers[randomIndex]);
@@ -875,149 +890,162 @@ const Game: React.FC = () => {
 
   // Drawing
   useEffect(() => {
-    if (!isPlaying && !gameOver && !gameWin) return;
+  if (!isPlaying && !gameOver && !gameWin) return;
 
-    const draw = () => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      if (backgroundImage.current.complete) {
-        ctx.drawImage(backgroundImage.current, backgroundXRef.current, 0, canvas.width, canvas.height);
-        ctx.drawImage(backgroundImage.current, backgroundXRef.current + canvas.width, 0, canvas.width, canvas.height);
-      }
-
-      if (cloudImage.current.complete) {
-  cloudsRef.current.forEach(cloud => {
-    if (cloud.isCorrect !== null) ctx.globalAlpha = 0.6;
+  const draw = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
     
-    // Làm tròn tọa độ X để vẽ mượt hơn
-    const drawX = Math.round(cloud.x);
-    ctx.drawImage(cloudImage.current, drawX, cloud.y, cloud.width, cloud.height);
-    
-    // Font chữ đậm và to hơn
-    ctx.font = `bold ${Math.min(28, cloud.height * 0.45)}px "Segoe UI", "Arial", sans-serif`;
-    ctx.fillStyle = cloud.isCorrect !== null ? '#555' : '#111';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    
-    // Thêm shadow cho chữ
-    ctx.shadowBlur = 2;
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-    ctx.fillText(cloud.answer, drawX + cloud.width / 2, cloud.y + cloud.height / 2);
-    ctx.shadowBlur = 0;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-    if (cloud.isCorrect !== null) {
-      const iconSize = cloud.height * 0.4;
-      if (cloud.isCorrect && tickImage.current.complete) {
-        ctx.drawImage(tickImage.current, drawX + cloud.width - iconSize, cloud.y, iconSize, iconSize);
-      } else if (cloud.isCorrect === false && crossImage.current.complete) {
-        ctx.drawImage(crossImage.current, drawX + cloud.width - iconSize, cloud.y, iconSize, iconSize);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (backgroundImage.current.complete) {
+      ctx.drawImage(backgroundImage.current, backgroundXRef.current, 0, canvas.width, canvas.height);
+      ctx.drawImage(backgroundImage.current, backgroundXRef.current + canvas.width, 0, canvas.width, canvas.height);
+    }
+
+    if (cloudImage.current.complete) {
+      cloudsRef.current.forEach(cloud => {
+        if (cloud.isCorrect !== null) ctx.globalAlpha = 0.6;
+        
+        const drawX = Math.round(cloud.x);
+        ctx.drawImage(cloudImage.current, drawX, cloud.y, cloud.width, cloud.height);
+        
+        ctx.font = `bold ${Math.min(28, cloud.height * 0.45)}px "Segoe UI", "Arial", sans-serif`;
+        ctx.fillStyle = cloud.isCorrect !== null ? '#555' : '#111';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        ctx.shadowBlur = 2;
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+        ctx.fillText(cloud.answer, drawX + cloud.width / 2, cloud.y + cloud.height / 2);
+        ctx.shadowBlur = 0;
+
+        if (cloud.isCorrect !== null) {
+          const iconSize = cloud.height * 0.4;
+          if (cloud.isCorrect && tickImage.current.complete) {
+            ctx.drawImage(tickImage.current, drawX + cloud.width - iconSize, cloud.y, iconSize, iconSize);
+          } else if (cloud.isCorrect === false && crossImage.current.complete) {
+            ctx.drawImage(crossImage.current, drawX + cloud.width - iconSize, cloud.y, iconSize, iconSize);
+          }
+        }
+        
+        ctx.globalAlpha = 1;
+      });
+    }
+
+    if (playerImage.current.complete && !gameOver && !gameWin) {
+      if (isInvincible) {
+        const shouldDraw = Math.floor(Date.now() / 100) % 2 === 0;
+        if (shouldDraw) {
+          ctx.globalAlpha = 0.5;
+          ctx.drawImage(playerImage.current, PLAYER_X, playerY, PLAYER_WIDTH, PLAYER_HEIGHT);
+          ctx.globalAlpha = 1;
+        }
+      } else {
+        ctx.drawImage(playerImage.current, PLAYER_X, playerY, PLAYER_WIDTH, PLAYER_HEIGHT);
       }
     }
+
+    if (explosionImage.current.complete) {
+      explosions.forEach(exp => {
+        ctx.globalAlpha = 1 - (exp.frame / 10);
+        ctx.drawImage(explosionImage.current, exp.x, exp.y, exp.width, exp.height);
+      });
+      ctx.globalAlpha = 1;
+    }
+
+    if (currentQuestion && !gameWin) {
+      ctx.font = `bold ${Math.min(32, canvasSize.height * 0.05)}px Arial`;
+      ctx.fillStyle = 'white';
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = 3;
+      ctx.textAlign = 'center';
+      ctx.strokeText(currentQuestion.question, canvas.width / 2, 60);
+      ctx.fillText(currentQuestion.question, canvas.width / 2, 60);
+    }
+
+    ctx.font = `${Math.min(24, canvasSize.height * 0.04)}px Arial`;
+    ctx.fillStyle = 'white';
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 2;
     
-    ctx.globalAlpha = 1;
-  });
-}
+    ctx.strokeText(`Score: ${score}`, 100, 50);
+    ctx.fillText(`Score: ${score}`, 100, 50);
+    
+    for (let i = 0; i < lives; i++) {
+      ctx.fillStyle = '#ff4444';
+      ctx.font = '30px Arial';
+      ctx.fillText('❤️', canvas.width - 150 + i * 35, 50);
+    }
 
-      if (playerImage.current.complete && !gameOver && !gameWin) {
-        if (isInvincible) {
-          const shouldDraw = Math.floor(Date.now() / 100) % 2 === 0;
-          if (shouldDraw) {
-            ctx.globalAlpha = 0.5;
-            ctx.drawImage(playerImage.current, PLAYER_X, playerY, PLAYER_WIDTH, PLAYER_HEIGHT);
-            ctx.globalAlpha = 1;
-          }
-        } else {
-          ctx.drawImage(playerImage.current, PLAYER_X, playerY, PLAYER_WIDTH, PLAYER_HEIGHT);
-        }
-      }
+    ctx.font = `${Math.min(20, canvasSize.height * 0.03)}px Arial`;
+    ctx.fillStyle = 'white';
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 2;
+    ctx.strokeText(`Question ${currentQuestionIndex + 1}/${questions.length}`, canvas.width / 2, 100);
+    ctx.fillText(`Question ${currentQuestionIndex + 1}/${questions.length}`, canvas.width / 2, 100);
+    
+    // ===== SỬA PHẦN HIỂN THỊ TỐC ĐỘ =====
+    const totalSpeed = baseGameSpeed * gameSpeed;
+    ctx.font = `${Math.min(20, canvasSize.height * 0.03)}px Arial`;
+    ctx.fillStyle = gameSpeed !== 1 ? '#ffaa44' : '#ffd700';
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 2;
+    ctx.strokeText(`Speed: ${totalSpeed.toFixed(1)}x (${baseGameSpeed.toFixed(1)} × ${gameSpeed})`, canvas.width - 180, 100);
+    ctx.fillText(`Speed: ${totalSpeed.toFixed(1)}x (${baseGameSpeed.toFixed(1)} × ${gameSpeed})`, canvas.width - 180, 100);
+    
+    // Vẽ thanh tiến trình tốc độ cơ bản
+    const speedPercent = (baseGameSpeed - 2) / 6; // từ x2 (0%) đến x8 (100%)
+    const barWidth = 130;
+    const barHeight = 6;
+    const barX = canvas.width - 180;
+    const barY = 115;
+    
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(barX, barY, barWidth, barHeight);
+    ctx.fillStyle = '#4CAF50';
+    ctx.fillRect(barX, barY, barWidth * Math.min(1, Math.max(0, speedPercent)), barHeight);
+    
+    // Vẽ multiplier (x2, x4, x6) bên cạnh
+    ctx.font = `${Math.min(12, canvasSize.height * 0.02)}px Arial`;
+    ctx.fillStyle = '#ffaa44';
+    ctx.fillText(`×${gameSpeed}`, barX + barWidth + 5, barY + 5);
+    // ===== KẾT THÚC =====
 
-      if (explosionImage.current.complete) {
-        explosions.forEach(exp => {
-          ctx.globalAlpha = 1 - (exp.frame / 10);
-          ctx.drawImage(explosionImage.current, exp.x, exp.y, exp.width, exp.height);
-        });
-        ctx.globalAlpha = 1;
-      }
-
-      if (currentQuestion && !gameWin) {
-        ctx.font = `bold ${Math.min(32, canvasSize.height * 0.05)}px Arial`;
-        ctx.fillStyle = 'white';
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 3;
-        ctx.textAlign = 'center';
-        ctx.strokeText(currentQuestion.question, canvas.width / 2, 60);
-        ctx.fillText(currentQuestion.question, canvas.width / 2, 60);
-      }
-
-      ctx.font = `${Math.min(24, canvasSize.height * 0.04)}px Arial`;
-      ctx.fillStyle = 'white';
-      ctx.strokeStyle = 'black';
-      ctx.lineWidth = 2;
-      
-      ctx.strokeText(`Score: ${score}`, 100, 50);
-      ctx.fillText(`Score: ${score}`, 100, 50);
-      
-      for (let i = 0; i < lives; i++) {
-        ctx.fillStyle = '#ff4444';
-        ctx.font = '30px Arial';
-        ctx.fillText('❤️', canvas.width - 150 + i * 35, 50);
-      }
-
-      ctx.font = `${Math.min(20, canvasSize.height * 0.03)}px Arial`;
-      ctx.fillStyle = 'white';
-      ctx.strokeStyle = 'black';
-      ctx.lineWidth = 2;
-      ctx.strokeText(`Question ${currentQuestionIndex + 1}/${questions.length}`, canvas.width / 2, 100);
-      ctx.fillText(`Question ${currentQuestionIndex + 1}/${questions.length}`, canvas.width / 2, 100);
-      
-      // Hiển thị tốc độ hiện tại
-      ctx.font = `${Math.min(20, canvasSize.height * 0.03)}px Arial`;
+    if (isInvincible && invincibleTimer > 0) {
+      ctx.font = `bold ${Math.min(24, canvasSize.height * 0.04)}px Arial`;
       ctx.fillStyle = '#ffd700';
       ctx.strokeStyle = 'black';
       ctx.lineWidth = 2;
-      ctx.strokeText(`Speed: ${baseGameSpeed.toFixed(1)}x`, canvas.width - 150, 100);
-      ctx.fillText(`Speed: ${baseGameSpeed.toFixed(1)}x`, canvas.width - 150, 100);
-      
-      // Vẽ thanh tiến trình tốc độ
-      const speedPercent = (baseGameSpeed - 1) / 5; // 1 -> 0%, 6 -> 100%
-      const barWidth = 130;
-      const barHeight = 6;
-      const barX = canvas.width - 150;
-      const barY = 115;
-      
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-      ctx.fillRect(barX, barY, barWidth, barHeight);
-      ctx.fillStyle = '#4CAF50';
-      ctx.fillRect(barX, barY, barWidth * Math.min(1, Math.max(0, speedPercent)), barHeight);
+      ctx.strokeText(`Invincible: ${invincibleTimer}s`, canvas.width / 2, 150);
+      ctx.fillText(`Invincible: ${invincibleTimer}s`, canvas.width / 2, 150);
+    }
 
-      if (isInvincible && invincibleTimer > 0) {
-        ctx.font = `bold ${Math.min(24, canvasSize.height * 0.04)}px Arial`;
-        ctx.fillStyle = '#ffd700';
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 2;
-        ctx.strokeText(`Invincible: ${invincibleTimer}s`, canvas.width / 2, 150);
-        ctx.fillText(`Invincible: ${invincibleTimer}s`, canvas.width / 2, 150);
-      }
+    if (showResult && resultMessage) {
+      ctx.font = `bold ${Math.min(28, canvasSize.height * 0.045)}px Arial`;
+      ctx.fillStyle = resultType === 'success' ? '#4CAF50' : '#ff4444';
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = 2;
+      ctx.strokeText(resultMessage, canvas.width / 2, 200);
+      ctx.fillText(resultMessage, canvas.width / 2, 200);
+    }
+  };
 
-      if (showResult && resultMessage) {
-        ctx.font = `bold ${Math.min(28, canvasSize.height * 0.045)}px Arial`;
-        ctx.fillStyle = resultType === 'success' ? '#4CAF50' : '#ff4444';
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 2;
-        ctx.strokeText(resultMessage, canvas.width / 2, 200);
-        ctx.fillText(resultMessage, canvas.width / 2, 200);
-      }
-    };
-
-    const interval = setInterval(draw, 1);
-    return () => clearInterval(interval);
-  }, [isPlaying, gameOver, gameWin, playerY, canvasSize, explosions, currentQuestion, score, lives, showResult, resultMessage, resultType, currentQuestionIndex, isInvincible, invincibleTimer, questions.length, baseGameSpeed]);
+  // ===== SỬA TẦN SUẤT VẼ =====
+  let animationId: number;
+  
+  const animate = () => {
+    draw();
+    animationId = requestAnimationFrame(animate);
+  };
+  
+  animationId = requestAnimationFrame(animate);
+  return () => cancelAnimationFrame(animationId);
+  // ===== KẾT THÚC =====
+}, [isPlaying, gameOver, gameWin, playerY, canvasSize, explosions, currentQuestion, score, lives, showResult, resultMessage, resultType, currentQuestionIndex, isInvincible, invincibleTimer, questions.length, baseGameSpeed, gameSpeed]);
 
   // Tự động bắt đầu game khi component được load
   useEffect(() => {
