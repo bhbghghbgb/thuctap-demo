@@ -1,1 +1,22 @@
 @import "tailwindcss";
+
+@keyframes floatEmoji {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  100% {
+    transform: translateY(-120vh) rotate(var(--rotate));
+  }
+}
+
+.emoji-particle {
+  position: absolute;
+  font-size: 2.5rem;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  animation: floatEmoji var(--duration) linear forwards;
+  left: var(--x);
+  bottom: -60px;
+  z-index: 0;
+}
