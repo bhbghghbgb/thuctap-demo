@@ -16,12 +16,14 @@ export const GameFeedback: React.FC<FeedbackProps> = ({ data, placed }) => {
   const accuracy = totalZones > 0 ? correctPlacements / totalZones : 0;
   const percentage = Math.round(accuracy * 100);
 
-  // Get completion message
+  // Get completion message (do not show when there are no zones)
   const completionMessage =
-    correctPlacements === totalZones
-      ? aiIdentifier.getCompletionMessage(1.0)
-      : correctPlacements > 0
-      ? aiIdentifier.getCompletionMessage(accuracy)
+    totalZones > 0
+      ? correctPlacements === totalZones
+        ? aiIdentifier.getCompletionMessage(1.0)
+        : correctPlacements > 0
+        ? aiIdentifier.getCompletionMessage(accuracy)
+        : null
       : null;
 
   // Count placed and remaining
@@ -90,7 +92,9 @@ export const GameFeedback: React.FC<FeedbackProps> = ({ data, placed }) => {
 
       {/* Status Message */}
       <div className="text-xs text-gray-600 text-center">
-        {remaining > 0 ? (
+        {data.labels.length === 0 ? (
+          <p className="text-gray-500">No labels defined yet</p>
+        ) : remaining > 0 ? (
           <p>
             <span className="font-semibold">{remaining}</span> more to
             label
@@ -100,7 +104,7 @@ export const GameFeedback: React.FC<FeedbackProps> = ({ data, placed }) => {
         )}
       </div>
 
-      {/* Hint System */}
+      {/* Hint System
       {correctPlacements > 0 && remaining > 0 && remaining <= 3 && (
         <div className="mt-3 pt-3 border-t border-gray-200">
           <p className="text-xs font-semibold text-gray-700 mb-2">💡 Tips:</p>
@@ -110,7 +114,7 @@ export const GameFeedback: React.FC<FeedbackProps> = ({ data, placed }) => {
             <li>• Hover for feedback on incorrect placements</li>
           </ul>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

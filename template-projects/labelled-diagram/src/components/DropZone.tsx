@@ -9,9 +9,10 @@ interface Props {
   label?: Label;
   isCorrect?: boolean;
   correctLabelId?: string;
+  showAnnotations?: boolean;
 }
 
-const DropZone: React.FC<Props> = ({ zone, label, isCorrect, correctLabelId }) => {
+const DropZone: React.FC<Props> = ({ zone, label, isCorrect, correctLabelId, showAnnotations = true }) => {
   const { setNodeRef, isOver } = useDroppable({
     id: zone.id,
   });
@@ -37,24 +38,26 @@ const DropZone: React.FC<Props> = ({ zone, label, isCorrect, correctLabelId }) =
         transform: "translate(-50%, -50%)",
       }}
       className={`px-3 py-2 flex flex-col items-center justify-center rounded-lg border-2 transition-all relative group shadow-md ${
-        isOver
-          ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200 scale-110"
-          : isCorrect === true
-          ? "border-green-400 bg-green-50 shadow-green-200"
-          : isCorrect === false
-          ? "border-red-400 bg-red-50 shadow-red-200"
-          : "border-gray-400 bg-yellow-50"
-      }`}
+        showAnnotations
+          ? isOver
+            ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200 scale-110"
+            : isCorrect === true
+            ? "border-green-400 bg-green-50 shadow-green-200"
+            : isCorrect === false
+            ? "border-red-400 bg-red-50 shadow-red-200"
+            : "border-gray-400 bg-yellow-50"
+          : "border-transparent bg-transparent shadow-none"
+      } ${!showAnnotations ? "pointer-events-auto" : ""}`}
     >
       {/* Zone placeholder indicator */}
-      {!label && (
+      {showAnnotations && !label && (
         <div className="flex flex-col items-center justify-center bg-white bg-opacity-80 rounded px-2 py border border-gray-300 shadow-sm">
           <div className="text-sm text-gray-500 text-center">⭕</div>
         </div>
       )}
 
       <AnimatePresence mode="popLayout">
-        {label && (
+        {showAnnotations && label && (
           <motion.div
             key={label.id}
             layoutId={label.id}
@@ -79,7 +82,7 @@ const DropZone: React.FC<Props> = ({ zone, label, isCorrect, correctLabelId }) =
       </AnimatePresence>
 
       {/* AI Insight tooltip - note style */}
-      {advancedFeedback && (
+      {showAnnotations && advancedFeedback && (
         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 bg-yellow-100 text-gray-800 text-xs rounded-lg p-2 opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-normal shadow-lg border border-yellow-300">
           <p className="font-semibold mb-1 text-yellow-800">🧠 Vị trí:</p>
           <p>{advancedFeedback}</p>
