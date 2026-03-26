@@ -91,33 +91,35 @@ export default function ImagePicker({
           e.stopPropagation()
           handleClick()
         }}
-        sx={{
-          width: size,
-          height: size,
-          borderRadius: 2,
-          border: '2px dashed',
-          borderColor: isActive
-            ? 'primary.main'
-            : value
-              ? 'primary.dark'
-              : 'rgba(255,255,255,0.15)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          overflow: 'hidden',
-          position: 'relative',
-          background: isActive
-            ? 'rgba(110,231,183,0.08)'
-            : value
-              ? 'transparent'
-              : 'rgba(255,255,255,0.02)',
-          transition: 'border-color 0.15s, background 0.15s',
-          flexShrink: 0,
-          '&:hover': { borderColor: 'primary.main', background: 'rgba(110,231,183,0.04)' },
-          ...sx
-        }}
+        sx={[
+          {
+            width: size,
+            height: size,
+            borderRadius: 2,
+            border: '2px dashed',
+            borderColor: isActive
+              ? 'primary.main'
+              : value
+                ? 'primary.dark'
+                : 'rgba(255,255,255,0.15)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            overflow: 'hidden',
+            position: 'relative',
+            background: isActive
+              ? 'rgba(110,231,183,0.08)'
+              : value
+                ? 'transparent'
+                : 'rgba(255,255,255,0.02)',
+            transition: 'border-color 0.15s, background 0.15s',
+            flexShrink: 0,
+            '&:hover': { borderColor: 'primary.main', background: 'rgba(110,231,183,0.04)' }
+          },
+          ...(Array.isArray(sx) ? sx : [sx])
+        ]}
       >
         {loading ? (
           <CircularProgress size={24} />

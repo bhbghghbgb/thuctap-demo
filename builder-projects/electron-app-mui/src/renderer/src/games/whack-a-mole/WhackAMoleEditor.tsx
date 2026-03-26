@@ -291,7 +291,14 @@ function QuestionCard({
           const rel = await window.electronAPI.importImage(fp, projectDir, question.id)
           onUpdate(question.id, { questionImage: rel })
         }}
-        sx={subgridStyle}
+        sx={[
+          subgridStyle,
+          {
+            // Top row: only round the top corners to match the Paper
+            borderTopLeftRadius: 'inherit',
+            borderTopRightRadius: 'inherit'
+          }
+        ]}
       >
         {/* Col 1 */}
         <Box sx={{ mt: 0.5 }}>
@@ -339,29 +346,41 @@ function QuestionCard({
         </IconButton>
       </FileDropTarget>
 
-      {/* ── ROW 2: HEADING (Aligned with Badge) ─────────────────────── */}
-      <Box sx={{ gridColumn: '1 / 4', px: 2, py: 0.5 }}>
-        <Typography
-          variant="overline"
-          sx={{
-            color: '#6ee7b7', // Subtle mint color for "Correct"
-            fontWeight: 700,
-            letterSpacing: 1.2,
-            fontSize: '0.65rem'
-          }}
-        >
-          Correct Answer (The mole students should whack)
-        </Typography>
-      </Box>
-
-      {/* ── ROW 3: ANSWER ───────────────────────────────────────────── */}
+      {/* ── ROW 2: ANSWER ───────────────────────────────────────────── */}
       <FileDropTarget
         onFileDrop={async (fp) => {
           const rel = await window.electronAPI.importImage(fp, projectDir, `${question.id}-answer`)
           onUpdate(question.id, { answerImage: rel })
         }}
-        sx={{ ...subgridStyle, pt: 1 }}
+        sx={[
+          subgridStyle,
+          {
+            // Bottom row: only round the bottom corners
+            borderBottomLeftRadius: 'inherit',
+            borderBottomRightRadius: 'inherit'
+          }
+        ]}
       >
+        {/* ROW 1 of this subgrid: The Heading */}
+        <Typography
+          variant="overline"
+          sx={{
+            gridColumn: '1 / 4', // Spans from Badge to Input
+            color: '#6ee7b7',
+            fontWeight: 700,
+            letterSpacing: 1.2,
+            fontSize: '0.65rem',
+            lineHeight: 1,
+            mb: 0.5
+          }}
+        >
+          Correct Answer (The mole students should whack)
+        </Typography>
+
+        {/* Fill the 4th column slot in the heading row */}
+        <Box />
+
+        {/* ROW 2 of this subgrid: The Content */}
         {/* Col 1: Empty (stays aligned with Badge width) */}
         <Box />
 

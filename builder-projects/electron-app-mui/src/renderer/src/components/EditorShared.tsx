@@ -146,7 +146,7 @@ export function NameField({
       placeholder={placeholder}
       multiline={multiline}
       minRows={multiline ? 2 : undefined}
-      sx={{ flex: 1, ...sx }}
+      sx={[{ flex: 1 }, ...(Array.isArray(sx) ? sx : [sx])]}
       error={!value.trim()}
       helperText={!value.trim() ? 'Required' : ''}
       inputRef={handleRef}
@@ -174,7 +174,7 @@ export function AtoZWordField({
   onChange: (v: string) => void
   placeholder?: string
   autoFocus?: boolean
-  sx?: object
+  sx?: SxProps
 }): JSX.Element {
   const wordText = value.trim().toUpperCase()
   const isInvalid = wordText && !/^[A-Z]+$/.test(wordText)
@@ -194,7 +194,17 @@ export function AtoZWordField({
   )
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, flex: 1, ...sx }}>
+    <Box
+      sx={[
+        {
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: 1.5,
+          flex: 1
+        },
+        ...(Array.isArray(sx) ? sx : [sx])
+      ]}
+    >
       <TextField
         label={label}
         value={value}
@@ -322,17 +332,16 @@ export function FileDropTarget({
   return (
     <Box
       {...getRootProps()}
-      sx={{
-        // Draw the outline INSIDE the box so it isn't clipped
-        // borderRadius: 1.5,
-        borderRadius: 1.9,
-        transition: 'outline 0.1s, background 0.1s',
-        outline: isDragActive ? '2px solid #6ee7b7' : '2px solid transparent',
-        // Draw the outline INSIDE the box so it isn't clipped
-        outlineOffset: -2,
-        background: isDragActive ? 'rgba(110,231,183,0.05)' : 'transparent',
-        ...sx
-      }}
+      sx={[
+        {
+          transition: 'outline 0.1s, background 0.1s',
+          outline: isDragActive ? '2px solid #6ee7b7' : '2px solid transparent',
+          // Draw the outline INSIDE the box so it isn't clipped
+          outlineOffset: -2,
+          background: isDragActive ? 'rgba(110,231,183,0.05)' : 'transparent'
+        },
+        ...(Array.isArray(sx) ? sx : [sx])
+      ]}
     >
       {children}
     </Box>
