@@ -1,0 +1,57 @@
+{
+  "groups": [
+    { "id": "group1", "name": "Trái cây", "imagePath": "./assets/basket.svg" },
+    { "id": "group2", "name": "Rau củ", "imagePath": "./assets/box.svg" },
+    { "id": "group3", "name": "Đồ dùng", "imagePath": "./assets/backpack.svg" }
+  ],
+  "items": [
+    {
+      "id": "item1",
+      "name": "Táo",
+      "imagePath": "./assets/apple.svg",
+      "groupId": "group1"
+    },
+    {
+      "id": "item2",
+      "name": "Chuối",
+      "imagePath": "./assets/banana.svg",
+      "groupId": "group1"
+    },
+    {
+      "id": "item3",
+      "name": "Cà rốt",
+      "imagePath": "./assets/carrot.svg",
+      "groupId": "group2"
+    },
+    {
+      "id": "item4",
+      "name": "Khoai tây",
+      "imagePath": "./assets/potato.svg",
+      "groupId": "group2"
+    },
+    {
+      "id": "item5",
+      "name": "Sách",
+      "imagePath": "./assets/book.svg",
+      "groupId": "group3"
+    },
+    {
+      "id": "item6",
+      "name": "Bút",
+      "imagePath": "./assets/pen.svg",
+      "groupId": "group3"
+    },
+    {
+      "id": "item7",
+      "name": "Cam",
+      "imagePath": "./assets/orange.svg",
+      "groupId": "group1"
+    },
+    {
+      "id": "item8",
+      "name": "Dâu",
+      "imagePath": "./assets/strawberry.svg",
+      "groupId": "group1"
+    }
+  ]
+}
