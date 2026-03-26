@@ -159,6 +159,43 @@ export const GAME_DATA_TRANSFORMS: Record<string, DataTransform> = {
       items,
       background: data.backgroundImagePath ?? undefined
     })
+  },
+
+  // Whack-a-Mole
+  'whack-a-mole': (appData) => {
+    // Template expects:
+    // {
+    //   questions: {
+    //     groupId,
+    //     question,
+    //     questionImage,
+    //     answerText,
+    //     answerImage
+    //   }[]
+    // }
+    // Internal format uses: id, question, questionImage, answerText, answerImage
+    // Transform: id -> groupId (for compatibility with existing template)
+    const data = appData as {
+      questions?: {
+        id: string
+        question: string
+        questionImage: string | null
+        answerText: string
+        answerImage: string | null
+      }[]
+    }
+
+    const questions = (data.questions ?? []).map(
+      ({ id, question, questionImage, answerText, answerImage }) => ({
+        groupId: id, // rename id to groupId for template compatibility
+        question,
+        questionImage,
+        answerText,
+        answerImage
+      })
+    )
+
+    return omitInternalKeys({ questions })
   }
 }
 

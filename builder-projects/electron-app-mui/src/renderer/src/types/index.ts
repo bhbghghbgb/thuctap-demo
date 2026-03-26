@@ -9,6 +9,7 @@ export interface GameTemplate {
     | 'balloon-letter-picker'
     | 'pair-matching'
     | 'word-search'
+    | 'whack-a-mole'
     | string
   version: string
   thumbnailUrl: string | null // file:// URL resolved by main process, or null
@@ -91,12 +92,26 @@ export interface WordSearchAppData {
   _itemCounter: number
 }
 
+// ── Whack-a-Mole ──────────────────────────────────────────────────────────────
+export interface WhackAMoleQuestion {
+  id: string
+  question: string
+  questionImage: string | null
+  answerText: string
+  answerImage: string | null
+}
+export interface WhackAMoleAppData {
+  questions: WhackAMoleQuestion[]
+  _questionCounter: number
+}
+
 export type AnyAppData =
   | GroupSortAppData
   | QuizAppData
   | BalloonLetterPickerAppData
   | PairMatchingAppData
   | WordSearchAppData
+  | WhackAMoleAppData
 
 // ── Settings ──────────────────────────────────────────────────────────────────
 export type AutoSaveMode = 'off' | 'on-edit' | 'interval'

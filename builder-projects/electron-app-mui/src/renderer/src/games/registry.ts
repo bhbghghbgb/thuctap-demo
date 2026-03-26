@@ -16,6 +16,7 @@ import BalloonLetterPickerEditor from './balloon-letter-picker/BalloonLetterPick
 import GroupSortEditor from './group-sort/GroupSortEditor'
 import PairMatchingEditor from './pair-matching/PairMatchingEditor'
 import QuizEditor from './plane-quiz/QuizEditor'
+import WhackAMoleEditor from './whack-a-mole/WhackAMoleEditor'
 import WordSearchEditor from './word-search/WordSearchEditor'
 
 export interface GameRegistryEntry {
@@ -71,6 +72,14 @@ export const GAME_REGISTRY: Record<string, GameRegistryEntry> = {
     createInitialData: () => ({
       items: [],
       _itemCounter: 0
+    })
+  },
+
+  'whack-a-mole': {
+    Editor: WhackAMoleEditor as GameRegistryEntry['Editor'],
+    createInitialData: () => ({
+      questions: [],
+      _questionCounter: 0
     })
   }
 }
