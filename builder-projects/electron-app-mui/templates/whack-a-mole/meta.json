@@ -1,0 +1,6 @@
+{
+  "name": "Whack A Mole",
+  "description": "Catch a mole hold the correct answer",
+  "gameType": "whack-a-mole",
+  "version": "1.0.0"
+}

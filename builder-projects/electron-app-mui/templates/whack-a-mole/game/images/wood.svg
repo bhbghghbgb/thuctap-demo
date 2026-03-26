@@ -1,0 +1,33 @@
+<svg width="700" height="220" viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+
+    <!-- CỌC TRÁI -->
+    <rect x="80" y="120" width="20" height="80" fill="#8b5a2b" />
+    <rect x="80" y="120" width="20" height="80" fill="none" stroke="#5c3a1a" stroke-width="2" />
+
+    <!-- CỌC PHẢI -->
+    <rect x="600" y="120" width="20" height="80" fill="#8b5a2b" />
+    <rect x="600" y="120" width="20" height="80" fill="none" stroke="#5c3a1a" stroke-width="2" />
+
+    <!-- BẢNG GỖ -->
+    <rect
+        x="50"
+        y="5"
+        width="600"
+        height="150"
+        rx="12"
+        fill="#d2a679"
+        stroke="#8b5a2b"
+        stroke-width="4"
+    />
+
+    <!-- VÂN GỖ (kéo dài full bảng) -->
+    <!-- <path d="M70 70 Q200 50 350 70 T636 70" stroke="#b07d52" stroke-width="2" fill="none" />
+    <path d="M70 90 Q200 110 350 90 T636 90" stroke="#b07d52" stroke-width="2" fill="none" />
+    <path d="M70 110 Q200 130 350 110 T636 110" stroke="#b07d52" stroke-width="2" fill="none" /> -->
+
+    <!-- ĐINH -->
+    <circle cx="70" cy="60" r="4" fill="#555" />
+    <circle cx="635" cy="60" r="4" fill="#555" />
+    <circle cx="70" cy="120" r="4" fill="#555" />
+    <circle cx="635" cy="120" r="4" fill="#555" />
+</svg>
