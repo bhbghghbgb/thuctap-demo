@@ -20,8 +20,8 @@ import {
   Tooltip,
   Typography
 } from '@mui/material'
-import { useEditorShortcuts } from '@renderer/hooks/useEditorShortcuts'
-import { JSX, useCallback, useState } from 'react'
+import log from 'electron-log/renderer'
+import { JSX, useCallback, useEffect, useState } from 'react'
 import {
   EmptyState,
   FileDropTarget,
@@ -158,13 +158,16 @@ export default function GroupSortEditor({
   )
 
   // ── Keyboard shortcuts ────────────────────────────────────────────────────
-  // Tier 1 (Ctrl+N) = item (smallest unit) → last group
-  // Tier 2 (Ctrl+Shift+N) = group (nothing above group)
-  // Tier 3 (Ctrl+Shift+Alt+N) = group (same, nothing higher)
-  useEditorShortcuts((tier) => {
-    if (tier === 1) addItem()
-    else addGroup()
-  })
+  useEffect(() => {
+    const handler = (e: Event): void => {
+      const tier = (e as CustomEvent).detail.tier
+      log.debug(`GroupSortEditor: Received add-entity tier ${tier}`)
+      if (tier === 1) addItem()
+      else addGroup()
+    }
+    window.addEventListener('editor-add-entity', handler)
+    return () => window.removeEventListener('editor-add-entity', handler)
+  }, [addItem, addGroup])
 
   // ── Validation ────────────────────────────────────────────────────────────
   const unassigned = items.filter((i) => !i.groupId || !groups.find((g) => g.id === i.groupId))

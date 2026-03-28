@@ -14,8 +14,8 @@ import {
   Tooltip,
   Typography
 } from '@mui/material'
-import { useEditorShortcuts } from '@renderer/hooks/useEditorShortcuts'
-import { JSX, useCallback, useState } from 'react'
+import log from 'electron-log/renderer'
+import { JSX, useCallback, useEffect, useState } from 'react'
 import {
   EmptyState,
   FileDropTarget,
@@ -97,9 +97,14 @@ export default function PairMatchingEditor({
     [data, items, onChange]
   )
 
-  useEditorShortcuts(() => {
-    addItem()
-  })
+  useEffect(() => {
+    const handler = (): void => {
+      log.debug('PairMatchingEditor: Received add-entity')
+      addItem()
+    }
+    window.addEventListener('editor-add-entity', handler)
+    return () => window.removeEventListener('editor-add-entity', handler)
+  }, [addItem])
 
   const unnamedI = items.filter((i) => !i.keyword.trim())
   const hasIssues = unnamedI.length > 0

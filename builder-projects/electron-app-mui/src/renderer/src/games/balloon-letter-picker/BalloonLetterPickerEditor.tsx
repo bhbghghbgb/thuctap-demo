@@ -14,8 +14,8 @@ import {
   Tooltip,
   Typography
 } from '@mui/material'
-import { useEditorShortcuts } from '@renderer/hooks/useEditorShortcuts'
-import { JSX, useCallback } from 'react'
+import log from 'electron-log/renderer'
+import { JSX, useCallback, useEffect } from 'react'
 import {
   AtoZWordField,
   EmptyState,
@@ -100,8 +100,14 @@ export default function BalloonLetterPickerEditor({
   // We handle it by surfacing ImagePicker but mapping its relativePath → imagePath field
 
   // ── Keyboard shortcuts ────────────────────────────────────────────────────
-  // Only one unit (word), all tiers do the same
-  useEditorShortcuts(() => addWord())
+  useEffect(() => {
+    const handler = (): void => {
+      log.debug('BalloonLetterPickerEditor: Received add-entity')
+      addWord()
+    }
+    window.addEventListener('editor-add-entity', handler)
+    return () => window.removeEventListener('editor-add-entity', handler)
+  }, [addWord])
 
   // ── Validation ────────────────────────────────────────────────────────────
   const missingWord = words.filter((w) => !w.word.trim())

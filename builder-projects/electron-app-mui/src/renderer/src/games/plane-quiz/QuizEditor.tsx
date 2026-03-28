@@ -21,8 +21,8 @@ import {
   Tooltip,
   Typography
 } from '@mui/material'
-import { useEditorShortcuts } from '@renderer/hooks/useEditorShortcuts'
-import React, { useCallback } from 'react'
+import log from 'electron-log/renderer'
+import React, { useCallback, useEffect } from 'react'
 import {
   EmptyState,
   FileDropTarget,
@@ -163,8 +163,14 @@ export default function QuizEditor({
   )
 
   // ── Keyboard shortcuts ────────────────────────────────────────────────────
-  // Quiz has only one unit (question), so all tiers do the same
-  useEditorShortcuts(() => addQuestion())
+  useEffect(() => {
+    const handler = (): void => {
+      log.debug('QuizEditor: Received add-entity')
+      addQuestion()
+    }
+    window.addEventListener('editor-add-entity', handler)
+    return () => window.removeEventListener('editor-add-entity', handler)
+  }, [addQuestion])
 
   // ── Validation ────────────────────────────────────────────────────────────
   const noText = questions.filter((q) => !q.question.trim())

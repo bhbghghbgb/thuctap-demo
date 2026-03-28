@@ -1,12 +1,5 @@
 import type { ProjectFile } from './types'
 
-export interface Difference {
-  type: 'CREATE' | 'REMOVE' | 'CHANGE'
-  path: (string | number)[]
-  value?: unknown
-  oldValue?: unknown
-}
-
 // Ensure the types module is imported exactly like this in tests/elsewhere
 export const CURRENT_PROJECT_VERSION = '1.2.0'
 

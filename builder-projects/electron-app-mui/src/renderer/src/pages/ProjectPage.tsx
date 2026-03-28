@@ -30,14 +30,17 @@ import {
   Tooltip,
   Typography
 } from '@mui/material'
+import log from 'electron-log/renderer'
+import { Operation } from 'fast-json-patch'
 import { JSX, useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import SettingsPanel from '../components/SettingsPanel'
+import { AssetTrackerContext } from '../context/AssetTrackerContext'
 import { useSettings } from '../context/SettingsContext'
 import { GAME_REGISTRY } from '../games/registry'
-import { useHistory } from '../hooks/useHistory'
+import { useProjectHistory } from '../hooks/useProjectHistory'
+import { useTieredEntityHotkeys } from '../hooks/useTieredEntityHotkeys'
 import { AnyAppData, GameTemplate, ProjectFile, ProjectMeta } from '../types'
-import { AssetTrackerContext } from '../context/AssetTrackerContext'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function buildTitle(templateId: string, projectName: string, filePath: string): string {
@@ -47,8 +50,8 @@ function buildTitle(templateId: string, projectName: string, filePath: string): 
 function buildProjectFile(
   meta: ProjectMeta,
   appData: AnyAppData,
-  historyPast?: import('microdiff').Difference[][],
-  historyFuture?: import('microdiff').Difference[][],
+  historyPast?: Operation[][],
+  historyFuture?: Operation[][],
   assets?: string[]
 ): ProjectFile {
   return {
@@ -98,10 +101,10 @@ export default function ProjectPage(): JSX.Element {
   const [templates, setTemplates] = useState<GameTemplate[]>([])
 
   // History tracks only the game data, not meta
-  const history = useHistory<AnyAppData>(
+  const history = useProjectHistory<AnyAppData>(
     locationState?.data.appData ?? ({} as AnyAppData),
-    locationState?.data.history?.past as import('microdiff').Difference[][],
-    locationState?.data.history?.future as import('microdiff').Difference[][]
+    locationState?.data.history?.past as Operation[][],
+    locationState?.data.history?.future as Operation[][]
   )
 
   // Explicit Asset Tracking
@@ -302,6 +305,7 @@ export default function ProjectPage(): JSX.Element {
 
   const handlePreview = async (): Promise<void> => {
     if (!meta) return
+    log.info(`ProjectPage: Requesting preview for ${meta.name}`)
     try {
       await window.electronAPI.previewProject({
         templateId: meta.templateId,
@@ -309,8 +313,10 @@ export default function ProjectPage(): JSX.Element {
         projectDir: meta.projectDir
       })
       showSnack('Preview opened')
-    } catch (e) {
-      showSnack(`Preview failed: ${e}`, 'error')
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e)
+      log.error(`Preview failed: ${msg}`, e)
+      showSnack(`Preview failed: ${msg}`, 'error')
     }
   }
 
@@ -328,6 +334,21 @@ export default function ProjectPage(): JSX.Element {
   }
 
   // ── Keyboard shortcuts ────────────────────────────────────────────────────
+  useTieredEntityHotkeys({
+    onTier: (tier) => {
+      // Find the currently active editor registry entry to see if it responds to tiers
+      // Usually editors just watch for "N" but we can pass the tier down or emit event
+      log.debug(`Hotkey: Tier ${tier} entity requested`)
+      // For now, we manually dispatch to existing logic if needed,
+      // but most editors listen for the 'n' key via their own useEffect or we can provide a ref.
+      // Better: we can fire a custom event that editors listen to.
+      window.dispatchEvent(new CustomEvent('editor-add-entity', { detail: { tier } }))
+    },
+    onPreview: handlePreview,
+    onExportFolder: () => handleExport('folder'),
+    onExportZip: () => handleExport('zip')
+  })
+
   useEffect(() => {
     const handler = (e: KeyboardEvent): void => {
       const ctrl = e.ctrlKey || e.metaKey

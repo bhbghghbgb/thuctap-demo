@@ -181,8 +181,8 @@ export interface ProjectFile {
   appData: AnyAppData
   assets?: string[]
   history?: {
-    past: import('./migrations').Difference[][]
-    future: import('./migrations').Difference[][]
+    past: import('fast-json-patch').Operation[][]
+    future: import('fast-json-patch').Operation[][]
   }
 }
 
