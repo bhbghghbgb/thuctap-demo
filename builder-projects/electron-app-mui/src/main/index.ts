@@ -1,8 +1,10 @@
 import archiver from 'archiver'
-import { app, BrowserWindow, dialog, ipcMain, net, protocol, shell } from 'electron'
+import { app, BrowserWindow, dialog, net, protocol, shell } from 'electron'
 import * as fs from 'fs'
 import * as path from 'path'
+import type { AnyAppData, FolderStatus, GameTemplate, GlobalSettings, ProjectFile } from '../shared'
 import { prepareAppDataForTemplate } from './gameRegistry'
+import { createHandler } from './ipc-handlers'
 
 const isDev = process.env.NODE_ENV === 'development'
 
@@ -207,7 +209,7 @@ app.on('window-all-closed', () => {
 })
 
 // ── IPC: Templates ────────────────────────────────────────────────────────────
-ipcMain.handle('get-templates', async () => {
+createHandler('get-templates', async () => {
   const templatesDir = getTemplatesDir()
   if (!fs.existsSync(templatesDir)) return []
 
@@ -233,15 +235,15 @@ ipcMain.handle('get-templates', async () => {
 
       return { id: dir.name, ...meta, thumbnailUrl }
     })
-    .filter(Boolean)
+    .filter(Boolean) as GameTemplate[]
 })
 
 // ── IPC: Project management ───────────────────────────────────────────────────
-ipcMain.handle('check-folder-status', async (_e, folderPath: string) =>
+createHandler('check-folder-status', async (_e, folderPath: string) =>
   checkFolderStatus(folderPath)
 )
 
-ipcMain.handle('choose-project-folder', async () => {
+createHandler('choose-project-folder', async () => {
   const result = await dialog.showOpenDialog(mainWindow!, {
     properties: ['openDirectory', 'createDirectory'],
     title: 'Choose Project Save Location'
@@ -249,7 +251,7 @@ ipcMain.handle('choose-project-folder', async () => {
   return result.canceled ? null : result.filePaths[0]
 })
 
-ipcMain.handle('open-project-file', async (_e, filePath?: string) => {
+createHandler('open-project-file', async (_e, filePath?: string) => {
   let resolved = filePath
   if (!resolved) {
     const result = await dialog.showOpenDialog(mainWindow!, {
@@ -261,10 +263,13 @@ ipcMain.handle('open-project-file', async (_e, filePath?: string) => {
     resolved = result.filePaths[0]
   }
   const content = fs.readFileSync(resolved, 'utf-8')
-  return { filePath: resolved, data: JSON.parse(content) }
+  return { filePath: resolved, data: JSON.parse(content) } as {
+    filePath: string
+    data: ProjectFile
+  }
 })
 
-ipcMain.handle('save-project', async (_e, projectData: object, projectPath: string) => {
+createHandler('save-project', async (_e, projectData: object, projectPath: string) => {
   fs.writeFileSync(projectPath, JSON.stringify(projectData, null, 2), 'utf-8')
   purgeUnusedAssets(path.dirname(projectPath), projectData)
   return true
@@ -272,7 +277,7 @@ ipcMain.handle('save-project', async (_e, projectData: object, projectPath: stri
 
 /** Save As: pick folder, copy assets, write file. Returns new paths or null if canceled. */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-ipcMain.handle('save-project-as', async (_) => {
+createHandler('save-project-as', async (_) => {
   const result = await dialog.showOpenDialog(mainWindow!, {
     properties: ['openDirectory', 'createDirectory'],
     title: 'Save Project As — Choose New Folder'
@@ -282,11 +287,11 @@ ipcMain.handle('save-project-as', async (_) => {
   const newFolder = result.filePaths[0]
   const status = checkFolderStatus(newFolder)
   // Return status so renderer can confirm overwrite if needed
-  return { folder: newFolder, status }
+  return { folder: newFolder, status } as { folder: string; status: FolderStatus }
 })
 
 /** Actually perform the save-as copy after the renderer has confirmed */
-ipcMain.handle(
+createHandler(
   'do-save-as',
   async (_e, opts: { projectData: object; oldProjectDir: string; newFolder: string }) => {
     const { projectData, oldProjectDir, newFolder } = opts
@@ -305,7 +310,7 @@ ipcMain.handle(
 )
 
 // ── IPC: Assets ───────────────────────────────────────────────────────────────
-ipcMain.handle('pick-image', async () => {
+createHandler('pick-image', async () => {
   const result = await dialog.showOpenDialog(mainWindow!, {
     properties: ['openFile'],
     filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'] }],
@@ -314,7 +319,7 @@ ipcMain.handle('pick-image', async () => {
   return result.canceled ? null : result.filePaths[0]
 })
 
-ipcMain.handle(
+createHandler(
   'import-image',
   async (_e, sourcePath: string, projectDir: string, desiredNamePrefix: string) => {
     const assetsDir = path.join(projectDir, 'assets')
@@ -327,25 +332,25 @@ ipcMain.handle(
   }
 )
 
-ipcMain.handle('resolve-asset-url', async (_e, projectDir: string, relativePath: string) => {
+createHandler('resolve-asset-url', async (_e, projectDir: string, relativePath: string) => {
   const abs = path.join(projectDir, relativePath)
   return `file://${abs.replace(/\\/g, '/')}`
 })
 
 // ── IPC: Settings ─────────────────────────────────────────────────────────────
-ipcMain.handle('settings-read-global', async () => readSettings())
-ipcMain.handle('settings-write-global', async (_e, data: object) => {
+createHandler('settings-read-global', async () => readSettings() as unknown as GlobalSettings)
+createHandler('settings-write-global', async (_e, data: GlobalSettings) => {
   writeSettings(data)
   return true
 })
 
 // ── IPC: Window title ─────────────────────────────────────────────────────────
-ipcMain.handle('set-title', async (_e, title: string) => {
+createHandler('set-title', async (_e, title: string) => {
   mainWindow?.setTitle(title)
 })
 
 // ── IPC: Preview ─────────────────────────────────────────────────────────────
-ipcMain.handle('preview-project', async (_, opts) => {
+createHandler('preview-project', async (_, opts) => {
   const { templateId, appData, projectDir } = opts
   const gameDir = getGameDir(templateId)
   const htmlPath = path.join(gameDir, 'index.html')
@@ -353,7 +358,7 @@ ipcMain.handle('preview-project', async (_, opts) => {
   if (!fs.existsSync(htmlPath)) throw new Error('Template not found')
 
   const sanitizedData = normalizeAssetPaths(appData, projectDir)
-  const templateData = prepareAppDataForTemplate(templateId, sanitizedData as object)
+  const templateData = prepareAppDataForTemplate(templateId, sanitizedData as AnyAppData)
   const injectedHtml = injectAppData(fs.readFileSync(htmlPath, 'utf-8'), templateData)
 
   // Unique ID for this specific window instance
@@ -401,7 +406,7 @@ ipcMain.handle('preview-project', async (_, opts) => {
 })
 
 // ── IPC: Export ───────────────────────────────────────────────────────────────
-ipcMain.handle(
+createHandler(
   'export-project',
   async (
     _e,
@@ -461,9 +466,13 @@ async function exportToZip(
     output.on('close', resolve)
     archive.on('error', reject)
     archive.pipe(output)
-    // Add all game resources
-    archive.directory(gameDir, false)
-    // Overwrite index.html with injected version
+    // Add all game resources except root index.html
+    archive.directory(gameDir, false, (entry) => {
+      // Only exclude index.html at the root level
+      if (entry.name === 'index.html') return false
+      return entry
+    })
+    // Add injected index.html
     archive.append(injectedHtml, { name: 'index.html' })
     // Add project assets
     const assetsDir = path.join(projectDir, 'assets')

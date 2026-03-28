@@ -4,6 +4,7 @@ import type { GameConfig, CardState } from "../types/objects";
 import { buildDeck, getOptimalGrid } from "../utils";
 import Card from "./Card";
 import { HUD } from "./HUD";
+import MascotBanner from "./MascotBanner";
 import WellDoneScreen from "./WellDoneScreen";
 import { MY_APP_DATA } from "../data";
 
@@ -45,7 +46,7 @@ export default function MatchingGame() {
     if (containerRef.current) obs.observe(containerRef.current);
 
     const onResize = () =>
-      setIsLandscape(window.innerWidth > window.innerHeight);
+      setIsLandscape(window.innerWidth / window.innerHeight >= 1.2);
     window.addEventListener("resize", onResize);
     return () => {
       obs.disconnect();
@@ -54,21 +55,48 @@ export default function MatchingGame() {
   }, []);
 
   // Compute card size to fill available space
-  const GAP = 10;
+  // Proportional UI Scale
+  const isNarrow = useMemo(() => {
+    return window.innerWidth / window.innerHeight < 0.6;
+  }, []);
+
+  const uiScale = useMemo(() => {
+    if (isLandscape) {
+      // Landscape: base on height
+      return Math.min(Math.max(window.innerHeight / 850, 0.8), 1.25);
+    } else {
+      // Portrait: base on width AND height to prevent HUD overflow
+      const widthBase = isNarrow ? 380 : 440;
+      const heightBase = 800;
+      const scaleByWidth = window.innerWidth / widthBase;
+      const scaleByHeight = window.innerHeight / heightBase;
+
+      // Use the smaller of the two to ensure it fits, but with a floor
+      const scale = Math.min(scaleByWidth, scaleByHeight);
+      return Math.min(Math.max(scale, isNarrow ? 0.85 : 0.95), 1.4);
+    }
+  }, [isLandscape, isNarrow]);
+
+  const finalCols = isLandscape ? grid.cols : grid.rows;
+  const finalRows = isLandscape ? grid.rows : grid.cols;
+
+  // Compute card size to fill available space
+  // Reduced base GAP for tighter look on small screens
+  const GAP = Math.min(10 * uiScale, 18);
   const cardSize = useMemo(() => {
     if (!containerSize.w || !containerSize.h) return 80;
     const maxByCols = Math.floor(
-      (containerSize.w - GAP * (grid.cols - 1)) / grid.cols,
+      (containerSize.w - GAP * (finalCols - 1)) / finalCols,
     );
     const maxByRows = Math.floor(
-      (containerSize.h - GAP * (grid.rows - 1)) / grid.rows,
+      (containerSize.h - GAP * (finalRows - 1)) / finalRows,
     );
     const size = Math.min(maxByCols, maxByRows);
-    return Math.max(size, 48); // minimum 48px
-  }, [containerSize, grid]);
+    return Math.max(size, 40); // minimum 40px
+  }, [containerSize, finalCols, finalRows, GAP]);
 
-  const gridW = cardSize * grid.cols + GAP * (grid.cols - 1);
-  const gridH = cardSize * grid.rows + GAP * (grid.rows - 1);
+  const gridW = cardSize * finalCols + GAP * (finalCols - 1);
+  const gridH = cardSize * finalRows + GAP * (finalRows - 1);
 
   // Matched pairs count
   const totalPairs = cards.length / 2;
@@ -153,21 +181,29 @@ export default function MatchingGame() {
           "linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)",
         fontFamily: "'Nunito', 'Comic Sans MS', cursive, sans-serif",
         flexDirection: isLandscape ? "row" : "column",
-        alignItems: "stretch",
+        alignItems: "center",
+        justifyContent: isLandscape ? "center" : "flex-start",
+        paddingTop: isLandscape ? 0 : 20 * uiScale,
+        gap: isLandscape ? 40 * uiScale : 20 * uiScale,
       }}
     >
-      {/* HUD Panel */}
+      {/* HUD Panel - centered horizontally in its slot */}
       <div
-        className="shrink-0 flex items-center justify-center p-4 ml-8 relative m-10"
+        className="shrink-0 flex items-center relative transition-all duration-300"
         style={
           isLandscape
             ? {
-                width: "clamp(240px, 20vw, 400px)", // Responsive width
-                justifyContent: "flex-start", // Align top
+                flex: "1 1 200px",
+                maxWidth: 400 * uiScale,
+                height: "85%",
                 flexDirection: "column",
-                overflowY: "visible", // Allow banner to pop out if needed
+                justifyContent: "flex-start",
               }
-            : { height: "auto", maxHeight: "35vh", justifyContent: "center" }
+            : {
+                width: "95%",
+                height: "auto",
+                flexDirection: isNarrow ? "column" : "row",
+              }
         }
       >
         <HUD
@@ -177,27 +213,38 @@ export default function MatchingGame() {
           mascotState={mascotState}
           onRestart={restart}
           isLandscape={isLandscape}
+          uiScale={uiScale}
+          isNarrow={isNarrow}
+        />
+
+        {/* Mascot Banner: Attached to HUD container for alignment */}
+        <MascotBanner
+          state={mascotState}
+          uiScale={uiScale}
+          isLandscape={isLandscape}
         />
       </div>
 
-      {/* Game Area */}
       <div
         ref={containerRef}
-        className="flex-1 flex items-center justify-center overflow-hidden m-10"
-        style={{ padding: 16 }}
+        className="shrink flex items-center justify-center overflow-hidden"
+        style={{
+          width: isLandscape ? "min(65vw, " + (gridW + 40) + "px)" : "95vw",
+          height: isLandscape ? "90vh" : "60vh",
+          padding: 8 * uiScale,
+        }}
       >
         <motion.div
           style={{
             width: gridW,
             height: gridH,
             display: "grid",
-            gridTemplateColumns: `repeat(${grid.cols}, ${cardSize}px)`,
-            gridTemplateRows: `repeat(${grid.rows}, ${cardSize}px)`,
+            gridTemplateColumns: `repeat(${finalCols}, ${cardSize}px)`,
+            gridTemplateRows: `repeat(${finalRows}, ${cardSize}px)`,
             gap: GAP,
           }}
-          initial={{ opacity: 0, scale: 0.85 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
         >
           {cards.map((card) => (
             <Card

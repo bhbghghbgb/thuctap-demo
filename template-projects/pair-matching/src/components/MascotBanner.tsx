@@ -3,35 +3,59 @@ import { AnimatePresence, motion } from "framer-motion";
 // ─── Mascot Banner ────────────────────────────────────────────────────────────
 export default function MascotBanner({
   state,
+  uiScale,
+  isLandscape,
 }: {
   state: "idle" | "happy" | "sad" | null;
+  uiScale: number;
+  isLandscape: boolean;
 }) {
-  if (!state || state === "idle") return null;
   return (
-    <AnimatePresence>
-      <motion.div
-        key={state}
-        initial={{ scale: 0, opacity: 0, y: 20 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0, opacity: 0, y: -20 }}
-        transition={{ type: "spring", stiffness: 400, damping: 20 }}
-        // Floating at bottom left
-        // Absolute inside HUD on desktop
-        className={`
-          fixed z-50 bottom-8 left-8 right-auto
-          md:absolute md:bottom-4 md:left-4 md:right-4
-          rounded-2xl px-6 py-4 text-center font-black text-base shadow-2xl border-2
-          ${
-            state === "happy"
-              ? "bg-linear-to-r from-green-400 to-emerald-500 text-white border-green-300"
-              : "bg-linear-to-r from-red-400 to-pink-500 text-white border-red-300"
-          }
-        `}
-      >
-        {state === "happy"
-          ? "🎉 Tuyệt vời! Đúng rồi!"
-          : "😢 Sai rồi! Thử lại nhé!"}
-      </motion.div>
+    <AnimatePresence mode="wait">
+      {state && state !== "idle" && (
+        <div
+          className="absolute inset-x-0 pointer-events-none z-[100] flex justify-center"
+          style={{
+            bottom: isLandscape ? -20 * uiScale : "auto",
+            top: isLandscape ? "auto" : 40 * uiScale,
+            alignItems: isLandscape ? "flex-end" : "flex-start",
+          }}
+        >
+          <motion.div
+            key={state}
+            initial={{ scale: 0, opacity: 0, y: isLandscape ? 50 : -50 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0, opacity: 0, y: isLandscape ? 50 : -50 }}
+            transition={{
+              type: "spring",
+              stiffness: 400,
+              damping: 25,
+            }}
+            className={`
+              pointer-events-auto
+              flex items-center justify-center rounded-3xl text-center font-black shadow-2xl border-4
+              ${
+                state === "happy"
+                  ? "bg-linear-to-r from-green-400 to-emerald-500 text-white border-green-300"
+                  : "bg-linear-to-r from-red-400 to-pink-500 text-white border-red-300"
+              }
+            `}
+            style={{
+              paddingTop: 18 * uiScale,
+              paddingBottom: 18 * uiScale,
+              paddingLeft: 30 * uiScale,
+              paddingRight: 30 * uiScale,
+              fontSize: 20 * uiScale,
+              borderRadius: 24 * uiScale,
+              maxWidth: "90vw",
+            }}
+          >
+            {state === "happy"
+              ? "🎉 Tuyệt vời! Đúng rồi!"
+              : "😢 Sai rồi! Thử lại nhé!"}
+          </motion.div>
+        </div>
+      )}
     </AnimatePresence>
   );
 }

@@ -160,3 +160,6 @@ vite.config.ts.timestamp-*
 
 # Built Visual Studio Code Extensions
 *.vsix
+
+
+.geminiignore

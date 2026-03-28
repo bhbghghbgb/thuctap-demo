@@ -11,7 +11,17 @@
  * need an entry here — it will pass through as-is.
  */
 
-export type DataTransform = (appData: object) => object
+import type {
+  AnyAppData,
+  GroupSortAppData,
+  QuizAppData,
+  BalloonLetterPickerAppData,
+  PairMatchingAppData,
+  WordSearchAppData,
+  WhackAMoleAppData
+} from '../shared'
+
+export type DataTransform = (appData: AnyAppData) => object
 
 // Helper to recursively remove any keys starting with an underscore
 function omitInternalKeys(obj: object): object {
@@ -35,7 +45,7 @@ export const GAME_DATA_TRANSFORMS: Record<string, DataTransform> = {
   // Balloon Letter Picker
   'balloon-letter-picker': (appData) => {
     // Template expects a flat array of { word, imageUrl, hint }
-    const data = appData as { words?: { word: string; imagePath: string; hint: string }[] }
+    const data = appData as BalloonLetterPickerAppData
     return omitInternalKeys(
       (data.words ?? []).map(({ word, imagePath, hint }) => ({ word, imageUrl: imagePath, hint }))
     )
@@ -48,10 +58,7 @@ export const GAME_DATA_TRANSFORMS: Record<string, DataTransform> = {
     //   groups: { id, name, imagePath }[]
     //   items: { id, name, imagePath, groupId }[]
     // }
-    const data = appData as {
-      groups?: { id: string; name: string; imagePath: string | null }[]
-      items?: { id: string; name: string; imagePath: string | null; groupId: string }[]
-    }
+    const data = appData as GroupSortAppData
 
     const groups = (data.groups ?? []).map(({ id, name, imagePath }) => ({
       id,
@@ -77,15 +84,7 @@ export const GAME_DATA_TRANSFORMS: Record<string, DataTransform> = {
     //     id, question, imagePath, answers: { id, text, isCorrect }[], multipleCorrect
     //   }[]
     // }
-    const data = appData as {
-      questions?: {
-        id: string
-        question: string
-        imagePath: string | null
-        answers?: { id: string; text: string; isCorrect: boolean }[]
-        multipleCorrect: boolean
-      }[]
-    }
+    const data = appData as QuizAppData
 
     const questions = (data.questions ?? []).map(
       ({ id, question, imagePath, answers, multipleCorrect }) => ({
@@ -114,17 +113,7 @@ export const GAME_DATA_TRANSFORMS: Record<string, DataTransform> = {
     //   items: { id, image, keyword, minPairs? }[]
     // }
     // imagePath → image
-    const data = appData as {
-      items?: {
-        id: string
-        imagePath: string | null
-        keyword: string
-        minPairs?: number | null
-      }[]
-      minTotalPairs?: number | null
-      cardBackColor?: string
-      cardBackImage?: string | null
-    }
+    const data = appData as PairMatchingAppData
 
     const items = (data.items ?? []).map(({ id, imagePath, keyword, minPairs }) => ({
       id,
@@ -145,10 +134,7 @@ export const GAME_DATA_TRANSFORMS: Record<string, DataTransform> = {
   'word-search': (appData) => {
     // Template expects:
     // { items: { word: string, image: string }[], background?: string }
-    const data = appData as {
-      items?: { id: string; word: string; imagePath: string | null }[]
-      backgroundImagePath?: string | null
-    }
+    const data = appData as WordSearchAppData
 
     const items = (data.items ?? []).map(({ word, imagePath }) => ({
       word,
@@ -173,15 +159,7 @@ export const GAME_DATA_TRANSFORMS: Record<string, DataTransform> = {
     // }[]
     // Internal format uses: id, question, questionImage, answerText, answerImage
     // Transform: id -> groupId (for compatibility with existing template)
-    const data = appData as {
-      questions?: {
-        id: string
-        question: string
-        questionImage: string | null
-        answerText: string
-        answerImage: string | null
-      }[]
-    }
+    const data = appData as WhackAMoleAppData
 
     const questions = (data.questions ?? []).map(
       ({ id, question, questionImage, answerText, answerImage }) => ({
@@ -203,5 +181,5 @@ export const GAME_DATA_TRANSFORMS: Record<string, DataTransform> = {
  */
 export function prepareAppDataForTemplate(templateId: string, appData: object): object {
   const transform = GAME_DATA_TRANSFORMS[templateId]
-  return transform ? transform(appData) : appData
+  return transform ? transform(appData as AnyAppData) : appData
 }
