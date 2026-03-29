@@ -48,10 +48,16 @@ build_game() {
 
   # Install dependencies
   # (cd "$abs_project" && yarn install --immutable)
-  (cd "$abs_project" && yarn install)
+  if ! (cd "$abs_project" && yarn install); then
+    err "Failed to install dependencies for $game_id"
+    return 1
+  fi
 
   # Build
-  (cd "$abs_project" && yarn build)
+  if ! (cd "$abs_project" && yarn build); then
+    err "Build failed for $game_id"
+    return 1
+  fi
 
   # Copy dist -> builder templates/<game_id>/game/
   info "Copying dist -> $target_dir"

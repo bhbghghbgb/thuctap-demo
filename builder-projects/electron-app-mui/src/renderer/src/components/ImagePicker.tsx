@@ -1,5 +1,6 @@
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
 import ClearIcon from '@mui/icons-material/Clear'
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'
 import { Box, CircularProgress, IconButton, SxProps, Tooltip, Typography } from '@mui/material'
 import React, { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
@@ -25,7 +26,13 @@ export default function ImagePicker({
   sx
 }: Props): React.ReactElement {
   const [loading, setLoading] = useState(false)
+  const [imageError, setImageError] = useState(false)
   const { data: url } = useAssetUrl(projectDir, value)
+
+  // Reset error state when value changes
+  React.useEffect(() => {
+    setImageError(false)
+  }, [value])
 
   const importFile = async (filePath: string): Promise<void> => {
     setLoading(true)
@@ -123,14 +130,52 @@ export default function ImagePicker({
       >
         {loading ? (
           <CircularProgress size={24} />
-        ) : url ? (
+        ) : url && !imageError ? (
           <>
             <Box
               component="img"
               src={url}
               alt={label ?? 'asset'}
               sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              onError={() => setImageError(true)}
             />
+            <IconButton
+              size="small"
+              onClick={handleClear}
+              sx={{
+                position: 'absolute',
+                top: 2,
+                right: 2,
+                background: 'rgba(0,0,0,0.6)',
+                color: '#fff',
+                padding: '2px',
+                '&:hover': { background: 'rgba(248,113,113,0.8)' }
+              }}
+            >
+              <ClearIcon sx={{ fontSize: 12 }} />
+            </IconButton>
+          </>
+        ) : value && imageError ? (
+          <>
+            <ErrorOutlineIcon
+              sx={{
+                fontSize: size * 0.4,
+                color: 'error.main'
+              }}
+            />
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'error.main',
+                fontSize: '0.65rem',
+                mt: 0.5,
+                textAlign: 'center',
+                px: 0.5,
+                lineHeight: 1.2
+              }}
+            >
+              Image not found
+            </Typography>
             <IconButton
               size="small"
               onClick={handleClear}

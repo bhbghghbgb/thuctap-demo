@@ -38,3 +38,19 @@ export const getBrightness = (url) => {
     img.onerror = () => resolve(128); // default brightness
   });
 };
+
+export const formatCssUrl = (path) => {
+  if (!path) return "";
+
+  // Ensure we don't have double slashes after file:///
+  // and ensure any backslashes are forward slashes for CSS
+  // 1. Convert Windows backslashes \ to forward slashes /
+  let cleanPath = path.replace(/\\/g, "/");
+
+  // 2. Encode special characters (including quotes, spaces, and parens)
+  // encodeURI handles the URL structure, but we use replace to
+  // specifically catch any remaining double quotes that might break CSS.
+  cleanPath = encodeURI(cleanPath).replace(/"/g, "%22");
+
+  return `url("${cleanPath}")`;
+};

@@ -2,27 +2,27 @@ import AddIcon from '@mui/icons-material/Add'
 import DeleteIcon from '@mui/icons-material/Delete'
 import TextFieldsIcon from '@mui/icons-material/TextFields'
 import {
-    Alert,
-    Box,
-    Button,
-    Chip,
-    Collapse,
-    Divider,
-    IconButton,
-    Paper,
-    TextField,
-    Tooltip,
-    Typography
+  Alert,
+  Box,
+  Button,
+  Chip,
+  Collapse,
+  Divider,
+  IconButton,
+  Paper,
+  TextField,
+  Tooltip,
+  Typography
 } from '@mui/material'
-import { useEditorShortcuts } from '@renderer/hooks/useEditorShortcuts'
+import { useEntityCreateShortcut } from '@renderer/hooks/useEntityCreateShortcut'
 import { JSX, useCallback } from 'react'
 import {
-    AtoZWordField,
-    EmptyState,
-    FileDropTarget,
-    IndexBadge,
-    SidebarTab,
-    StickyHeader
+  AtoZWordField,
+  EmptyState,
+  FileDropTarget,
+  IndexBadge,
+  SidebarTab,
+  StickyHeader
 } from '../../components/EditorShared'
 import ImagePicker from '../../components/ImagePicker'
 import { useSettings } from '../../context/SettingsContext'
@@ -101,7 +101,9 @@ export default function BalloonLetterPickerEditor({
 
   // ── Keyboard shortcuts ────────────────────────────────────────────────────
   // Only one unit (word), all tiers do the same
-  useEditorShortcuts(() => addWord())
+  useEntityCreateShortcut({
+    onTier1: addWord
+  })
 
   // ── Validation ────────────────────────────────────────────────────────────
   const missingWord = words.filter((w) => !w.word.trim())

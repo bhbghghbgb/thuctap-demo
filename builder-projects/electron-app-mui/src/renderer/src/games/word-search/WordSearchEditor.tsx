@@ -3,15 +3,15 @@ import CollectionsIcon from '@mui/icons-material/Collections'
 import DeleteIcon from '@mui/icons-material/Delete'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { Alert, Box, Button, Collapse, IconButton, Paper, Tooltip, Typography } from '@mui/material'
-import { useEditorShortcuts } from '@renderer/hooks/useEditorShortcuts'
+import { useEntityCreateShortcut } from '@renderer/hooks/useEntityCreateShortcut'
 import { useCallback, useState } from 'react'
 import {
-    AtoZWordField,
-    EmptyState,
-    FileDropTarget,
-    IndexBadge,
-    SidebarTab,
-    StickyHeader
+  AtoZWordField,
+  EmptyState,
+  FileDropTarget,
+  IndexBadge,
+  SidebarTab,
+  StickyHeader
 } from '../../components/EditorShared'
 import ImagePicker from '../../components/ImagePicker'
 import { useSettings } from '../../context/SettingsContext'
@@ -86,8 +86,8 @@ export default function WordSearchEditor({
     [data, items, onChange]
   )
 
-  useEditorShortcuts(() => {
-    addItem()
+  useEntityCreateShortcut({
+    onTier1: addItem
   })
 
   // Basic validation

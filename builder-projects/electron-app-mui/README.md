@@ -477,6 +477,7 @@ When creating a new editor, study existing ones for patterns:
 2. **Shared Components**: Reuse `EditorShared` for tabs, counters, list editors
 3. **Image Handling**: Use `ImagePicker` and the `importImage` IPC method
 4. **Undo/Redo**: The project context handles this automatically—just call `onChange` with new data
+5. **Keyboard Shortcuts**: Use `useEntityCreateShortcut` for entity creation hotkeys
 
 Example pattern:
 
@@ -493,6 +494,50 @@ function handleAddItem() {
   })
 }
 ```
+
+### Keyboard Shortcuts
+
+The builder uses a tiered keyboard shortcut system for efficient content creation:
+
+#### Entity Creation (in Editors)
+
+Use the `useEntityCreateShortcut` hook to register keyboard shortcuts for adding entities:
+
+```typescript
+import { useEntityCreateShortcut } from '@renderer/hooks/useEntityCreateShortcut'
+
+export default function MyGameEditor({ appData, onChange }: Props) {
+  // Register shortcuts for adding items (tier 1) and groups (tier 2)
+  useEntityCreateShortcut({
+    onTier1: addItem,        // Ctrl+N
+    onTier2: addGroup        // Ctrl+Shift+N
+  })
+
+  // ... editor UI
+}
+```
+
+**Tier System:**
+| Tier | Shortcut | Purpose | Example |
+|------|----------|---------|---------|
+| 1 | `Ctrl+N` | Smallest unit | Item, word, question |
+| 2 | `Ctrl+Shift+N` | Medium unit | Group, category |
+| 3 | `Ctrl+Alt+N` | Large unit | Section, block |
+| 4 | `Ctrl+Shift+Alt+N` | Complex unit | Complex category |
+
+#### Project-Level Shortcuts
+
+The Project page automatically handles these shortcuts:
+
+| Action | Shortcut |
+|--------|----------|
+| Undo | `Ctrl+Z` |
+| Redo | `Ctrl+Y` or `Ctrl+Shift+Z` |
+| Save | `Ctrl+S` |
+| Save As | `Ctrl+Shift+S` |
+| Preview | `Ctrl+P` |
+| Export to folder | `Ctrl+Shift+P` |
+| Export as ZIP | `Ctrl+Alt+P` |
 
 ### Debugging
 

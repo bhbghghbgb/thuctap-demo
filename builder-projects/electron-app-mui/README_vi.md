@@ -478,6 +478,7 @@ Khi tạo một editor mới, hãy nghiên cứu các editor hiện có để bi
 2. **Shared Components**: Tái sử dụng `EditorShared` cho tabs, counters, list editors
 3. **Xử lý Hình ảnh**: Sử dụng `ImagePicker` và phương thức IPC `importImage`
 4. **Undo/Redo**: Project context xử lý việc này tự động—chỉ cần gọi `onChange` với dữ liệu mới
+5. **Keyboard Shortcuts**: Sử dụng `useEntityCreateShortcut` cho hotkey tạo entity
 
 Mẫu ví dụ:
 
@@ -494,6 +495,50 @@ function handleAddItem() {
   })
 }
 ```
+
+### Keyboard Shortcuts
+
+Builder sử dụng hệ thống keyboard shortcut phân tầng để tạo nội dung hiệu quả:
+
+#### Entity Creation (trong Editors)
+
+Sử dụng hook `useEntityCreateShortcut` để đăng ký keyboard shortcuts cho việc thêm entities:
+
+```typescript
+import { useEntityCreateShortcut } from '@renderer/hooks/useEntityCreateShortcut'
+
+export default function MyGameEditor({ appData, onChange }: Props) {
+  // Đăng ký shortcuts cho việc thêm items (tier 1) và groups (tier 2)
+  useEntityCreateShortcut({
+    onTier1: addItem,        // Ctrl+N
+    onTier2: addGroup        // Ctrl+Shift+N
+  })
+
+  // ... editor UI
+}
+```
+
+**Hệ thống Tier:**
+| Tier | Shortcut | Mục đích | Ví dụ |
+|------|----------|---------|-------|
+| 1 | `Ctrl+N` | Đơn vị nhỏ nhất | Item, word, question |
+| 2 | `Ctrl+Shift+N` | Đơn vị trung bình | Group, category |
+| 3 | `Ctrl+Alt+N` | Đơn vị lớn | Section, block |
+| 4 | `Ctrl+Shift+Alt+N` | Đơn vị phức tạp | Complex category |
+
+#### Project-Level Shortcuts
+
+Trang Project tự động xử lý các shortcuts sau:
+
+| Action | Shortcut |
+|--------|----------|
+| Undo | `Ctrl+Z` |
+| Redo | `Ctrl+Y` hoặc `Ctrl+Shift+Z` |
+| Save | `Ctrl+S` |
+| Save As | `Ctrl+Shift+S` |
+| Preview | `Ctrl+P` |
+| Export to folder | `Ctrl+Shift+P` |
+| Export as ZIP | `Ctrl+Alt+P` |
 
 ### Gỡ lỗi
 

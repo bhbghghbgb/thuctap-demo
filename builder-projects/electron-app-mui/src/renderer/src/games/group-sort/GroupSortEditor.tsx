@@ -5,30 +5,30 @@ import ExtensionIcon from '@mui/icons-material/Extension'
 import ViewQuiltIcon from '@mui/icons-material/ViewQuilt'
 import WarningAmberIcon from '@mui/icons-material/WarningAmber'
 import {
-    Alert,
-    Box,
-    Button,
-    Chip,
-    Collapse,
-    Divider,
-    FormControl,
-    IconButton,
-    InputLabel,
-    MenuItem,
-    Paper,
-    Select,
-    Tooltip,
-    Typography
+  Alert,
+  Box,
+  Button,
+  Chip,
+  Collapse,
+  Divider,
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  Tooltip,
+  Typography
 } from '@mui/material'
-import { useEditorShortcuts } from '@renderer/hooks/useEditorShortcuts'
+import { useEntityCreateShortcut } from '@renderer/hooks/useEntityCreateShortcut'
 import { JSX, useCallback, useState } from 'react'
 import {
-    EmptyState,
-    FileDropTarget,
-    IndexBadge,
-    NameField,
-    SidebarTab,
-    StickyHeader
+  EmptyState,
+  FileDropTarget,
+  IndexBadge,
+  NameField,
+  SidebarTab,
+  StickyHeader
 } from '../../components/EditorShared'
 import ImagePicker from '../../components/ImagePicker'
 import { useSettings } from '../../context/SettingsContext'
@@ -160,10 +160,9 @@ export default function GroupSortEditor({
   // ── Keyboard shortcuts ────────────────────────────────────────────────────
   // Tier 1 (Ctrl+N) = item (smallest unit) → last group
   // Tier 2 (Ctrl+Shift+N) = group (nothing above group)
-  // Tier 3 (Ctrl+Shift+Alt+N) = group (same, nothing higher)
-  useEditorShortcuts((tier) => {
-    if (tier === 1) addItem()
-    else addGroup()
+  useEntityCreateShortcut({
+    onTier1: addItem,
+    onTier2: addGroup
   })
 
   // ── Validation ────────────────────────────────────────────────────────────

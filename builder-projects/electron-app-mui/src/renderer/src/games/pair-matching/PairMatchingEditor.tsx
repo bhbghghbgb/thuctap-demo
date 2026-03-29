@@ -3,26 +3,26 @@ import CollectionsIcon from '@mui/icons-material/Collections'
 import DeleteIcon from '@mui/icons-material/Delete'
 import SettingsIcon from '@mui/icons-material/Settings'
 import {
-    Alert,
-    Box,
-    Button,
-    Collapse,
-    Divider,
-    IconButton,
-    Paper,
-    TextField,
-    Tooltip,
-    Typography
+  Alert,
+  Box,
+  Button,
+  Collapse,
+  Divider,
+  IconButton,
+  Paper,
+  TextField,
+  Tooltip,
+  Typography
 } from '@mui/material'
-import { useEditorShortcuts } from '@renderer/hooks/useEditorShortcuts'
+import { useEntityCreateShortcut } from '@renderer/hooks/useEntityCreateShortcut'
 import { JSX, useCallback, useState } from 'react'
 import {
-    EmptyState,
-    FileDropTarget,
-    IndexBadge,
-    NameField,
-    SidebarTab,
-    StickyHeader
+  EmptyState,
+  FileDropTarget,
+  IndexBadge,
+  NameField,
+  SidebarTab,
+  StickyHeader
 } from '../../components/EditorShared'
 import ImagePicker from '../../components/ImagePicker'
 import { useSettings } from '../../context/SettingsContext'
@@ -97,8 +97,8 @@ export default function PairMatchingEditor({
     [data, items, onChange]
   )
 
-  useEditorShortcuts(() => {
-    addItem()
+  useEntityCreateShortcut({
+    onTier1: addItem
   })
 
   const unnamedI = items.filter((i) => !i.keyword.trim())

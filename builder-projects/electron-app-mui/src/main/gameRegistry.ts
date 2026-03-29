@@ -13,12 +13,12 @@
 
 import type {
   AnyAppData,
-  GroupSortAppData,
-  QuizAppData,
   BalloonLetterPickerAppData,
+  GroupSortAppData,
   PairMatchingAppData,
-  WordSearchAppData,
-  WhackAMoleAppData
+  QuizAppData,
+  WhackAMoleAppData,
+  WordSearchAppData
 } from '../shared'
 
 export type DataTransform = (appData: AnyAppData) => object

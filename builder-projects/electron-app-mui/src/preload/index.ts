@@ -7,10 +7,10 @@
 
 import { contextBridge, ipcRenderer, webUtils } from 'electron'
 import type {
+  GlobalSettings,
   IPCChannelDefinitions,
   IPCReturn,
-  RendererInvokeArgs,
-  GlobalSettings
+  RendererInvokeArgs
 } from '../shared'
 
 /**
@@ -46,12 +46,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
     typedIpcRenderer.invoke('check-folder-status', folderPath),
   chooseProjectFolder: () => typedIpcRenderer.invoke('choose-project-folder'),
   openProjectFile: (filePath?: string) => typedIpcRenderer.invoke('open-project-file', filePath),
-  saveProject: (data: object, projectPath: string) =>
-    typedIpcRenderer.invoke('save-project', data, projectPath),
+  saveProject: (
+    data: object,
+    projectPath: string,
+    historyStates?: { past: object[]; future: object[] }
+  ) => typedIpcRenderer.invoke('save-project', data, projectPath, historyStates),
   saveProjectAs: (opts: { projectData: object; oldProjectDir: string }) =>
     typedIpcRenderer.invoke('save-project-as', opts),
-  doSaveAs: (opts: { projectData: object; oldProjectDir: string; newFolder: string }) =>
-    typedIpcRenderer.invoke('do-save-as', opts),
+  doSaveAs: (opts: {
+    projectData: object
+    oldProjectDir: string
+    newFolder: string
+    historyStates?: { past: object[]; future: object[] }
+  }) => typedIpcRenderer.invoke('do-save-as', opts),
 
   // Assets
   pickImage: () => typedIpcRenderer.invoke('pick-image'),
@@ -62,7 +69,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Settings
   settingsReadGlobal: () => typedIpcRenderer.invoke('settings-read-global'),
-  settingsWriteGlobal: (data: GlobalSettings) => typedIpcRenderer.invoke('settings-write-global', data),
+  settingsWriteGlobal: (data: GlobalSettings) =>
+    typedIpcRenderer.invoke('settings-write-global', data),
 
   // Window
   setTitle: (title: string) => typedIpcRenderer.invoke('set-title', title),

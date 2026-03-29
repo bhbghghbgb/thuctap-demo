@@ -1,3 +1,4 @@
+import { formatCssUrl } from "../../utils/imageUtils";
 import Grid from "../Grid/Grid";
 import ImageHints from "../ImageHints/ImageHints";
 
@@ -25,7 +26,7 @@ export default function GamePreview({
         className="overlay-content"
         style={{
           background: background
-            ? `url(${background}) center / cover no-repeat`
+            ? `${formatCssUrl(background)} center / cover no-repeat`
             : "#fff",
           color: textColor
         }}

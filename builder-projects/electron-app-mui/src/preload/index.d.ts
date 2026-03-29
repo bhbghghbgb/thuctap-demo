@@ -5,13 +5,7 @@
  * that is exposed to the renderer process via contextBridge.
  */
 
-import type {
-  GameTemplate,
-  FolderStatus,
-  ProjectFile,
-  GlobalSettings,
-  AnyAppData
-} from '../shared'
+import type { FolderStatus, GameTemplate, GlobalSettings, ProjectFile } from '../shared'
 
 export interface ElectronAPI {
   // Templates
@@ -21,7 +15,11 @@ export interface ElectronAPI {
   checkFolderStatus: (folderPath: string) => Promise<FolderStatus>
   chooseProjectFolder: () => Promise<string | null>
   openProjectFile: (filePath?: string) => Promise<{ filePath: string; data: ProjectFile } | null>
-  saveProject: (data: object, projectPath: string) => Promise<boolean>
+  saveProject: (
+    data: object,
+    projectPath: string,
+    historyStates?: { past: object[]; future: object[] }
+  ) => Promise<boolean>
   saveProjectAs: (opts: {
     projectData: object
     oldProjectDir: string
@@ -30,11 +28,16 @@ export interface ElectronAPI {
     projectData: object
     oldProjectDir: string
     newFolder: string
+    historyStates?: { past: object[]; future: object[] }
   }) => Promise<{ filePath: string; projectDir: string }>
 
   // Assets
   pickImage: () => Promise<string | null>
-  importImage: (sourcePath: string, projectDir: string, desiredNamePrefix: string) => Promise<string>
+  importImage: (
+    sourcePath: string,
+    projectDir: string,
+    desiredNamePrefix: string
+  ) => Promise<string>
   resolveAssetUrl: (projectDir: string, relativePath: string) => Promise<string>
 
   // Settings
