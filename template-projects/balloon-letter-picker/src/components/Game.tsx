@@ -11,6 +11,8 @@ const Game: React.FC = () => {
   const [globalMousePos, setGlobalMousePos] = useState({ x: 0, y: 0 });
   const [loadedImages, setLoadedImages] = useState<Map<string, HTMLImageElement>>(new Map());
   const [canvasSize, setCanvasSize] = useState({ width: 1200, height: 700 });
+  const [showTutorial, setShowTutorial] = useState(true);
+  const [gameStarted, setGameStarted] = useState(false);
   
   // State cho hiệu ứng
   const [explodeEffect, setExplodeEffect] = useState<{ x: number; y: number; active: boolean }>({ x: 0, y: 0, active: false });
@@ -366,6 +368,106 @@ return (
     background: 'black',
     overflow: 'hidden'
   }}>
+    // Thêm vào return, trước khi vẽ game (khi showTutorial = true)
+
+  {showTutorial && (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(0,0,0,0.85)',
+      backdropFilter: 'blur(10px)',
+      zIndex: 1000,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      animation: 'fadeIn 0.3s ease-out'
+    }}>
+      <div style={{
+        background: 'white',
+        borderRadius: '30px',
+        padding: '40px',
+        maxWidth: '600px',
+        width: '90%',
+        textAlign: 'center',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.3)'
+      }}>
+        <h1 style={{
+          fontSize: '36px',
+          color: '#667eea',
+          marginBottom: '20px'
+        }}>
+          🎈 Balloon Letter Picker
+        </h1>
+        
+        <div style={{
+          textAlign: 'left',
+          margin: '30px 0',
+          padding: '0 20px'
+        }}>
+          <h3 style={{ color: '#764ba2', marginBottom: '15px' }}>📖 How to Play:</h3>
+          
+          <div style={{ marginBottom: '15px' }}>
+            <span style={{ fontSize: '24px', marginRight: '10px' }}>🎯</span>
+            <span style={{ fontSize: '16px' }}>Move your mouse to aim</span>
+          </div>
+          
+          <div style={{ marginBottom: '15px' }}>
+            <span style={{ fontSize: '24px', marginRight: '10px' }}>🖱️</span>
+            <span style={{ fontSize: '16px' }}>Click on balloons to shoot them</span>
+          </div>
+          
+          <div style={{ marginBottom: '15px' }}>
+            <span style={{ fontSize: '24px', marginRight: '10px' }}>🔤</span>
+            <span style={{ fontSize: '16px' }}>Shoot letters in the correct order to spell the word</span>
+          </div>
+          
+          <div style={{ marginBottom: '15px' }}>
+            <span style={{ fontSize: '24px', marginRight: '10px' }}>⭐</span>
+            <span style={{ fontSize: '16px' }}>+10 points for each correct letter</span>
+          </div>
+          
+          <div style={{ marginBottom: '15px' }}>
+            <span style={{ fontSize: '24px', marginRight: '10px' }}>💡</span>
+            <span style={{ fontSize: '16px' }}>Use the hint to help you guess the word</span>
+          </div>
+        </div>
+        
+        <button
+          onClick={() => {
+            setShowTutorial(false);
+            setGameStarted(true);
+          }}
+          style={{
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+            border: 'none',
+            padding: '15px 50px',
+            fontSize: '24px',
+            fontWeight: 'bold',
+            borderRadius: '50px',
+            cursor: 'pointer',
+            transition: 'transform 0.2s, box-shadow 0.2s',
+            boxShadow: '0 10px 20px rgba(102,126,234,0.4)',
+            marginTop: '20px'
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.transform = 'scale(1.05)';
+            e.currentTarget.style.boxShadow = '0 15px 30px rgba(102,126,234,0.6)';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.boxShadow = '0 10px 20px rgba(102,126,234,0.4)';
+          }}
+        >
+          🚀 START GAME
+        </button>
+      </div>
+    </div>
+  )}
+  
     {/* Canvas full màn hình */}
     <canvas
       ref={canvasRef}
@@ -382,6 +484,7 @@ return (
         display: 'block'
       }}
     />
+    
     
     {/* WordDisplay đè lên canvas */}
     <div style={{
