@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import GamePreview from "../components/Game/GamePreview";
 import { generateWordSearch } from "../engine/generateWordSearch";
 import { getBrightness } from "../utils/imageUtils";
-
+import { createPortal } from "react-dom";
 const customBackground = "";
 
 export default function WordSearchPage() {
@@ -26,6 +26,7 @@ export default function WordSearchPage() {
   const isDraggingRef = useRef(false);
   const selectedRef = useRef([]);
   const directionRef = useRef(null);
+  const [showCongrats, setShowCongrats] = useState(false);
 
   const generateGame = () => {
     const words = items.map((item) => item.word.trim().toUpperCase()).filter((word) => word);
@@ -47,7 +48,17 @@ export default function WordSearchPage() {
     generateGame();
     // keep explicit background value rather than auto-switching based on items
   }, []);
+  useEffect(() => {
+    console.log("COMPONENT MOUNTED");
+  }, []);
+  useEffect(() => {
+    console.log("found:", foundWords.length, "placements:", placements.length);
 
+    if (foundWords.length === placements.length && placements.length > 0) {
+      console.log("WIN 🎉");
+      setShowCongrats(true);
+    }
+  }, [foundWords, placements]);
   useEffect(() => {
     if (!background) {
       setTextColor("#000");
@@ -183,29 +194,41 @@ export default function WordSearchPage() {
   };
 
   const handlePointerUp = () => {
+    console.log("POINTER UP");
     if (!isDraggingRef.current) {
       return;
     }
 
     isDraggingRef.current = false;
     const foundWord = checkWord(selectedRef.current);
-
+    console.log("FOUND WORD:", foundWord); // 👈 thêm dòng này
     if (foundWord) {
       const placement = placements.find((item) => item.word === foundWord);
       if (placement) {
         setFoundCells((prev) => [...prev, ...placement.positions]);
-        setFoundWords((prev) => [...prev, foundWord]);
+        setFoundWords((prev) => {
+          if (prev.includes(foundWord)) {
+            return [...prev]; // 👈 tạo array mới
+          }
+          return [...prev, foundWord];
+        });
       }
     }
-
     selectedRef.current = [];
     setSelectedCells([]);
     directionRef.current = null;
   };
 
+const handleRestart = () => {
+  setShowCongrats(false);
+  generateGame();
+};
+
   return (
+  <>
     <div className="game-page">
-      {showPreview && (
+      {/* ❗ Ẩn game khi win */}
+      {showPreview && !showCongrats && (
         <GamePreview
           grid={grid}
           items={items}
@@ -222,5 +245,39 @@ export default function WordSearchPage() {
         />
       )}
     </div>
-  );
+
+    {/* ✅ Popup */}
+    {showCongrats &&
+      createPortal(
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "rgba(0,0,0,0.5)",
+            zIndex: 999999,
+          }}
+        >
+          <div
+            style={{
+              background: "white",
+              padding: "24px",
+              borderRadius: "16px",
+              textAlign: "center",
+            }}
+          >
+            <h2>🎉 Congratulations!</h2>
+            <p>You found all the words!</p>
+
+            <button onClick={handleRestart}>
+              Play Again
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
+  </>
+);
 }
