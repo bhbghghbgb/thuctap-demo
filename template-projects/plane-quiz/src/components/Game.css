@@ -524,3 +524,166 @@
     min-width: 35px;
   }
 }
+.tutorial-panel {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.95);
+  color: white;
+  padding: 30px;
+  border-radius: 20px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  border: 2px solid #ffd700;
+  box-shadow: 0 0 50px rgba(255, 215, 0, 0.3);
+  width: min(800px, 90vw);
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: slideUp 0.5s ease-out;
+  z-index: 200;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tutorial-panel h2 {
+  color: #ffd700;
+  margin-bottom: 25px;
+  font-size: clamp(28px, 5vw, 36px);
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  border-bottom: 2px solid #ffd700;
+  display: inline-block;
+  padding-bottom: 10px;
+}
+
+.tutorial-section {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: left;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tutorial-section h3 {
+  color: #4CAF50;
+  margin-bottom: 15px;
+  font-size: clamp(20px, 3vw, 24px);
+  border-left: 4px solid #4CAF50;
+  padding-left: 12px;
+}
+
+.tutorial-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+.tutorial-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 10px 15px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.key {
+  background: #333;
+  border: 1px solid #ffd700;
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-family: monospace;
+  font-weight: bold;
+  font-size: 16px;
+  color: #ffd700;
+  min-width: 60px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.tutorial-text p {
+  margin: 10px 0;
+  padding: 8px 15px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  font-size: 15px;
+  line-height: 1.5;
+  border-left: 3px solid #ffd700;
+}
+
+.tutorial-close {
+  margin-top: 25px;
+  text-align: center;
+}
+
+.close-tutorial {
+  background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+  color: black;
+  padding: 12px 40px;
+  font-size: 18px;
+  font-weight: bold;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 200px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.close-tutorial:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 10px 25px rgba(255, 215, 0, 0.6);
+}
+
+/* Scrollbar cho tutorial */
+.tutorial-panel::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tutorial-panel::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.tutorial-panel::-webkit-scrollbar-thumb {
+  background: #ffd700;
+  border-radius: 10px;
+}
+
+.tutorial-panel::-webkit-scrollbar-thumb:hover {
+  background: #ffaa00;
+}
+
+/* Responsive cho tutorial */
+@media (max-width: 768px) {
+  .tutorial-panel {
+    padding: 20px;
+  }
+  
+  .tutorial-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .tutorial-item {
+    font-size: 12px;
+  }
+  
+  .key {
+    padding: 3px 8px;
+    font-size: 12px;
+    min-width: 45px;
+  }
+  
+  .tutorial-text p {
+    font-size: 13px;
+  }
+}
