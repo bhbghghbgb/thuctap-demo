@@ -26,6 +26,8 @@ minigame-builder/
 ├── .github/workflows/build-all.yml # CI: builds templates, then packages Electron app
 │
 ├── template-projects/              # Game template projects (ADD NEW GAMES HERE)
+│   ├── shared/                     # ⭐ NEW: Shared library components
+│   │   └── tutorial-viewer/        #   Tutorial Viewer component (scaffold for future libraries)
 │   ├── group-sort/                 # ⭐ RECOMMENDED template to copy (Vite + React Compiler)
 │   └── ...                         # Other game templates
 │
@@ -43,6 +45,8 @@ minigame-builder/
 ```
 
 > 💡 **Adding a new game?** Create it in `template-projects/`, then register it in the builder. See [Adding a New Game](#adding-a-new-game--quick-start) below.
+
+> 💡 **New: Shared Libraries** The `shared/` folder contains reusable components like `tutorial-viewer`. See [template-projects README](template-projects/README.md) for details.
 
 ---
 
@@ -127,7 +131,7 @@ Optionally place a `thumbnail.png` (or `.jpg`/`.webp`) next to `meta.json` for a
 ## Local Development
 
 ```bash
-# 1. Build all game templates and copy them into the builder
+# 1. Build all game templates (including shared libraries)
 ./build-templates.sh
 
 # 2. Start the builder in dev mode
@@ -142,32 +146,43 @@ To build only a single game template:
 ./build-templates.sh group-sort
 ```
 
+> 💡 **For game template developers:** See [template-projects README](template-projects/README.md) for the complete development workflow, including how to use shared components and add new templates.
+
 ---
 
 ## Adding a New Game — Quick Start
 
-> 📚 **For detailed instructions**, see [Builder README — Adding a New Game](builder-projects/electron-app-mui/README.md#adding-a-new-game).
+> 📚 **For detailed step-by-step instructions**, see [template-projects README — Adding a New Game Template](template-projects/README.md#adding-a-new-game-template).
 
 ### Overview
 
-1. **Create template project** — Copy `template-projects/group-sort` or scaffold from scratch
-2. **Register in `build-templates.sh`** — Add one line to the `GAMES` array
-3. **Register in CI workflow** — Add to `.github/workflows/build-all.yml`
-4. **Add TypeScript types** — In `builder-projects/electron-app-mui/src/shared/types.ts`
-5. **Create editor component** — In `builder-projects/electron-app-mui/src/renderer/src/games/`
-6. **Register editor** — In `builder-projects/electron-app-mui/src/renderer/src/games/registry.ts`
-7. **Add data transform (if needed)** — In `builder-projects/electron-app-mui/src/main/gameRegistry.ts`
-8. **Test locally** — Build template, run builder, verify end-to-end
+**In template-projects/:**
+1. **Create template project** — Copy `template-projects/group-sort`
+2. **Update package.json** — Change name to match folder
+3. **Register in workspace** — Add to `template-projects/package.json` workspaces and scripts
+4. **Create meta.json** — Add template metadata
+5. **Install dependencies** — Run `yarn install` from `template-projects/`
+
+**In builder-projects/electron-app-mui/:**
+6. **Register in `build-templates.sh`** — Add to `GAMES` array
+7. **Register in CI workflow** — The workflow auto-detects templates from `build-templates.sh`
+8. **Add TypeScript types** — In `src/shared/types.ts`
+9. **Create editor component** — In `src/renderer/src/games/`
+10. **Register editor** — In `src/renderer/src/games/registry.ts`
+11. **Add data transform (if needed)** — In `src/main/gameRegistry.ts`
 
 ### Key Files to Modify
 
 | File                                                                   | Purpose                                       |
 | ---------------------------------------------------------------------- | --------------------------------------------- |
+| `template-projects/package.json`                                       | Add to workspaces and build scripts           |
 | `build-templates.sh`                                                   | Register new game template for local builds   |
 | `.github/workflows/build-all.yml`                                      | Register for CI builds                        |
 | `builder-projects/electron-app-mui/src/shared/types.ts`                | Add AppData types                             |
 | `builder-projects/electron-app-mui/src/renderer/src/games/registry.ts` | Register editor component                     |
 | `builder-projects/electron-app-mui/src/main/gameRegistry.ts`           | Add data transform (if runtime shape differs) |
+
+> 💡 **Complete guide:** See [template-projects README](template-projects/README.md#adding-a-new-game-template) for detailed instructions.
 
 ---
 
@@ -200,11 +215,24 @@ yarn build:mac
 
 The GitHub Actions workflow (`.github/workflows/build-all.yml`) runs on `workflow_dispatch`. It:
 
-1. Builds every template project in parallel
-2. Downloads all built templates into a staging area
-3. Copies them into the builder's `templates/` directory
-4. Packages the Electron app for Windows and Linux
-5. Uploads installers as GitHub artifacts
+1. **Linux runner (primary build)**:
+   - Runs `./build-templates.sh` to build all game templates
+   - Uploads all templates as artifacts
+   - Builds the builder app with `electron-vite build && electron-builder --dir`
+   - Archives the output as 7z (overrides NSIS/DMG config)
+   - Uploads the 7z archive as artifact
+
+2. **Windows runner**:
+   - Downloads pre-built templates from Linux runner
+   - Builds only the builder app with 7z target
+   - Uploads the 7z archive as artifact
+
+3. **macOS runner**:
+   - Downloads pre-built templates from Linux runner
+   - Builds only the builder app with 7z target
+   - Uploads the 7z archive as artifact
+
+This approach minimizes Windows and macOS build time by reusing template artifacts built on Linux. All platforms produce 7z archives instead of platform-specific installers (NSIS for Windows, DMG for macOS).
 
 ---
 

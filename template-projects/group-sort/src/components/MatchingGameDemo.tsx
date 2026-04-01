@@ -10,6 +10,7 @@ import {
 } from "@dnd-kit/core";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useRef, useState } from "react";
+import { TutorialViewer } from "@minigame/tutorial-viewer";
 import { MY_APP_DATA } from "../data";
 import type { Item } from "../types/objects";
 import DraggableItem, { ItemCard } from "./DraggableItem";
@@ -29,6 +30,7 @@ const MatchingGameDemo: React.FC = () => {
   } | null>(null);
   const [showSummary, setShowSummary] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   // Use ref to manage feedback timeout
   const feedbackTimeoutRef = useRef<number | null>(null);
@@ -270,10 +272,18 @@ const MatchingGameDemo: React.FC = () => {
           <h1 className="text-4xl font-extrabold text-blue-900 drop-shadow-sm">
             Ghép Đôi Vui Vẻ
           </h1>
-          <div className="bg-white rounded-full px-6 py-2 shadow-md">
-            <span className="text-lg font-semibold text-blue-800">
-              Còn lại: {unansweredItems.length} / {MY_APP_DATA.items.length}
-            </span>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setShowTutorial(true)}
+              className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-full shadow-md transition-colors"
+            >
+              📖 Hướng dẫn
+            </button>
+            <div className="bg-white rounded-full px-6 py-2 shadow-md">
+              <span className="text-lg font-semibold text-blue-800">
+                Còn lại: {unansweredItems.length} / {MY_APP_DATA.items.length}
+              </span>
+            </div>
           </div>
         </header>
 
@@ -332,6 +342,15 @@ const MatchingGameDemo: React.FC = () => {
             <ItemCard item={activeItem} style={{ cursor: "grabbing" }} />
           ) : null}
         </DragOverlay>
+
+        {/* TUTORIAL VIEWER */}
+        <TutorialViewer
+          isOpen={showTutorial}
+          onClose={() => setShowTutorial(false)}
+          basePath="images/"
+          filenamePattern="tutorial"
+          fileExtension="png"
+        />
       </div>
 
       <style>{`

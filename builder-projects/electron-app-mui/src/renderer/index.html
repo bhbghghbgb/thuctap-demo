@@ -23,32 +23,375 @@
         opacity: 0;
         pointer-events: none;
       }
-      .splash-ring {
-        width: 40px;
-        height: 40px;
-        border: 3px solid rgba(110, 231, 183, 0.18);
-        border-top-color: #6ee7b7;
-        border-radius: 50%;
-        animation: spin 0.75s linear infinite;
-      }
       .splash-wordmark {
         margin-top: 18px;
         font-family: system-ui, sans-serif;
-        font-size: 13px;
+        font-size: 28px;
         font-weight: 600;
         letter-spacing: 0.06em;
         color: rgba(110, 231, 183, 0.7);
       }
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
+
+      /*
+       * Windows 10 Dotted Loading Spinner
+       * Customization via CSS variables:
+       * --spinner-size: Overall size (default: 50px)
+       * --spinner-scale: Scale factor (default: 0.8)
+       * --dot-size: Size of each dot (default: 10px)
+       * --dot-color: Color of the dots (default: #ffffff)
+       * --dot-border-radius: Border radius for dots (default: 128px for circular)
+       * --spinner-duration: Animation duration (default: 3.8s)
+       * --rotation-offset: Initial rotation offset in degrees (default: 220deg)
+       */
+      .windows10-spinner-container {
+        --spinner-size: 120px;
+        --spinner-scale: 0.8;
+        --dot-size: 10px;
+        --dot-color: #6ee7b7;
+        --dot-border-radius: 128px;
+        --spinner-duration: 3.8s;
+        --spinner-easing: linear;
+        --rotation-offset: 220deg;
+
+        --dot-orbit-radius: calc((var(--spinner-size) - var(--dot-size)) / 2);
+
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: var(--spinner-size);
+        height: var(--spinner-size);
+        transform: scale(var(--spinner-scale));
+        transform-origin: center center;
+      }
+
+      .windows10-spinner-container > .dot {
+        position: absolute;
+        width: var(--dot-size);
+        height: var(--dot-size);
+        background-color: var(--dot-color);
+        border-radius: var(--dot-border-radius);
+        opacity: 0;
+        top: 50%;
+        left: 50%;
+        z-index: 10;
+      }
+
+      .windows10-spinner-container > .dot:nth-child(1) {
+        animation:
+          win10-dot-1-rotate var(--spinner-duration) var(--spinner-easing) 0ms infinite,
+          win10-dot-opacity var(--spinner-duration) var(--spinner-easing) 0ms infinite;
+      }
+
+      .windows10-spinner-container > .dot:nth-child(2) {
+        animation:
+          win10-dot-2-rotate var(--spinner-duration) var(--spinner-easing)
+            calc(var(--spinner-duration) * 0.0439) infinite,
+          win10-dot-opacity var(--spinner-duration) var(--spinner-easing)
+            calc(var(--spinner-duration) * 0.0439) infinite;
+      }
+
+      .windows10-spinner-container > .dot:nth-child(3) {
+        animation:
+          win10-dot-3-rotate var(--spinner-duration) var(--spinner-easing)
+            calc(var(--spinner-duration) * 0.0879) infinite,
+          win10-dot-opacity var(--spinner-duration) var(--spinner-easing)
+            calc(var(--spinner-duration) * 0.0879) infinite;
+      }
+
+      .windows10-spinner-container > .dot:nth-child(4) {
+        animation:
+          win10-dot-4-rotate var(--spinner-duration) var(--spinner-easing)
+            calc(var(--spinner-duration) * 0.1318) infinite,
+          win10-dot-opacity var(--spinner-duration) var(--spinner-easing)
+            calc(var(--spinner-duration) * 0.1318) infinite;
+      }
+
+      .windows10-spinner-container > .dot:nth-child(5) {
+        animation:
+          win10-dot-5-rotate var(--spinner-duration) var(--spinner-easing)
+            calc(var(--spinner-duration) * 0.1758) infinite,
+          win10-dot-opacity var(--spinner-duration) var(--spinner-easing)
+            calc(var(--spinner-duration) * 0.1758) infinite;
+      }
+
+      .windows10-spinner-container > .dot:nth-child(6) {
+        animation:
+          win10-dot-6-rotate var(--spinner-duration) var(--spinner-easing)
+            calc(var(--spinner-duration) * 0.2197) infinite,
+          win10-dot-opacity var(--spinner-duration) var(--spinner-easing)
+            calc(var(--spinner-duration) * 0.2197) infinite;
+      }
+
+      @keyframes win10-dot-opacity {
+        0% {
+          opacity: 1;
+        }
+        73.9145% {
+          opacity: 1;
+        }
+        73.9156% {
+          opacity: 0;
+        }
+        79.9017% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+
+      @keyframes win10-dot-1-rotate {
+        0% {
+          transform: translate(-50%, -50%) rotate(calc(-110deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0.02, 0.33, 0.38, 0.77);
+        }
+        9.9704% {
+          transform: translate(-50%, -50%) rotate(calc(10deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+        }
+        27.6316% {
+          transform: translate(-50%, -50%) rotate(calc(93deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0.57, 0.17, 0.95, 0.75);
+        }
+        37.2341% {
+          transform: translate(-50%, -50%) rotate(calc(205deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0, 0.19, 0.07, 0.72);
+        }
+        46.4443% {
+          transform: translate(-50%, -50%) rotate(calc(357deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+        }
+        64.0821% {
+          transform: translate(-50%, -50%) rotate(calc(439deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0, 0, 0.95, 0.37);
+        }
+        74.0758% {
+          transform: translate(-50%, -50%) rotate(calc(585deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0.13, 0.21, 0.1, 0.7);
+        }
+        100% {
+          transform: translate(-50%, -50%) rotate(calc(585deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+        }
+      }
+
+      @keyframes win10-dot-2-rotate {
+        0% {
+          transform: translate(-50%, -50%) rotate(calc(-116deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0.02, 0.33, 0.38, 0.77);
+        }
+        9.9704% {
+          transform: translate(-50%, -50%) rotate(calc(4deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+        }
+        27.6316% {
+          transform: translate(-50%, -50%) rotate(calc(87deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0.57, 0.17, 0.95, 0.75);
+        }
+        37.2341% {
+          transform: translate(-50%, -50%) rotate(calc(199deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0, 0.19, 0.07, 0.72);
+        }
+        46.4443% {
+          transform: translate(-50%, -50%) rotate(calc(351deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+        }
+        64.0821% {
+          transform: translate(-50%, -50%) rotate(calc(433deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0, 0, 0.95, 0.37);
+        }
+        74.0758% {
+          transform: translate(-50%, -50%) rotate(calc(579deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0.13, 0.21, 0.1, 0.7);
+        }
+        100% {
+          transform: translate(-50%, -50%) rotate(calc(579deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+        }
+      }
+
+      @keyframes win10-dot-3-rotate {
+        0% {
+          transform: translate(-50%, -50%) rotate(calc(-122deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0.02, 0.33, 0.38, 0.77);
+        }
+        9.9704% {
+          transform: translate(-50%, -50%) rotate(calc(-2deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+        }
+        27.6316% {
+          transform: translate(-50%, -50%) rotate(calc(81deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0.57, 0.17, 0.95, 0.75);
+        }
+        37.2341% {
+          transform: translate(-50%, -50%) rotate(calc(193deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0, 0.19, 0.07, 0.72);
+        }
+        46.4443% {
+          transform: translate(-50%, -50%) rotate(calc(345deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+        }
+        64.0821% {
+          transform: translate(-50%, -50%) rotate(calc(427deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0, 0, 0.95, 0.37);
+        }
+        74.0758% {
+          transform: translate(-50%, -50%) rotate(calc(573deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0.13, 0.21, 0.1, 0.7);
+        }
+        100% {
+          transform: translate(-50%, -50%) rotate(calc(573deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+        }
+      }
+
+      @keyframes win10-dot-4-rotate {
+        0% {
+          transform: translate(-50%, -50%) rotate(calc(-128deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0.02, 0.33, 0.38, 0.77);
+        }
+        9.9704% {
+          transform: translate(-50%, -50%) rotate(calc(-8deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+        }
+        27.6316% {
+          transform: translate(-50%, -50%) rotate(calc(75deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0.57, 0.17, 0.95, 0.75);
+        }
+        37.2341% {
+          transform: translate(-50%, -50%) rotate(calc(187deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0, 0.19, 0.07, 0.72);
+        }
+        46.4443% {
+          transform: translate(-50%, -50%) rotate(calc(339deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+        }
+        64.0821% {
+          transform: translate(-50%, -50%) rotate(calc(421deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0, 0, 0.95, 0.37);
+        }
+        74.0758% {
+          transform: translate(-50%, -50%) rotate(calc(567deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0.13, 0.21, 0.1, 0.7);
+        }
+        100% {
+          transform: translate(-50%, -50%) rotate(calc(567deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+        }
+      }
+
+      @keyframes win10-dot-5-rotate {
+        0% {
+          transform: translate(-50%, -50%) rotate(calc(-134deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0.02, 0.33, 0.38, 0.77);
+        }
+        9.9704% {
+          transform: translate(-50%, -50%) rotate(calc(-14deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+        }
+        27.6316% {
+          transform: translate(-50%, -50%) rotate(calc(69deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0.57, 0.17, 0.95, 0.75);
+        }
+        37.2341% {
+          transform: translate(-50%, -50%) rotate(calc(181deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0, 0.19, 0.07, 0.72);
+        }
+        46.4443% {
+          transform: translate(-50%, -50%) rotate(calc(331deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+        }
+        64.0821% {
+          transform: translate(-50%, -50%) rotate(calc(415deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0, 0, 0.95, 0.37);
+        }
+        74.0758% {
+          transform: translate(-50%, -50%) rotate(calc(561deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0.13, 0.21, 0.1, 0.7);
+        }
+        100% {
+          transform: translate(-50%, -50%) rotate(calc(561deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+        }
+      }
+
+      @keyframes win10-dot-6-rotate {
+        0% {
+          transform: translate(-50%, -50%) rotate(calc(-140deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0.02, 0.33, 0.38, 0.77);
+        }
+        9.9704% {
+          transform: translate(-50%, -50%) rotate(calc(-20deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+        }
+        27.6316% {
+          transform: translate(-50%, -50%) rotate(calc(63deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0.57, 0.17, 0.95, 0.75);
+        }
+        37.2341% {
+          transform: translate(-50%, -50%) rotate(calc(175deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0, 0.19, 0.07, 0.72);
+        }
+        46.4443% {
+          transform: translate(-50%, -50%) rotate(calc(325deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+        }
+        64.0821% {
+          transform: translate(-50%, -50%) rotate(calc(409deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0, 0, 0.95, 0.37);
+        }
+        74.0758% {
+          transform: translate(-50%, -50%) rotate(calc(555deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
+          animation-timing-function: cubic-bezier(0.13, 0.21, 0.1, 0.7);
+        }
+        100% {
+          transform: translate(-50%, -50%) rotate(calc(555deg + var(--rotation-offset)))
+            translateX(var(--dot-orbit-radius));
         }
       }
     </style>
   </head>
   <body>
     <div id="splash">
-      <div class="splash-ring"></div>
+      <div class="windows10-spinner-container">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
       <div class="splash-wordmark">MINIGAME BUILDER</div>
     </div>
     <div id="root"></div>

@@ -1,6 +1,6 @@
 {
   "name": "electron-app",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "An Electron application with React and TypeScript",
   "main": "./out/main/index.js",
   "author": "example.com",
@@ -27,16 +27,20 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.9",
     "@mui/material": "^7.3.9",
-    "@tanstack/react-query": "^5.95.2",
+    "@tanstack/react-query": "^5.96.1",
     "archiver": "^7.0.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
-    "electron-updater": "^6.3.9",
+    "electron-updater": "^6.8.3",
     "framer-motion": "^12.38.0",
+    "mutative": "^1.3.0",
     "react-dropzone": "^15.0.0",
     "react-hotkeys-hook": "^5.2.4",
-    "react-router-dom": "^7.13.1",
-    "uuid": "^13.0.0"
+    "react-router-dom": "^7.13.2",
+    "travels": "^1.1.0",
+    "uuid": "^13.0.0",
+    "zustand": "^5.0.12",
+    "zustand-travel": "^1.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",
@@ -51,50 +55,24 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@types/uuid": "^11.0.0",
-    "@vitejs/plugin-react": "^6.0.0",
+    "@vitejs/plugin-react": "^6.0.1",
     "babel-plugin-react-compiler": "^1.0.0",
-    "electron": "^39.2.6",
-    "electron-builder": "^26.0.12",
+    "electron": "^41.1.1",
+    "electron-builder": "^26.8.1",
+    "electron-devtools-installer": "^4.0.0",
+    "electron-icon-maker": "^0.0.5",
     "electron-vite": "^5.0.0",
-    "eslint": "^9.39.1",
+    "eslint": "^10.1.0",
     "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-compiler": "^19.1.0-rc.2",
     "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-react-refresh": "^0.4.24",
-    "prettier": "^3.7.4",
-    "react": "^19.2.1",
-    "react-dom": "^19.2.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "prettier": "^3.8.1",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "tailwindcss": "^4.2.2",
-    "typescript": "^5.9.3",
-    "vite": "^8.0.0"
-  },
-  "build": {
-    "appId": "com.electron.app",
-    "productName": "electron-app",
-    "asar": true,
-    "files": [
-      "out/**/*"
-    ],
-    "extraResources": [
-      {
-        "from": "templates",
-        "to": "templates"
-      }
-    ],
-    "win": {
-      "target": [
-        "7z"
-      ]
-    },
-    "mac": {
-      "target": [
-        "dmg"
-      ]
-    },
-    "linux": {
-      "target": [
-        "AppImage"
-      ]
-    }
+    "typescript": "^6.0.2",
+    "vite": "^8.0.3"
   },
   "packageManager": "yarn@4.13.0"
 }

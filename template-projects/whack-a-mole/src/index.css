@@ -5,10 +5,11 @@
 }
 
 :root {
-  --moles-wid: clamp(6rem, 8vw, 20rem);
-  --moles-hei: clamp(8rem, 8vh, 14rem);
+  --moles-wid: clamp(7.5rem, 10vw, 20rem);
+  --moles-hei: clamp(4rem, 7vw, 8rem);
 
   font-size: 62.5%;
+  overflow: hidden;
 }
 
 body {
@@ -44,6 +45,7 @@ body {
   background-repeat: no-repeat;
   width: 100%;
   height: 100px;
+  z-index: 100;
 }
 
 main {
@@ -57,7 +59,7 @@ main {
 .row {
   display: grid;
   justify-content: center;
-  gap: 10rem;
+  gap: clamp(2rem, 6vw, 10rem);
 }
 
 /* 3 - 4 - 3 */
@@ -107,7 +109,7 @@ div.moles-hole.down.wrong {
   left: 50%;
   transform: translateX(-50%) translateY(-10px);
 
-  width: 200px;
+  width: clamp(10rem, 15vw, 20rem);
 
   background: white;
   padding: 0.8rem 1rem;
@@ -125,7 +127,7 @@ div.moles-hole.down.wrong {
 
 /* 👈 lệch trái */
 .row>div:nth-child(1) .mole-bubble {
-  transform: translateX(-90%) translateY(-10px);
+  transform: translateX(-83%) translateY(-10px);
 }
 
 .row.row-4>div:nth-child(2) .mole-bubble {
@@ -159,14 +161,14 @@ div.moles-hole.down.wrong {
 
 /* 📸 image */
 .mole-bubble img {
-  width: 50px;
-  height: 50px;
+  width: clamp(3rem, 5vw, 6rem);
+  height: clamp(3rem, 5vw, 6rem);
   object-fit: contain;
 }
 
 /* 📝 text */
 .mole-bubble div {
-  font-size: 2rem;
+  font-size: clamp(1rem, 2vw, 2rem);
   font-weight: bold;
   color: #333;
   text-align: center;
@@ -187,7 +189,7 @@ div.moles-hole.down.wrong {
 }
 
 .row>div:nth-child(1) .mole-bubble::after {
-  left: 85%;
+  left: 80%;
 }
 
 .row.row-3>div:nth-child(3) .mole-bubble::after {
@@ -206,7 +208,7 @@ div.moles-hole.down.wrong {
   left: 8%;
 }
 
-button {
+/* button {
   padding: 1.5rem;
   background-color: rgb(85, 65, 10);
   border: none;
@@ -220,13 +222,11 @@ button {
 
   text-transform: uppercase;
   transition: all 0.4s;
-
-  cursor: pointer;
 }
 
 button:hover {
   transform: scale(1.1);
-}
+} */
 
 @media (min-width: 1000px) {
   main {
@@ -350,7 +350,8 @@ button:hover {
 
 .sign-box {
   position: relative;
-  width: 700px;
+  width: 80vw;
+  max-width: 100%;
   margin: 0 auto;
 }
 
@@ -360,7 +361,8 @@ button:hover {
   background-position: bottom;
   background-repeat: no-repeat;
   width: 100%;
-  height: 200px;
+  aspect-ratio: 5 / 2;
+  max-height: 250px;
 }
 
 /* 👇 container nằm đè lên ảnh và căn giữa */
@@ -370,23 +372,458 @@ button:hover {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  top: 40%;
+  top: 45%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 80%;
-  /* 👈 giúp không tràn */
+  width: 100%;
   text-align: center;
 }
 
 .sign-text {
   flex: 1;
-  font-size: 32px;
+  font-size: clamp(1.5rem, 4vw, 3rem);
   font-weight: bold;
   color: #ffffff;
 }
 
 .sign-box .question-img {
-  width: 80px;
+  width: clamp(40px, 10vw, 80px);
   display: block;
   margin: 0 auto;
+}
+
+/* 🎮 Controls container */
+.controls {
+  position: fixed;
+  top: 2rem;
+  right: 0;
+  flex-direction: column;
+  transform: translateX(-50%);
+
+  display: flex;
+  gap: 1.5rem;
+
+  z-index: 10;
+}
+
+/* 🔘 base button */
+.game-btn {
+  width: 60px;
+  height: 60px;
+
+  border-radius: 16px;
+  border: none;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  cursor: none;
+  position: relative;
+
+  transition: all 0.15s ease;
+
+  /* bóng ngoài */
+  box-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* ✨ glossy overlay */
+.game-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+
+  background: linear-gradient(to bottom,
+      rgba(255, 255, 255, 0.5),
+      rgba(255, 255, 255, 0.1) 40%,
+      transparent 60%);
+
+  pointer-events: none;
+}
+
+/* ✨ chấm highlight góc */
+.game-btn::after {
+  content: "";
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.9);
+}
+
+/* hover */
+.game-btn:hover {
+  transform: scale(1.08);
+}
+
+/* click */
+.game-btn:active {
+  transform: scale(0.92);
+
+  box-shadow:
+    inset 0 6px 12px rgba(0, 0, 0, 0.4),
+    0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* 🎯 icon */
+.game-btn svg {
+  width: 24px;
+  height: 24px;
+  color: white;
+  stroke-width: 3;
+}
+
+/* 🔴 PLAY / PAUSE */
+.btn-play {
+  background: linear-gradient(145deg, #ff6a6a, #d62828);
+
+  box-shadow:
+    inset 0 4px 8px rgba(255, 255, 255, 0.4),
+    inset 0 -6px 10px rgba(0, 0, 0, 0.2),
+    0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 🟠 RESTART */
+.btn-restart {
+  background: linear-gradient(145deg, #ffb74d, #f57c00);
+
+  box-shadow:
+    inset 0 4px 8px rgba(255, 255, 255, 0.4),
+    inset 0 -6px 10px rgba(0, 0, 0, 0.2),
+    0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 🔵 GUIDE */
+.btn-guide {
+  background: linear-gradient(145deg, #64b5f6, #1565c0);
+
+  box-shadow:
+    inset 0 4px 8px rgba(255, 255, 255, 0.4),
+    inset 0 -6px 10px rgba(0, 0, 0, 0.2),
+    0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 🌑 overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+
+  background: rgba(0, 0, 0, 0.6);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 20;
+}
+
+/* 📦 modal box */
+.modal {
+  width: 500px;
+  max-width: 90%;
+
+  background: #fff;
+  border-radius: 2rem;
+
+  padding: 2.5rem;
+
+  text-align: center;
+
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+
+  animation: modal-pop 0.3s ease;
+}
+
+/* nội dung */
+.modal p {
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 2rem;
+}
+
+/* group nút */
+.modal>div {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+/* button trong modal */
+.modal button {
+  position: static;
+
+  padding: 1rem 1.5rem;
+  font-size: 1.4rem;
+
+  border-radius: 1rem;
+  border: none;
+
+  background: #795548;
+  color: white;
+  cursor: none;
+
+  transition: 0.2s;
+}
+
+.modal button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.modal button:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+/* nút close */
+.modal button:last-child {
+  background: #f44336;
+}
+
+/* animation */
+@keyframes modal-pop {
+  from {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 🌟 complete modal */
+.complete-modal {
+  position: relative;
+
+  background: linear-gradient(180deg, #fff8e1, #ffe0b2);
+  border: 4px solid #ffcc80;
+
+  border-radius: 2.5rem;
+  padding: 3rem 2rem;
+
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.3),
+    inset 0 4px 10px rgba(255, 255, 255, 0.6);
+
+  animation: pop-bounce 0.5s ease;
+}
+
+/* 🎉 title */
+.complete-title {
+  font-size: 3.2rem;
+  font-weight: bold;
+
+  color: #ff6f00;
+  text-shadow: 0 3px 0 #fff;
+
+  margin-bottom: 1rem;
+}
+
+/* 📝 sub text */
+.complete-sub {
+  font-size: 1.6rem;
+  color: #6d4c41;
+
+  margin-bottom: 2.5rem;
+}
+
+/* 🔁 restart button */
+.restart-btn {
+  width: 180px;
+  height: 60px;
+  font-size: 1.8rem;
+  margin: 0 auto;
+}
+
+/* 🎊 confetti fake */
+.confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.confetti::before,
+.confetti::after {
+  content: "";
+  position: absolute;
+  width: 200%;
+  height: 200%;
+
+  background-image:
+    radial-gradient(circle, #ff5252 4px, transparent 5px),
+    radial-gradient(circle, #ffeb3b 4px, transparent 5px),
+    radial-gradient(circle, #4caf50 4px, transparent 5px),
+    radial-gradient(circle, #2196f3 4px, transparent 5px);
+
+  background-size: 50px 50px;
+  opacity: 0.3;
+
+  animation: confetti-move 6s linear infinite;
+}
+
+.confetti::after {
+  animation-direction: reverse;
+  opacity: 0.2;
+}
+
+/* 🎈 animation */
+@keyframes pop-bounce {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+
+  60% {
+    transform: scale(1.1);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes confetti-move {
+  from {
+    transform: translateY(-20%);
+  }
+
+  to {
+    transform: translateY(20%);
+  }
+}
+
+/* 🌟 modal nâng cấp */
+.guide-modal {
+  position: relative;
+
+  width: 80vw;
+  max-width: 980px;
+
+  background: linear-gradient(180deg, #fffaf0, #ffe0b2);
+  border-radius: 2.5rem;
+
+  padding: 2.5rem 2rem 2rem;
+
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.4),
+    inset 0 4px 10px rgba(255, 255, 255, 0.6);
+
+  text-align: center;
+
+  animation: modal-pop 0.3s ease;
+}
+
+.guide-modal button {
+  position: static;
+  /* 🔥 reset lại */
+}
+
+/* ❌ nút close */
+.close-btn {
+  position: absolute !important;
+  top: 1.2rem;
+  left: auto;
+  right: 1.2rem;
+  width: 40px;
+  height: 40px;
+
+  background: linear-gradient(145deg, #ff6a6a, #d62828);
+}
+
+/* 📝 text */
+.guide-text {
+  font-size: clamp(2rem, 2vw, 3.5rem);
+  font-weight: bold;
+  color: #5d4037;
+
+  margin-bottom: 1.5rem;
+}
+
+/* 📦 content */
+.guide-content {
+  width: 100%;
+  /* min-width: 0; */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* 🖼️ image */
+.guide-img {
+  width: 100%;
+  min-width: 0;
+  object-fit: cover;
+}
+
+/* 🔘 icon button */
+.icon-btn {
+  width: 50px;
+  height: 50px;
+
+  border-radius: 50%;
+  border: none;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: linear-gradient(145deg, #64b5f6, #1565c0);
+
+  box-shadow:
+    inset 0 4px 8px rgba(255, 255, 255, 0.5),
+    inset 0 -6px 10px rgba(0, 0, 0, 0.2),
+    0 6px 12px rgba(0, 0, 0, 0.2);
+
+  cursor: none;
+  transition: 0.2s;
+}
+
+.icon-btn svg {
+  width: 24px;
+  height: 24px;
+  color: white;
+  stroke-width: 3;
+}
+
+.icon-btn:hover:not(:disabled) {
+  transform: scale(1.1);
+}
+
+.icon-btn:active:not(:disabled) {
+  transform: scale(0.9);
+}
+
+.icon-btn:disabled {
+  opacity: 0.3;
+}
+
+/* 🔵 dots */
+.dots {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #bbb;
+  transition: 0.2s;
+}
+
+.dot.active {
+  background: #ff6f00;
+  transform: scale(1.3);
 }

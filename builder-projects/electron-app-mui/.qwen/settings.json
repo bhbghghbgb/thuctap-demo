@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(yarn add *)",
+      "Bash(del *)",
+      "Bash(yarn *)",
+      "Bash(rm *)"
+    ]
+  },
+  "$version": 3
+}

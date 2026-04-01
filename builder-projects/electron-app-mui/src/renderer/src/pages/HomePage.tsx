@@ -7,14 +7,12 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import HistoryIcon from '@mui/icons-material/History'
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports'
 import {
-  Alert,
   Box,
   Button,
   Card,
   CardActionArea,
   CardContent,
   Chip,
-  CircularProgress,
   Collapse,
   Dialog,
   DialogActions,
@@ -26,11 +24,11 @@ import {
   Tooltip,
   Typography
 } from '@mui/material'
-import { timeRelative } from '@renderer/utils/stringUtils'
 import { JSX, useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { GAME_REGISTRY } from '../games/registry'
+import { useTemplateManager } from '../hooks/useTemplates'
 import { GameTemplate, GlobalSettings, RecentProject } from '../types'
+import { timeRelative } from '../utils/stringUtils'
 
 async function readRecentProjects(): Promise<RecentProject[]> {
   const s = await window.electronAPI.settingsReadGlobal()
@@ -58,36 +56,31 @@ type FolderDialogState =
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function HomePage(): JSX.Element {
   const navigate = useNavigate()
-  const [templates, setTemplates] = useState<GameTemplate[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const manager = useTemplateManager()
   const [folderDlg, setFolderDlg] = useState<FolderDialogState>(null)
   const [recent, setRecent] = useState<RecentProject[]>([])
   const [showRecent, setShowRecent] = useState(false)
 
+  // Load recent projects on mount (templates are preloaded via usePrefetchTemplates)
   useEffect(() => {
-    window.electronAPI
-      .getTemplates()
-      .then(setTemplates)
-      .catch((e) => setError(String(e)))
-      .finally(() => setLoading(false))
     readRecentProjects().then(setRecent)
   }, [])
 
   const openProject = useCallback(
     async (filePath: string, data: ReturnType<typeof JSON.parse>) => {
       const projectDir = filePath.replace(/[/\\][^/\\]+$/, '')
+      const template = manager.getTemplate(data.templateId)
       await addRecentProject({
         filePath,
         projectDir,
         templateId: data.templateId,
-        templateName: templates.find((t) => t.id === data.templateId)?.name ?? data.templateId,
+        templateName: template?.name ?? data.templateId,
         projectName: data.name,
         lastOpened: new Date().toISOString()
       })
       navigate(`/project/${data.templateId}`, { state: { filePath, projectDir, data } })
     },
-    [templates, navigate]
+    [manager, navigate]
   )
 
   const handleOpenExisting = async (): Promise<void> => {
@@ -114,7 +107,7 @@ export default function HomePage(): JSX.Element {
   const createNewProject = async (folder: string, template: GameTemplate): Promise<void> => {
     const projectPath = `${folder}/project.mgproj`
     const now = new Date().toISOString()
-    const initialAppData = GAME_REGISTRY[template.id]?.createInitialData() ?? {}
+    const initialAppData = manager.createInitialData(template.id)
     const newProject = {
       version: '1.0.0',
       templateId: template.id,
@@ -159,7 +152,6 @@ export default function HomePage(): JSX.Element {
         display: 'flex',
         flexDirection: 'column',
         gap: 4,
-        // maxWidth: 1000,
         mx: 'auto',
         width: '100%'
       }}
@@ -328,22 +320,6 @@ export default function HomePage(): JSX.Element {
         <Typography variant="overline" color="text.secondary" sx={{ letterSpacing: 2 }}>
           Start a new project
         </Typography>
-        {loading && (
-          <Box sx={{ mt: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
-            <CircularProgress size={20} />
-            <Typography color="text.secondary">Loading game types…</Typography>
-          </Box>
-        )}
-        {error && (
-          <Alert severity="error" sx={{ mt: 2 }}>
-            Could not load game types: {error}
-          </Alert>
-        )}
-        {!loading && !error && templates.length === 0 && (
-          <Alert severity="info" sx={{ mt: 2 }}>
-            No game types found. Make sure the <code>templates/</code> directory exists.
-          </Alert>
-        )}
         <Box
           sx={{
             mt: 2,
@@ -352,7 +328,7 @@ export default function HomePage(): JSX.Element {
             gap: 2
           }}
         >
-          {templates.map((t) => (
+          {manager.getAllTemplates().map((t) => (
             <GameTemplateCard key={t.id} template={t} onSelect={handleNewProject} />
           ))}
         </Box>
@@ -446,7 +422,7 @@ function GameTemplateCard({
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        height: '100%', // let the Card stretch to the grid item height
+        height: '100%',
         background:
           'linear-gradient(135deg, rgba(110,231,183,0.05) 0%, rgba(167,139,250,0.05) 100%)',
         transition: 'transform 0.15s, box-shadow 0.15s',
@@ -464,7 +440,7 @@ function GameTemplateCard({
           flexDirection: 'column',
           gap: 1,
           alignItems: 'stretch',
-          height: '100%' // make the clickable area fill the Card
+          height: '100%'
         }}
       >
         <Box
@@ -499,7 +475,7 @@ function GameTemplateCard({
             display: 'flex',
             flexDirection: 'column',
             gap: 1,
-            flexGrow: 1, // this area grows to take available vertical space
+            flexGrow: 1,
             minHeight: 0
           }}
         >
@@ -529,7 +505,7 @@ function GameTemplateCard({
               display: 'flex',
               alignItems: 'center',
               gap: 0.5,
-              marginTop: 'auto' // pushes this row to the bottom of CardContent
+              marginTop: 'auto'
             }}
           >
             <AddIcon sx={{ fontSize: 16, color: 'primary.main' }} />
