@@ -39,9 +39,8 @@ export function mergeSettings(
 export function deepMergeDefaults(saved: object): GlobalSettings {
   const s = saved as Partial<GlobalSettings>
   return {
-    // Preserve recentProjects and any other fields first
-    ...(s as GlobalSettings),
-    // Then override with properly merged core settings
+    // Preserve recentProjects and any other unknown fields
+    recentProjects: Array.isArray((s as any).recentProjects) ? (s as any).recentProjects : [],
     autoSave: {
       mode: s.autoSave?.mode ?? DEFAULT_GLOBAL_SETTINGS.autoSave.mode,
       intervalSeconds:

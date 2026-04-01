@@ -49,25 +49,33 @@ export function SettingsProvider({ children }: { children: React.ReactNode }): R
   const persistTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const updateGlobal = useCallback((patch: Partial<GlobalSettings>) => {
-    setGlobalSettings((prev) => {
-      // Build complete settings object with all fields
+    // Debounce persist - read current settings from disk and merge
+    if (persistTimer.current) clearTimeout(persistTimer.current)
+    persistTimer.current = setTimeout(async () => {
+      // Read latest settings from disk to get current recentProjects
+      const current = await window.electronAPI.settingsReadGlobal()
       const next: GlobalSettings = {
-        // Preserve recentProjects and any other fields
-        ...(prev as GlobalSettings),
+        // Preserve recentProjects and any other fields from disk
+        ...(current as GlobalSettings),
         // Override with updated core settings
         autoSave: {
-          mode: patch.autoSave?.mode ?? prev.autoSave.mode,
-          intervalSeconds: patch.autoSave?.intervalSeconds ?? prev.autoSave.intervalSeconds
+          mode: patch.autoSave?.mode ?? current.autoSave?.mode ?? DEFAULT_GLOBAL_SETTINGS.autoSave.mode,
+          intervalSeconds: patch.autoSave?.intervalSeconds ?? current.autoSave?.intervalSeconds ?? DEFAULT_GLOBAL_SETTINGS.autoSave.intervalSeconds
         },
-        prefillNames: patch.prefillNames ?? prev.prefillNames
+        prefillNames: patch.prefillNames ?? current.prefillNames ?? DEFAULT_GLOBAL_SETTINGS.prefillNames
       }
-      // Debounce persist - write complete object
-      if (persistTimer.current) clearTimeout(persistTimer.current)
-      persistTimer.current = setTimeout(() => {
-        window.electronAPI.settingsWriteGlobal(next)
-      }, 500)
-      return next
-    })
+      window.electronAPI.settingsWriteGlobal(next)
+    }, 500)
+    
+    // Update local state immediately for UI responsiveness
+    setGlobalSettings((prev) => ({
+      ...prev,
+      autoSave: {
+        mode: patch.autoSave?.mode ?? prev.autoSave.mode,
+        intervalSeconds: patch.autoSave?.intervalSeconds ?? prev.autoSave.intervalSeconds
+      },
+      prefillNames: patch.prefillNames ?? prev.prefillNames
+    }))
   }, [])
 
   const updateProject = useCallback((patch: ProjectSettings | null) => {
