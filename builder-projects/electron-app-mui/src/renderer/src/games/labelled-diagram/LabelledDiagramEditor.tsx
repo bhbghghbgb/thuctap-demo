@@ -1,6 +1,5 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Snackbar, SpeedDial, SpeedDialAction, SpeedDialIcon, Typography } from '@mui/material'
-import { Add, DeleteForever, PhotoSizeSelectActual, Reorder } from '@mui/icons-material'
-import { useCallback, useRef, useState } from 'react'
+import { Box, Typography } from '@mui/material'
+import React, { useCallback, useRef, useState } from 'react'
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
 import ImagePicker from '../../components/ImagePicker'
 import { useAssetUrl } from '../../hooks/useAssetUrl'
@@ -41,45 +40,24 @@ export default function LabelledDiagramEditor({
   const [overlayPos, setOverlayPos] = useState({ x: 0, y: 0 })
   const [viewablePointIds, setViewablePointIds] = useState<string[]>([])
   const [imgSize, setImgSize] = useState({ width: 0, height: 0 })
-  const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 })
-  const [isDraggingPoint, setIsDraggingPoint] = useState(false)
-  
-  // Dialog States
-  const [imageAction, setImageAction] = useState<{ type: 'change' | 'delete', path?: string | null } | null>(null)
-  const [showReorderToast, setShowReorderToast] = useState(false)
 
   // ── HUD/UX Logic ──────────────────────────────────────────────────────────
-  const handleTransform = useCallback((ref: ReactZoomPanPinchRef) => {
-    setTransform({
-      x: ref.instance.transformState.positionX,
-      y: ref.instance.transformState.positionY,
-      scale: ref.instance.transformState.scale
-    })
-    updateViewablePoints()
-  }, [points])
-
   const updateViewablePoints = useCallback(() => {
     if (!contentRef.current) return
     const container = contentRef.current
-    const rect = container.getBoundingClientRect()
-    
-    // The viewport is the parent of the TransformComponent's wrapper
-    const viewport = container.closest('.labelled-diagram-editor-canvas')
-    if (!viewport) return
-    const vRect = viewport.getBoundingClientRect()
+    const wrapper = container.parentElement?.parentElement // TransformComponent wrapper
+    if (!wrapper) return
+
+    const wRect = wrapper.getBoundingClientRect()
+    const cRect = container.getBoundingClientRect()
 
     const viewable = points
       .filter((p) => {
         if (p.isHidden) return false
-        // Calculate screen position of point
-        const pxX = rect.left + (p.x / 100) * rect.width
-        const pxY = rect.top + (p.y / 100) * rect.height
-        
+        const pxX = cRect.left + (p.x / 100) * cRect.width
+        const pxY = cRect.top + (p.y / 100) * cRect.height
         return (
-          pxX >= vRect.left && 
-          pxX <= vRect.right && 
-          pxY >= vRect.top && 
-          pxY <= vRect.bottom
+          pxX >= wRect.left && pxX <= wRect.right && pxY >= wRect.top && pxY <= wRect.bottom
         )
       })
       .map((p) => p.id)
@@ -88,7 +66,7 @@ export default function LabelledDiagramEditor({
   }, [points])
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (showCollisionOverlay || isDraggingPoint) return
+    if (showCollisionOverlay) return
 
     const rect = contentRef.current?.getBoundingClientRect()
     if (!rect) return
@@ -114,7 +92,7 @@ export default function LabelledDiagramEditor({
       setNearbyPointId(undefined)
       setCollisionPoints([])
     }
-  }, [points, showCollisionOverlay, isDraggingPoint])
+  }, [points, showCollisionOverlay])
 
   const handleCanvasClick = useCallback((e: React.MouseEvent) => {
     // If we have collisions, show the overlay
@@ -163,74 +141,65 @@ export default function LabelledDiagramEditor({
     if (nearbyPointId === id) setNearbyPointId(undefined)
   }, [data, points, focusedPointId, nearbyPointId, onChange])
 
-  const handleConfirmImageAction = () => {
-    if (!imageAction) return
-    if (imageAction.type === 'delete') {
-      onChange({ ...data, imagePath: null })
-    } else if (imageAction.type === 'change') {
-      onChange({ ...data, imagePath: imageAction.path || null })
-    }
-    setImageAction(null)
-  }
-
   const handleFocusPoint = useCallback((point: LabelledDiagramPoint) => {
     setFocusedPointId(point.id)
     setShowCollisionOverlay(false)
-    if (!transformRef.current || !contentRef.current) return
+    if (!transformRef.current || !imageRef.current) return
     
-    const scale = transformRef.current.instance.transformState.scale
-    const container = contentRef.current.parentElement?.parentElement
-    if (!container) return
+    const { setTransform } = transformRef.current
+    const img = imageRef.current
     
-    const wWidth = container.clientWidth
-    const wHeight = container.clientHeight
+    // Calculate pixel coordinates
+    const pxX = (point.x / 100) * img.width
+    const pxY = (point.y / 100) * img.height
     
-    const pxX = (point.x / 100) * imgSize.width
-    const pxY = (point.y / 100) * imgSize.height
+    // Get wrapper dimensions
+    const wrapper = img.parentElement?.parentElement // TransformComponent wrapper
+    if (!wrapper) return
     
-    const targetX = (wWidth / 2) - (pxX * scale)
-    const targetY = (wHeight / 2) - (pxY * scale)
+    const wWidth = wrapper.clientWidth
+    const wHeight = wrapper.clientHeight
     
-    transformRef.current.setTransform(targetX, targetY, scale, 400, 'easeOut')
-  }, [imgSize])
+    const scale = 2 // Zoom level for focusing
+    
+    // Center point: (wWidth / 2) - pxX * scale
+    const targetX = (wWidth / 2) - pxX * scale
+    const targetY = (wHeight / 2) - pxY * scale
+    
+    setTransform(targetX, targetY, scale, 400, 'easeOut')
+  }, [])
 
   return (
     <Box 
       sx={{ display: 'flex', height: '100%', overflow: 'hidden', position: 'relative' }}
-      className="labelled-diagram-editor"
       onPointerMove={handlePointerMove}
     >
       {/* ── Floating Left Sidebar ── */}
-      <PointsSidebar
-        points={points}
-        onAddPoint={addPoint}
-        onUpdatePoint={updatePoint}
-        onDeletePoint={deletePoint}
-        onFocusPoint={handleFocusPoint}
-        focusedPointId={focusedPointId}
-        viewablePointIds={viewablePointIds}
-        imgSize={imgSize}
-      />
+      {imagePath && (
+        <PointsSidebar
+          points={points}
+          projectDir={projectDir}
+          imagePath={imagePath}
+          onAddPoint={addPoint}
+          onUpdatePoint={updatePoint}
+          onDeletePoint={deletePoint}
+          onFocusPoint={handleFocusPoint}
+          onImageChange={(val) => onChange({ ...data, imagePath: val })}
+          focusedPointId={focusedPointId}
+          viewablePointIds={viewablePointIds}
+          imgSize={imgSize}
+        />
+      )}
 
       {/* ── Main Canvas ── */}
       <Box
-        className="labelled-diagram-editor-canvas"
         sx={{
           flex: 1,
           position: 'relative',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          bgcolor: '#1a1a1a',
-          // Checkerboard pattern for background awareness
-          backgroundImage: `
-            linear-gradient(45deg, #222 25%, transparent 25%),
-            linear-gradient(-45deg, #222 25%, transparent 25%),
-            linear-gradient(45deg, transparent 75%, #222 75%),
-            linear-gradient(-45deg, transparent 75%, #222 75%)
-          `,
-          backgroundSize: '40px 40px',
-          backgroundPosition: '0 0, 0 20px, 20px -20px, -20px 0px',
+          bgcolor: 'rgba(0,0,0,0.15)',
           overflow: 'hidden'
         }}
         onClick={handleCanvasClick}
@@ -251,142 +220,50 @@ export default function LabelledDiagramEditor({
             />
           </Box>
         ) : (
-          <>
-            <TransformWrapper 
-              ref={transformRef}
-              centerOnInit 
-              minScale={0.1} 
-              maxScale={5}
-              doubleClick={{ disabled: true }}
-              panning={{ 
-                disabled: isDraggingPoint,
-                velocityDisabled: true
-              }}
-              limitToBounds={true} // Constraint applied to keep image in view
-              onTransformed={handleTransform}
-              onInit={handleTransform}
-            >
-              <TransformComponent wrapperStyle={{ width: '100%', height: '100%' }}>
-                <Box 
-                  ref={contentRef}
-                  sx={{ position: 'relative', display: 'inline-block' }}
-                >
-                  {imageUrl && (
-                    <img
-                      ref={imageRef}
-                      src={imageUrl}
-                      alt="Diagram"
-                      style={{ display: 'block', maxWidth: 'none' }}
-                      onLoad={(e) => {
-                        const img = e.currentTarget
-                        setImgSize({ width: img.naturalWidth, height: img.naturalHeight })
-                        updateViewablePoints()
-                      }}
-                    />
-                  )}
-                </Box>
-              </TransformComponent>
-            </TransformWrapper>
-
-            {/* Points Overlay (Outside TransformComponent for full control) */}
-            <Box 
-              sx={{ 
-                position: 'absolute', 
-                inset: 0, 
-                pointerEvents: 'none' 
-              }}
-            >
-              {points.map((p, idx) => (
-                <DiagramPointBadge 
-                  key={p.id}
-                  point={p}
-                  index={idx}
-                  isFocused={p.id === focusedPointId}
-                  isNearby={p.id === nearbyPointId}
-                  imgSize={imgSize}
-                  transform={transform}
-                  onMove={(id, x, y) => updatePoint(id, { x, y })}
-                  onFocus={(id) => setFocusedPointId(id)}
-                  onUpdateText={(text) => updatePoint(p.id, { text })}
-                  onDelete={() => deletePoint(p.id)}
-                  onFocusInSidebar={() => handleFocusPoint(p)}
-                  onDragStart={() => setIsDraggingPoint(true)}
-                  onDragEnd={() => setIsDraggingPoint(false)}
+          <TransformWrapper 
+            ref={transformRef}
+            centerOnInit 
+            minScale={0.1} 
+            maxScale={5}
+            doubleClick={{ disabled: true }}
+            onTransformed={updateViewablePoints}
+            onInit={updateViewablePoints}
+          >
+            <TransformComponent wrapperStyle={{ width: '100%', height: '100%' }}>
+              <Box ref={contentRef} sx={{ position: 'relative', display: 'inline-block' }}>
+                <img
+                  ref={imageRef}
+                  src={imageUrl || ''}
+                  alt="Diagram"
+                  style={{ display: 'block', maxWidth: 'none' }}
+                  onLoad={(e) => {
+                    const img = e.currentTarget
+                    setImgSize({ width: img.naturalWidth, height: img.naturalHeight })
+                    updateViewablePoints()
+                  }}
                 />
-              ))}
-            </Box>
-          </>
+                
+                {/* Render Point Badges */}
+                {points.map((p, idx) => (
+                  <DiagramPointBadge 
+                    key={p.id}
+                    point={p}
+                    index={idx}
+                    isFocused={p.id === focusedPointId}
+                    isNearby={p.id === nearbyPointId}
+                    containerRef={contentRef}
+                    onMove={(id, x, y) => updatePoint(id, { x, y })}
+                    onFocus={(id) => setFocusedPointId(id)}
+                    onUpdateText={(text) => updatePoint(p.id, { text })}
+                    onDelete={() => deletePoint(p.id)}
+                    onFocusInSidebar={() => handleFocusPoint(p)}
+                  />
+                ))}
+              </Box>
+            </TransformComponent>
+          </TransformWrapper>
         )}
       </Box>
-
-      {/* Speed Dial Actions */}
-      <SpeedDial
-        ariaLabel="Labelled Diagram Actions"
-        sx={{ position: 'absolute', bottom: 32, right: 32 }}
-        icon={<SpeedDialIcon />}
-      >
-        <SpeedDialAction
-          icon={<Add />}
-          tooltipTitle="Add New Point"
-          onClick={addPoint}
-        />
-        <SpeedDialAction
-          icon={<PhotoSizeSelectActual />}
-          tooltipTitle="Change Diagram Image"
-          onClick={() => setImageAction({ type: 'change', path: imagePath })}
-        />
-        <SpeedDialAction
-          icon={<DeleteForever color="error" />}
-          tooltipTitle="Delete Diagram Image"
-          onClick={() => setImageAction({ type: 'delete' })}
-        />
-        <SpeedDialAction
-          icon={<Reorder />}
-          tooltipTitle="Reorder Points (Coming Soon)"
-          onClick={() => setShowReorderToast(true)}
-        />
-      </SpeedDial>
-
-      {/* Confirmation Dialog */}
-      <Dialog
-        open={Boolean(imageAction)}
-        onClose={() => setImageAction(null)}
-        PaperProps={{ sx: { borderRadius: 3, p: 1 } }}
-      >
-        <DialogTitle sx={{ fontWeight: 700 }}>
-          {imageAction?.type === 'delete' ? 'Delete Diagram Image?' : 'Change Diagram Image?'}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {imageAction?.type === 'delete' 
-              ? 'This will remove the current image. Point positions (%) will be preserved but you won\'t see them until a new image is added.'
-              : 'Changing the image will apply the current point percentages to the new image dimensions. You may need to readjust them.'}
-          </DialogContentText>
-          {imageAction?.type === 'change' && (
-            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
-              <ImagePicker
-                projectDir={projectDir}
-                desiredNamePrefix="diag-img"
-                value={imageAction.path || null}
-                onChange={(path) => setImageAction(prev => prev ? { ...prev, path } : null)}
-                label="Select New Image"
-                size={120}
-              />
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ p: 2, pt: 0 }}>
-          <Button onClick={() => setImageAction(null)} color="inherit">Cancel</Button>
-          <Button 
-            onClick={handleConfirmImageAction} 
-            variant="contained" 
-            color={imageAction?.type === 'delete' ? 'error' : 'primary'}
-            disabled={imageAction?.type === 'change' && imageAction.path === imagePath}
-          >
-            Confirm {imageAction?.type === 'delete' ? 'Deletion' : 'Change'}
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       {/* ── Collision Overlay (Iteration 5) ── */}
       {showCollisionOverlay && (
@@ -442,13 +319,6 @@ export default function LabelledDiagramEditor({
           })}
         </Box>
       )}
-      {/* Snackbar for Reorder */}
-      <Snackbar
-        open={showReorderToast}
-        autoHideDuration={3000}
-        onClose={() => setShowReorderToast(false)}
-        message="Reordering points will be available in a future update."
-      />
     </Box>
   )
 }
