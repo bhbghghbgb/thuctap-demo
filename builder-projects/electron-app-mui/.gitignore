@@ -163,3 +163,5 @@ vite.config.ts.timestamp-*
 
 
 .geminiignore
+templates/**
+!templates/*/meta*.*
