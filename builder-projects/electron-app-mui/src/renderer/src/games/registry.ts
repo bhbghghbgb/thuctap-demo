@@ -18,7 +18,6 @@ import PairMatchingEditor from './pair-matching/PairMatchingEditor'
 import QuizEditor from './plane-quiz/QuizEditor'
 import WhackAMoleEditor from './whack-a-mole/WhackAMoleEditor'
 import WordSearchEditor from './word-search/WordSearchEditor'
-import LabelledDiagramEditor from './labelled-diagram/LabelledDiagramEditor'
 
 export interface GameRegistryEntry {
   /** Editor component rendered on the ProjectPage */
@@ -81,15 +80,6 @@ export const GAME_REGISTRY: Record<string, GameRegistryEntry> = {
     createInitialData: () => ({
       questions: [],
       _questionCounter: 0
-    })
-  },
-
-  'labelled-diagram': {
-    Editor: LabelledDiagramEditor as GameRegistryEntry['Editor'],
-    createInitialData: () => ({
-      imagePath: null,
-      points: [],
-      _pointCounter: 0
     })
   }
 }

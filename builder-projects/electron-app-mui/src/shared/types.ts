@@ -120,20 +120,6 @@ export interface WhackAMoleAppData {
   _questionCounter: number
 }
 
-// Labelled Diagram
-export interface LabelledDiagramPoint {
-  id: string
-  text: string
-  x: number // percentage
-  y: number // percentage
-  isHidden?: boolean
-}
-export interface LabelledDiagramAppData {
-  imagePath: string | null
-  points: LabelledDiagramPoint[]
-  _pointCounter: number
-}
-
 // Union type for any game's AppData
 export type AnyAppData =
   | GroupSortAppData
@@ -142,7 +128,6 @@ export type AnyAppData =
   | PairMatchingAppData
   | WordSearchAppData
   | WhackAMoleAppData
-  | LabelledDiagramAppData
 
 // Map of game type to its AppData type (for generic lookups)
 export interface GameAppDataMap {
@@ -152,7 +137,6 @@ export interface GameAppDataMap {
   'pair-matching': PairMatchingAppData
   'word-search': WordSearchAppData
   'whack-a-mole': WhackAMoleAppData
-  'labelled-diagram': LabelledDiagramAppData
 }
 
 // ── Other Shared Types ────────────────────────────────────────────────────────
