@@ -1,25 +1,11 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { guidelinePages as pages } from "../constants";
 
 type Props = {
     open: boolean;
     onClose: () => void;
 };
-
-const pages = [
-    {
-        text: "Cặp đáp án chính xác",
-        image: "./images/guide-1.png"
-    },
-    {
-        text: "Nổi giận",
-        image: "./images/guide-2.png"
-    },
-    {
-        text: "Bắt được rồi",
-        image: "./images/guide-3.png"
-    }
-];
 
 export default function GuideModal({ open, onClose }: Props) {
     const [page, setPage] = useState(0);
