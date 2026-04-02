@@ -365,7 +365,12 @@ GAMES=(
 
 ### Step 7: Register in CI/CD
 
-Edit `.github/workflows/build-all.yml` and add your game to the build matrix.
+The CI workflow (`.github/workflows/build-all.yml`) now uses a simplified approach:
+
+- **Linux runner**: Runs `./build-templates.sh` which automatically builds all games registered in the `GAMES` array
+- **Windows/macOS runners**: Download pre-built templates from Linux runner
+
+No changes to the workflow file are needed when adding a new game — just register it in `build-templates.sh` (Step 6). The CI will automatically pick it up.
 
 ### Step 8: Test
 
@@ -416,14 +421,41 @@ While `group-sort` uses Vite + React, you can use **anything**:
 
 ### Build Output
 
-Your template must produce:
+Your template must produce the following structure:
 
-| File                 | Requirement                                                                            |
-| -------------------- | -------------------------------------------------------------------------------------- |
-| `index.html`         | **Single-file HTML** — all JS/CSS inlined. Use `vite-plugin-singlefile` or equivalent. |
-| `images/` (optional) | Image assets that can't be inlined. Keep minimal.                                      |
+```
+<game-id>/
+├── index.html              # Single-file HTML at root — all JS and CSS must be inlined
+└── assets/                 # Single assets folder next to index.html
+    ├── sounds/             # Audio files (optional)
+    ├── images/             # Image assets that cannot be inlined
+    │   ├── logo.png        # Required: Game logo
+    │   ├── banner.png      # Required: Game banner
+    │   └── icons/          # Required: Multi-sized icons
+    │       ├── 16x16.png
+    │       ├── 32x32.png
+    │       ├── 48x48.png
+    │       ├── 64x64.png
+    │       ├── 128x128.png
+    │       ├── 256x256.png
+    │       ├── 512x512.png
+    │       └── 1024x1024.png
+```
 
-> ⚠️ **No other assets.** Fonts, icons, small SVGs should be inlined into the HTML.
+> ⚠️ **The `assets/user/` folder must NOT exist in game templates.** This folder is created and populated by the builder when teachers export their projects. Template authors should not create or use this folder.
+
+| File/Folder              | Requirement                                                                                                                     |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| `index.html`             | **Single-file HTML** — all JS and CSS must be inlined. Use `vite-plugin-singlefile` or equivalent.                              |
+| `assets/`                | **Required folder** containing all assets. Must be named exactly `assets`.                                                      |
+| `assets/sounds/`         | Optional audio files. Can be omitted if the game has no sounds.                                                                 |
+| `assets/images/`         | **Required folder** for image assets that cannot be inlined.                                                                    |
+| `assets/images/logo.png` | **Required** — Game logo image.                                                                                                 |
+| `assets/images/banner.png` | **Required** — Game banner image.                                                                                             |
+| `assets/images/icons/`   | **Required folder** containing multi-sized PNG icons for various display contexts.                                              |
+| `assets/images/icons/*.png` | **Required** — Icons at sizes: 16x16, 32x32, 48x48, 64x64, 128x128, 256x256, 512x512, 1024x1024 (all in pixels).              |
+
+> ⚠️ **No other asset types should be emitted at the root level.** Fonts, icons, and small SVGs should be inlined into the HTML. All other assets must be organized inside the `assets/` folder by type.
 
 ### Runtime Data Contract
 

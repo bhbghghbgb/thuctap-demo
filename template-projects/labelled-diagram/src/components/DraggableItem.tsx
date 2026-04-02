@@ -16,8 +16,8 @@ export const ItemCard: React.FC<Props & { style?: React.CSSProperties }> = ({
 }) => (
   <motion.div
     layoutId={item.id}
-    className={`w-32 h-20 shrink-0 flex items-center justify-center border-4 border-yellow-400 rounded-2xl bg-white shadow-lg select-none cursor-grab active:cursor-grabbing transition-all ${
-      isDragging ? "opacity-30 scale-95" : "opacity-100 scale-100"
+    className={`w-32 h-20 shrink-0 flex items-center justify-center border-4 border-purple-400 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-elevated select-none cursor-grab active:cursor-grabbing transition-all ${
+      isDragging ? "opacity-50 scale-90 shadow-none" : "opacity-100 scale-100 hover:shadow-glow hover:border-purple-300"
     }`}
     style={style}
     transition={layoutTransition}
@@ -26,7 +26,7 @@ export const ItemCard: React.FC<Props & { style?: React.CSSProperties }> = ({
       type="text"
       value={item.name}
       readOnly
-      className="w-full text-center px-2 py-1 bg-transparent outline-none font-semibold text-gray-700 cursor-grab"
+      className="w-full text-center px-2 py-1 bg-transparent outline-none font-bold text-white cursor-grab text-sm"
     />
   </motion.div>
 );

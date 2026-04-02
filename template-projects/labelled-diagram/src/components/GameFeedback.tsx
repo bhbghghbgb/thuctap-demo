@@ -33,23 +33,24 @@ export const GameFeedback: React.FC<FeedbackProps> = ({ data, placed }) => {
   const showProgressBar = placedCount > 0;
 
   return (
-    <div className="fixed top-4 right-4 bg-white rounded-xl shadow-lg p-4 max-w-xs z-40">
+    <div className="fixed top-4 right-4 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-elevated p-5 max-w-xs z-40 border border-white/10 backdrop-blur-sm animate-slide-up">
       {/* Header */}
-      <h3 className="font-bold text-lg text-gray-800 mb-3">
+      <h3 className="font-bold text-lg text-white mb-4 flex items-center gap-2">
+        <span className="text-xl">📊</span>
         Progress
       </h3>
 
       {/* Stats */}
-      <div className="space-y-2 mb-4">
+      <div className="space-y-2 mb-4 bg-white/5 rounded-lg p-3 border border-white/10">
         <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Placed:</span>
-          <span className="font-semibold text-blue-600">
+          <span className="text-purple-200">Placed:</span>
+          <span className="font-bold text-cyan-400">
             {placedCount} / {data.labels.length}
           </span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Correct:</span>
-          <span className="font-semibold text-green-600">
+          <span className="text-purple-200">Correct:</span>
+          <span className="font-bold text-emerald-400">
             {correctPlacements} / {totalZones}
           </span>
         </div>
@@ -58,24 +59,24 @@ export const GameFeedback: React.FC<FeedbackProps> = ({ data, placed }) => {
       {/* Progress Bar */}
       {showProgressBar && (
         <div className="mb-4">
-          <div className="flex justify-between items-center mb-1">
-            <span className="text-xs font-semibold text-gray-700">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-xs font-semibold text-purple-300">
               Accuracy
             </span>
-            <span className="text-xs font-bold text-blue-600">
+            <span className="text-sm font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
               {percentage}%
             </span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gradient-to-r from-slate-700 to-slate-600 rounded-full h-3 overflow-hidden">
             <div
-              className={`h-2 rounded-full transition-all duration-300 ${
+              className={`h-3 rounded-full transition-all duration-300 ${
                 accuracy === 1
-                  ? "bg-green-500"
+                  ? "bg-gradient-to-r from-emerald-400 to-teal-400"
                   : accuracy >= 0.8
-                  ? "bg-blue-500"
+                  ? "bg-gradient-to-r from-cyan-400 to-blue-500"
                   : accuracy >= 0.5
-                  ? "bg-yellow-500"
-                  : "bg-orange-500"
+                  ? "bg-gradient-to-r from-amber-400 to-orange-500"
+                  : "bg-gradient-to-r from-red-400 to-pink-500"
               }`}
               style={{ width: `${percentage}%` }}
             />
@@ -85,19 +86,18 @@ export const GameFeedback: React.FC<FeedbackProps> = ({ data, placed }) => {
 
       {/* AI Feedback */}
       {completionMessage && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
-          <p className="text-sm text-blue-900">{completionMessage}</p>
+        <div className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-400/50 rounded-lg p-3 mb-3">
+          <p className="text-sm text-purple-200">✨ {completionMessage}</p>
         </div>
       )}
 
       {/* Status Message */}
-      <div className="text-xs text-gray-600 text-center">
+      <div className="text-xs text-purple-300 text-center">
         {data.labels.length === 0 ? (
-          <p className="text-gray-500">No labels defined yet</p>
+          <p className="text-purple-400">No labels defined yet</p>
         ) : remaining > 0 ? (
           <p>
-            <span className="font-semibold">{remaining}</span> more to
-            label
+            <span className="font-bold text-purple-200">{remaining}</span> more to label
           </p>
         ) : (
           <p className="text-green-600 font-semibold">All labeled! ✓</p>

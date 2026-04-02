@@ -35,16 +35,16 @@ const DiagramBoard = ({ data, placed, onZoneSelect, selectedPoint, showAnnotatio
     <div className="relative flex-1">
       <div
         ref={boardRef}
-        className="relative bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-xl p-4 inline-block"
+        className="relative bg-gradient-to-br from-slate-700 to-slate-800 rounded-2xl shadow-elevated p-4 inline-block border border-white/10"
       >
         {imageError || !data.imagePath ? (
-          <div className="w-full max-w-[500px] h-auto bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-blue-300">
+          <div className="w-full max-w-[500px] h-auto bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-purple-400/50">
             <div className="text-center p-8">
-              <div className="text-6xl mb-4">🖼️</div>
-              <h2 className="text-2xl font-bold text-gray-700 mb-4">Upload Your Image</h2>
-              <div className="bg-white p-4 rounded-lg shadow-md">
-                <p className="text-sm text-gray-500 mb-2">Supported formats: PNG, JPG, GIF, SVG</p>
-                <p className="text-xs text-gray-400">Click the "Choose File" button in the sidebar to get started!</p>
+              <div className="text-6xl mb-4 animate-float">🖼️</div>
+              <h2 className="text-2xl font-bold text-white mb-4">Upload Your Image</h2>
+              <div className="bg-white/10 backdrop-blur p-4 rounded-lg shadow-soft border border-white/20">
+                <p className="text-sm text-purple-200 mb-2">Supported formats: PNG, JPG, GIF, SVG</p>
+                <p className="text-xs text-purple-300">Click the "Choose File" button in the sidebar to get started!</p>
               </div>
             </div>
           </div>

@@ -80,7 +80,7 @@ function App() {
       <TutorialViewer
         isOpen={showTutorial}
         onClose={() => setShowTutorial(false)}
-        basePath="images/"
+        basePath="assets/images/"
         filenamePattern="tutorial"
         fileExtension="png"
       />

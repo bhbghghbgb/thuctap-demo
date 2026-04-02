@@ -23,6 +23,7 @@ function readSettings(): Record<string, unknown> {
   }
   return {}
 }
+
 function writeSettings(data: object): void {
   fs.writeFileSync(settingsPath, JSON.stringify(data, null, 2), 'utf-8')
 }
@@ -94,20 +95,13 @@ function collectUsedAssets(obj: unknown, out = new Set<string>()): Set<string> {
   return out
 }
 
-/** Collect used assets from current state and all history states (past + future) */
-function collectUsedAssetsWithHistory(
-  currentData: object,
-  historyStates?: { past: object[]; future: object[] }
-): Set<string> {
+/** Collect used assets from current state and all history states */
+function collectUsedAssetsWithHistory(currentData: object, history?: object[]): Set<string> {
   const used = collectUsedAssets(currentData)
 
-  if (historyStates) {
-    // Include assets from past states (undo stack)
-    for (const state of historyStates.past) {
-      collectUsedAssets(state, used)
-    }
-    // Include assets from future states (redo stack)
-    for (const state of historyStates.future) {
+  if (history) {
+    // Include assets from all history states
+    for (const state of history) {
       collectUsedAssets(state, used)
     }
   }
@@ -116,15 +110,11 @@ function collectUsedAssetsWithHistory(
 }
 
 /** Delete files in <projectDir>/assets/ that are not in the used set */
-function purgeUnusedAssets(
-  projectDir: string,
-  projectData: object,
-  historyStates?: { past: object[]; future: object[] }
-): void {
+function purgeUnusedAssets(projectDir: string, projectData: object, history?: object[]): void {
   const assetsDir = path.join(projectDir, 'assets')
   if (!fs.existsSync(assetsDir)) return
 
-  const usedPaths = collectUsedAssetsWithHistory(projectData, historyStates)
+  const usedPaths = collectUsedAssetsWithHistory(projectData, history)
   const usedFiles = new Set([...usedPaths].map((p) => path.basename(p)))
 
   for (const file of fs.readdirSync(assetsDir)) {
@@ -141,7 +131,7 @@ function purgeUnusedAssets(
 /** Copy only used assets to a destination directory */
 function copyUsedAssetsOnly(projectDir: string, destDir: string, projectData: object): void {
   const srcAssetsDir = path.join(projectDir, 'assets')
-  const destAssetsDir = path.join(destDir, 'assets')
+  const destAssetsDir = path.join(destDir, 'assets', 'user')
 
   if (!fs.existsSync(srcAssetsDir)) return
 
@@ -326,14 +316,11 @@ createHandler('open-project-file', async (_e, filePath?: string) => {
   }
 })
 
-createHandler(
-  'save-project',
-  async (_e, projectData: object, projectPath: string, historyStates) => {
-    fs.writeFileSync(projectPath, JSON.stringify(projectData, null, 2), 'utf-8')
-    purgeUnusedAssets(path.dirname(projectPath), projectData, historyStates)
-    return true
-  }
-)
+createHandler('save-project', async (_e, projectData: object, projectPath: string, history) => {
+  fs.writeFileSync(projectPath, JSON.stringify(projectData, null, 2), 'utf-8')
+  purgeUnusedAssets(path.dirname(projectPath), projectData, history)
+  return true
+})
 
 /** Save As: pick folder, copy assets, write file. Returns new paths or null if canceled. */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -359,10 +346,10 @@ createHandler(
       projectData: object
       oldProjectDir: string
       newFolder: string
-      historyStates?: { past: object[]; future: object[] }
+      history?: object[]
     }
   ) => {
-    const { projectData, oldProjectDir, newFolder, historyStates } = opts
+    const { projectData, oldProjectDir, newFolder, history } = opts
 
     // Copy assets from old location
     const oldAssets = path.join(oldProjectDir, 'assets')
@@ -371,7 +358,7 @@ createHandler(
     // Write project file
     const newFilePath = path.join(newFolder, 'project.mgproj')
     fs.writeFileSync(newFilePath, JSON.stringify(projectData, null, 2), 'utf-8')
-    purgeUnusedAssets(newFolder, projectData, historyStates)
+    purgeUnusedAssets(newFolder, projectData, history)
 
     return { filePath: newFilePath, projectDir: newFolder }
   }
@@ -553,7 +540,7 @@ async function exportToZip(
       for (const file of usedFiles) {
         const filePath = path.join(srcAssetsDir, file)
         if (fs.existsSync(filePath)) {
-          archive.file(filePath, { name: `assets/${file}` })
+          archive.file(filePath, { name: `assets/user/${file}` })
         }
       }
     }

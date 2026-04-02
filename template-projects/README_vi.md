@@ -365,7 +365,12 @@ GAMES=(
 
 ### Bước 7: Đăng ký trong CI/CD
 
-Chỉnh sửa `.github/workflows/build-all.yml` và thêm game của bạn vào build matrix.
+Quy trình CI (`.github/workflows/build-all.yml`) hiện sử dụng cách tiếp cận đơn giản hóa:
+
+- **Linux runner**: Chạy `./build-templates.sh` tự động build tất cả games đã đăng ký trong mảng `GAMES`
+- **Windows/macOS runners**: Tải templates đã build từ Linux runner
+
+Không cần thay đổi file workflow khi thêm game mới — chỉ cần đăng ký trong `build-templates.sh` (Bước 6). CI sẽ tự động nhận diện.
 
 ### Bước 8: Kiểm tra
 
@@ -416,14 +421,41 @@ Mặc dù `group-sort` sử dụng Vite + React, bạn có thể dùng **bất c
 
 ### Đầu ra Build
 
-Template của bạn phải tạo ra:
+Template của bạn phải tạo ra cấu trúc sau:
 
-| Tệp                  | Yêu cầu                                                                                      |
-| -------------------- | -------------------------------------------------------------------------------------------- |
-| `index.html`         | **HTML một tệp** — tất cả JS/CSS được nhúng trực tiếp. Dùng `vite-plugin-singlefile` hoặc tương đương. |
-| `images/` (tùy chọn) | Các tài sản hình ảnh không thể nhúng trực tiếp. Giữ ở mức tối thiểu.                         |
+```
+<game-id>/
+├── index.html              # HTML một tệp ở root — tất cả JS và CSS phải được nhúng trực tiếp
+└── assets/                 # Thư mục assets duy nhất bên cạnh index.html
+    ├── sounds/             # Tệp âm thanh (tùy chọn)
+    ├── images/             # Tài sản hình ảnh không thể nhúng trực tiếp
+    │   ├── logo.png        # Bắt buộc: Logo game
+    │   ├── banner.png      # Bắt buộc: Banner game
+    │   └── icons/          # Bắt buộc: Icons nhiều kích thước
+    │       ├── 16x16.png
+    │       ├── 32x32.png
+    │       ├── 48x48.png
+    │       ├── 64x64.png
+    │       ├── 128x128.png
+    │       ├── 256x256.png
+    │       ├── 512x512.png
+    │       └── 1024x1024.png
+```
 
-> ⚠️ **Không có tài sản khác.** Fonts, icons, SVG nhỏ nên được nhúng trực tiếp vào HTML.
+> ⚠️ **Thư mục `assets/user/` KHÔNG được tồn tại trong game templates.** Thư mục này được tạo và điền bởi builder khi giáo viên xuất dự án. Tác giả template không nên tạo hoặc sử dụng thư mục này.
+
+| Tệp/Thư mục              | Yêu cầu                                                                                                                     |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `index.html`             | **HTML một tệp** — tất cả JS và CSS phải được nhúng trực tiếp. Dùng `vite-plugin-singlefile` hoặc tương đương.              |
+| `assets/`                | **Thư mục bắt buộc** chứa tất cả assets. Phải được đặt tên chính xác là `assets`.                                           |
+| `assets/sounds/`         | Tệp âm thanh tùy chọn. Có thể bỏ qua nếu game không có âm thanh.                                                            |
+| `assets/images/`         | **Thư mục bắt buộc** cho tài sản hình ảnh không thể nhúng trực tiếp.                                                        |
+| `assets/images/logo.png` | **Bắt buộc** — Ảnh logo game.                                                                                               |
+| `assets/images/banner.png` | **Bắt buộc** — Ảnh banner game.                                                                                           |
+| `assets/images/icons/`   | **Thư mục bắt buộc** chứa icons nhiều kích thước cho các ngữ cảnh hiển thị khác nhau.                                       |
+| `assets/images/icons/*.png` | **Bắt buộc** — Icons ở các kích thước: 16x16, 32x32, 48x48, 64x64, 128x128, 256x256, 512x512, 1024x1024 (tất cả tính bằng pixel). |
+
+> ⚠️ **Không được phát sinh các loại tài sản khác ở cấp root.** Font chữ, biểu tượng và SVG nhỏ nên được nhúng trực tiếp vào HTML. Tất cả các assets khác phải được tổ chức bên trong thư mục `assets/` theo loại.
 
 ### Runtime Data Contract
 

@@ -77,12 +77,41 @@ cp -r template-projects/group-sort template-projects/my-new-game
 
 ### Yêu cầu Đầu ra Build
 
-| Tệp                  | Yêu cầu                                                                                                                                                  |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `index.html`         | **HTML một tệp** — tất cả JS và CSS phải được nhúng trực tiếp. Sử dụng `vite-plugin-singlefile` (hoặc tương đương) để đạt được điều này.                 |
-| `images/` (tùy chọn) | Các tài sản hình ảnh không thể nhúng trực tiếp. Giữ số lượng tệp ở mức tối thiểu. Trình soạn thảo sẽ sao chép các tệp này cùng với `index.html` đã xuất. |
+Game template đã build phải tuân theo cấu trúc chính xác sau:
 
-> ⚠️ **Không được phát sinh các loại tài sản khác.** Font chữ, biểu tượng và SVG nhỏ nên được nhúng trực tiếp vào HTML.
+```
+<game-id>/
+├── index.html              # HTML một tệp ở root — tất cả JS và CSS phải được nhúng trực tiếp
+└── assets/                 # Thư mục assets duy nhất bên cạnh index.html
+    ├── sounds/             # Tệp âm thanh (tùy chọn)
+    ├── images/             # Tài sản hình ảnh không thể nhúng trực tiếp
+    │   ├── logo.png        # Bắt buộc: Logo game
+    │   ├── banner.png      # Bắt buộc: Banner game
+    │   └── icons/          # Bắt buộc: Icons nhiều kích thước
+    │       ├── 16x16.png
+    │       ├── 32x32.png
+    │       ├── 48x48.png
+    │       ├── 64x64.png
+    │       ├── 128x128.png
+    │       ├── 256x256.png
+    │       ├── 512x512.png
+    │       └── 1024x1024.png
+```
+
+> ⚠️ **Thư mục `assets/user/` KHÔNG được tồn tại trong game templates.** Thư mục này được tạo và điền bởi builder khi giáo viên xuất dự án. Tác giả template không nên tạo hoặc sử dụng thư mục này.
+
+| Tệp/Thư mục              | Yêu cầu                                                                                                                     |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `index.html`             | **HTML một tệp** — tất cả JS và CSS phải được nhúng trực tiếp. Sử dụng `vite-plugin-singlefile` (hoặc tương đương).         |
+| `assets/`                | **Thư mục bắt buộc** chứa tất cả assets. Phải được đặt tên chính xác là `assets`.                                           |
+| `assets/sounds/`         | Tệp âm thanh tùy chọn. Có thể bỏ qua nếu game không có âm thanh.                                                            |
+| `assets/images/`         | **Thư mục bắt buộc** cho tài sản hình ảnh không thể nhúng trực tiếp.                                                        |
+| `assets/images/logo.png` | **Bắt buộc** — Ảnh logo game.                                                                                               |
+| `assets/images/banner.png` | **Bắt buộc** — Ảnh banner game.                                                                                           |
+| `assets/images/icons/`   | **Thư mục bắt buộc** chứa icons nhiều kích thước cho các ngữ cảnh hiển thị khác nhau.                                       |
+| `assets/images/icons/*.png` | **Bắt buộc** — Icons ở các kích thước: 16x16, 32x32, 48x48, 64x64, 128x128, 256x256, 512x512, 1024x1024 (tất cả tính bằng pixel). |
+
+> ⚠️ **Không được phát sinh các loại tài sản khác ở cấp root.** Font chữ, biểu tượng và SVG nhỏ nên được nhúng trực tiếp vào HTML. Tất cả các assets khác phải được tổ chức bên trong thư mục `assets/` theo loại.
 
 ### Hợp đồng Dữ liệu Runtime
 
@@ -114,6 +143,70 @@ Mỗi thư mục template phải chứa `meta.json` ở cấp root (cạnh `vite
 ```
 
 Có thể đặt tệp `thumbnail.png` (hoặc `.jpg`/`.webp`) bên cạnh `meta.json` để hiển thị hình ảnh xem trước trên màn hình chính.
+
+---
+
+## Cấu trúc Game đã Xuất
+
+Khi giáo viên xuất một dự án game bằng trình soạn thảo, đầu ra tuân theo cấu trúc tương tự như game template đã build, với một điểm khác biệt chính: thư mục `assets/user/` được tạo và điền với các tài sản tùy chỉnh của giáo viên.
+
+### Cấu trúc Thư mục Game đã Xuất
+
+```
+<ten-game-da-xuat>/
+├── index.html              # HTML một tệp với dữ liệu của giáo viên được đưa vào (window.APP_DATA)
+└── assets/
+    ├── sounds/             # Sounds của template (nếu có)
+    ├── images/             # Images của template (logo.png, banner.png, icons/)
+    │   ├── logo.png
+    │   ├── banner.png
+    │   └── icons/
+    │       ├── 16x16.png
+    │       ├── 32x32.png
+    │       ├── ...
+    │       └── 1024x1024.png
+    └── user/               # ⭐ Tài sản tùy chỉnh của giáo viên (cấu trúc phẳng, không thư mục con)
+        ├── item-abc123-1712048532456-0.1234567.png
+        ├── question-def456-1712048533789-0.9876543.jpg
+        ├── group-ghi789-1712048534012-0.4567891.svg
+        ├── word-jkl012-1712048535345-0.7891234.mp3
+        ├── answer-mno345-1712048536678-0.2345678.ogg
+        └── ...             # Bất kỳ loại tệp nào khác (png, jpg, svg, mp3, ogg, v.v.)
+```
+
+### Điểm Khác biệt Chính so với Cấu trúc Template
+
+| Khía cạnh | Game Template | Game đã Xuất |
+|-----------|---------------|--------------|
+| `assets/user/` | **Không được tồn tại** — templates không nên tạo thư mục này | **Luôn xuất hiện** — được builder tạo, chứa các assets đã nhập của giáo viên |
+| `index.html` | Chứa `window.APP_DATA` giữ chỗ/trống | Chứa **dữ liệu giáo viên được đưa vào** trong `window.APP_DATA` |
+| Mục đích | Phát triển & phân phối | Game độc lập sẵn sàng sử dụng |
+
+### Chi tiết Thư mục Assets Người dùng
+
+Thư mục `assets/user/` có các đặc điểm sau:
+
+- **Cấu trúc phẳng**: Tất cả tệp được lưu trực tiếp trong `assets/user/` không có thư mục con
+- **Tên tệp tự động tạo**: Tệp được đổi tên theo mẫu `<loai-thuc-the>-<id>-<thoi-gian>-<ngau-nhien>`:
+  - `loai-thuc-the`: Loại thực thể game (ví dụ: `item`, `question`, `group`, `word`, `answer`)
+  - `id`: Định danh duy nhất cho thực thể
+  - `thoi-gian`: Unix timestamp khi tệp được nhập
+  - `ngau-nhien`: Số thập phân ngẫu nhiên để tăng tính duy nhất
+- **Bất kỳ loại tệp nào**: Giáo viên có thể tải lên nhiều loại tệp bao gồm:
+  - Ảnh: `.png`, `.jpg`, `.jpeg`, `.svg`, `.webp`, `.gif`
+  - Âm thanh: `.mp3`, `.ogg`, `.wav`, `.aac`
+  - Khác: Bất kỳ loại tệp nào được hỗ trợ bởi game template
+- **Không phân loại theo thư mục**: Builder không tách các tệp thành thư mục con theo loại; tất cả assets người dùng được lưu phẳng trong `assets/user/`
+
+### Cách Assets Người dùng Được Thêm vào
+
+1. **Trong Trình soạn thảo**: Khi giáo viên tải lên một hình ảnh, âm thanh hoặc tài nguyên khác qua giao diện builder, tệp được sao chép vào thư mục assets của dự án với tên tệp được tạo.
+
+2. **Khi Xuất**: Builder sao chép tất cả các tệp từ thư mục assets của dự án vào `assets/user/` trong thư mục đã xuất, giữ nguyên tên tệp đã tạo.
+
+3. **Tại Runtime**: Game template tải các assets người dùng qua đường dẫn tương đối được lưu trong `window.APP_DATA`, ví dụ: `./assets/user/item-abc123-1712048532456-0.1234567.png`.
+
+> 💡 **Lưu ý**: Game đã xuất là một **thư mục tự chứa** hoạt động ngoại tuyến trên bất kỳ trình duyệt hiện đại nào. Không cần máy chủ hoặc quy trình build — chỉ cần mở tệp `index.html`.
 
 ---
 
@@ -161,7 +254,7 @@ yarn dev
 
 **Trong builder-projects/electron-app-mui/:**
 6. **Đăng ký trong `build-templates.sh`** — Thêm vào mảng `GAMES`
-7. **Đăng ký trong CI workflow** — Thêm vào `.github/workflows/build-all.yml`
+7. **Đăng ký trong CI workflow** — Workflow tự động phát hiện templates từ `build-templates.sh`
 8. **Thêm kiểu TypeScript** — Trong `src/shared/types.ts`
 9. **Tạo thành phần editor** — Trong `src/renderer/src/games/`
 10. **Đăng ký editor** — Trong `src/renderer/src/games/registry.ts`
@@ -211,11 +304,24 @@ yarn build:mac
 
 Quy trình GitHub Actions (`.github/workflows/build-all.yml`) chạy khi `workflow_dispatch`. Nó:
 
-1. Build mọi dự án template song song
-2. Tải tất cả các template đã build vào một khu vực tạm thời
-3. Sao chép chúng vào thư mục `templates/` của builder
-4. Đóng gói ứng dụng Electron cho Windows và Linux
-5. Tải lên các trình cài đặt dưới dạng artifacts của GitHub
+1. **Linux runner (build chính)**:
+   - Chạy `./build-templates.sh` để build tất cả game templates
+   - Tải lên tất cả templates dưới dạng artifacts
+   - Build ứng dụng builder với `electron-vite build && electron-builder --dir`
+   - Lưu đầu ra dưới dạng 7z (ghi đè cấu hình NSIS/DMG)
+   - Tải lên file 7z dưới dạng artifact
+
+2. **Windows runner**:
+   - Tải templates đã build từ Linux runner
+   - Chỉ build ứng dụng builder với target 7z
+   - Tải lên file 7z dưới dạng artifact
+
+3. **macOS runner**:
+   - Tải templates đã build từ Linux runner
+   - Chỉ build ứng dụng builder với target 7z
+   - Tải lên file 7z dưới dạng artifact
+
+Cách tiếp cận này giảm thiểu thời gian build trên Windows và macOS bằng cách tái sử dụng template artifacts được build trên Linux. Tất cả các nền tảng đều tạo ra file 7z thay vì các bộ cài đặt riêng của nền tảng (NSIS cho Windows, DMG cho macOS).
 
 ---
 

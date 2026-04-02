@@ -270,7 +270,7 @@ export default function MatchingGame() {
       <TutorialViewer
         isOpen={showTutorial}
         onClose={() => setShowTutorial(false)}
-        basePath="images/"
+        basePath="assets/images/"
         filenamePattern="tutorial"
         fileExtension="png"
       />

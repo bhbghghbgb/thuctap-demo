@@ -1,23 +1,12 @@
 import CloseIcon from '@mui/icons-material/Close'
-import FolderSpecialIcon from '@mui/icons-material/FolderSpecial'
-import PublicIcon from '@mui/icons-material/Public'
+import { Box, Divider, Drawer, IconButton, Typography } from '@mui/material'
+import { useSettings } from '@renderer/hooks/useSettings'
+import React, { useCallback } from 'react'
 import {
-  Box,
-  Chip,
-  Divider,
-  Drawer,
-  FormControlLabel,
-  IconButton,
-  Slider,
-  Switch,
-  ToggleButton,
-  ToggleButtonGroup,
-  Tooltip,
-  Typography
-} from '@mui/material'
-import React from 'react'
-import { useSettings } from '../context/SettingsContext'
-import { AutoSaveMode, ProjectSettings } from '../types'
+  GlobalSettingsSection,
+  ProjectOverrideSection
+} from '../components/settings/SettingsSubcomponents'
+import { ProjectSettings } from '../types'
 
 interface Props {
   open: boolean
@@ -29,31 +18,24 @@ interface Props {
 export default function SettingsPanel({ open, onClose, hasProject }: Props): React.ReactElement {
   const { globalSettings, projectSettings, resolved, updateGlobal, updateProject } = useSettings()
 
-  // ── Helpers ─────────────────────────────────────────────────────────────────
+  const clearProjOverride = useCallback(
+    (key: keyof ProjectSettings): void => {
+      if (!projectSettings) return
+      const next: ProjectSettings = {
+        autoSave: key === 'autoSave' ? null : projectSettings.autoSave,
+        prefillNames: key === 'prefillNames' ? null : projectSettings.prefillNames
+      }
+      updateProject(next)
+    },
+    [projectSettings, updateProject]
+  )
 
-  const projOverride = (key: keyof ProjectSettings): boolean => {
-    if (!projectSettings) return false
-    if (key === 'autoSave') return projectSettings.autoSave != null
-    if (key === 'prefillNames') return projectSettings.prefillNames != null
-    return false
-  }
-
-  const clearProjOverride = (key: keyof ProjectSettings): void => {
-    if (!projectSettings) return
-    const next = { ...projectSettings }
-    if (key === 'autoSave') next.autoSave = null
-    if (key === 'prefillNames') next.prefillNames = null
-    updateProject(next)
-  }
-
-  const setProjOverride = (patch: ProjectSettings): void => {
-    updateProject({ ...projectSettings, ...patch })
-  }
-
-  // Effective values (resolved)
-  // const autoSaveMode = resolved.autoSave.mode
-  // const intervalSec = resolved.autoSave.intervalSeconds
-  const prefillNames = resolved.prefillNames
+  const setProjOverride = useCallback(
+    (patch: ProjectSettings): void => {
+      updateProject({ ...projectSettings, ...patch })
+    },
+    [projectSettings, updateProject]
+  )
 
   return (
     <Drawer
@@ -89,284 +71,64 @@ export default function SettingsPanel({ open, onClose, hasProject }: Props): Rea
 
       <Box sx={{ overflow: 'auto', flex: 1 }}>
         {/* ── Global settings ── */}
-        <SectionHeader icon={<PublicIcon fontSize="small" />} label="Global" />
-
-        <Box sx={{ px: 2.5, py: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <AutoSaveSetting
-            mode={globalSettings.autoSave.mode}
-            intervalSec={globalSettings.autoSave.intervalSeconds}
-            onModeChange={(mode) =>
-              updateGlobal({ autoSave: { ...globalSettings.autoSave, mode } })
-            }
-            onIntervalChange={(s) =>
-              updateGlobal({ autoSave: { ...globalSettings.autoSave, intervalSeconds: s } })
-            }
-          />
-
-          <PrefillSetting
-            value={globalSettings.prefillNames}
-            onChange={(v) => updateGlobal({ prefillNames: v })}
-          />
-        </Box>
+        <GlobalSettingsSection
+          mode={globalSettings.autoSave.mode}
+          intervalSec={globalSettings.autoSave.intervalSeconds}
+          prefillNames={globalSettings.prefillNames}
+          onModeChange={(mode) => updateGlobal({ autoSave: { ...globalSettings.autoSave, mode } })}
+          onIntervalChange={(s) =>
+            updateGlobal({ autoSave: { ...globalSettings.autoSave, intervalSeconds: s } })
+          }
+          onPrefillChange={(v) => updateGlobal({ prefillNames: v })}
+        />
 
         {/* ── Per-project overrides ── */}
         {hasProject && (
           <>
             <Divider sx={{ borderColor: 'rgba(255,255,255,0.06)', mx: 2 }} />
-            <SectionHeader
-              icon={<FolderSpecialIcon fontSize="small" />}
-              label="This project"
-              subtitle="Overrides global settings for this project only"
-            />
-
-            <Box sx={{ px: 2.5, py: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
-              {/* Auto-save override */}
-              <OverrideRow
-                label="Auto-save"
-                active={projOverride('autoSave')}
-                effectiveLabel={autoSaveModeLabel(resolved.autoSave.mode)}
-                onEnable={() =>
-                  setProjOverride({
-                    autoSave: {
-                      mode: globalSettings.autoSave.mode,
-                      intervalSeconds: globalSettings.autoSave.intervalSeconds
-                    }
-                  })
-                }
-                onDisable={() => clearProjOverride('autoSave')}
-              >
-                {projOverride('autoSave') && (
-                  <AutoSaveSetting
-                    mode={projectSettings?.autoSave?.mode ?? globalSettings.autoSave.mode}
-                    intervalSec={
+            <ProjectOverrideSection
+              projectSettings={projectSettings}
+              globalMode={globalSettings.autoSave.mode}
+              globalIntervalSec={globalSettings.autoSave.intervalSeconds}
+              globalPrefillNames={globalSettings.prefillNames}
+              resolvedMode={resolved.autoSave.mode}
+              resolvedPrefillNames={resolved.prefillNames}
+              onModeChange={(mode) =>
+                setProjOverride({
+                  autoSave: {
+                    mode,
+                    intervalSeconds:
                       projectSettings?.autoSave?.intervalSeconds ??
                       globalSettings.autoSave.intervalSeconds
-                    }
-                    onModeChange={(mode) =>
-                      setProjOverride({
-                        autoSave: {
-                          mode,
-                          intervalSeconds:
-                            projectSettings?.autoSave?.intervalSeconds ??
-                            globalSettings.autoSave.intervalSeconds
-                        }
-                      })
-                    }
-                    onIntervalChange={(s) =>
-                      setProjOverride({
-                        autoSave: {
-                          mode: projectSettings?.autoSave?.mode ?? globalSettings.autoSave.mode,
-                          intervalSeconds: s
-                        }
-                      })
-                    }
-                  />
-                )}
-              </OverrideRow>
-
-              {/* Prefill names override */}
-              <OverrideRow
-                label="Prefill names"
-                active={projOverride('prefillNames')}
-                effectiveLabel={prefillNames ? 'On' : 'Off'}
-                onEnable={() => setProjOverride({ prefillNames: globalSettings.prefillNames })}
-                onDisable={() => clearProjOverride('prefillNames')}
-              >
-                {projOverride('prefillNames') && (
-                  <PrefillSetting
-                    value={projectSettings?.prefillNames ?? globalSettings.prefillNames}
-                    onChange={(v) => setProjOverride({ prefillNames: v })}
-                  />
-                )}
-              </OverrideRow>
-            </Box>
+                  }
+                })
+              }
+              onIntervalChange={(s) =>
+                setProjOverride({
+                  autoSave: {
+                    mode: projectSettings?.autoSave?.mode ?? globalSettings.autoSave.mode,
+                    intervalSeconds: s
+                  }
+                })
+              }
+              onPrefillChange={(v) => setProjOverride({ prefillNames: v })}
+              onEnableAutoSaveOverride={() =>
+                setProjOverride({
+                  autoSave: {
+                    mode: globalSettings.autoSave.mode,
+                    intervalSeconds: globalSettings.autoSave.intervalSeconds
+                  }
+                })
+              }
+              onDisableAutoSaveOverride={() => clearProjOverride('autoSave')}
+              onEnablePrefillOverride={() =>
+                setProjOverride({ prefillNames: globalSettings.prefillNames })
+              }
+              onDisablePrefillOverride={() => clearProjOverride('prefillNames')}
+            />
           </>
         )}
       </Box>
     </Drawer>
   )
-}
-
-// ── Sub-components ────────────────────────────────────────────────────────────
-
-function SectionHeader({
-  icon,
-  label,
-  subtitle
-}: {
-  icon: React.ReactNode
-  label: string
-  subtitle?: string
-}): React.ReactElement {
-  return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1,
-        px: 2.5,
-        pt: 2.5,
-        pb: 0.5
-      }}
-    >
-      <Box sx={{ color: 'primary.main', display: 'flex' }}>{icon}</Box>
-      <Box>
-        <Typography
-          variant="overline"
-          sx={{ letterSpacing: 2, fontSize: '0.65rem', color: 'primary.main', lineHeight: 1.2 }}
-        >
-          {label}
-        </Typography>
-        {subtitle && (
-          <Typography
-            variant="caption"
-            color="text.disabled"
-            sx={{ display: 'block', fontSize: '0.7rem' }}
-          >
-            {subtitle}
-          </Typography>
-        )}
-      </Box>
-    </Box>
-  )
-}
-
-function OverrideRow({
-  label,
-  active,
-  effectiveLabel,
-  onEnable,
-  onDisable,
-  children
-}: {
-  label: string
-  active: boolean
-  effectiveLabel: string
-  onEnable: () => void
-  onDisable: () => void
-  children?: React.ReactNode
-}): React.ReactElement {
-  return (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: active ? 1.5 : 0 }}>
-        <Typography variant="body2" sx={{ flex: 1, color: 'text.secondary' }}>
-          {label}
-        </Typography>
-        {!active && (
-          <Tooltip title="Using global value">
-            <Chip
-              label={`Global · ${effectiveLabel}`}
-              size="small"
-              sx={{ height: 18, fontSize: '0.65rem', cursor: 'default' }}
-            />
-          </Tooltip>
-        )}
-        <FormControlLabel
-          control={
-            <Switch
-              size="small"
-              checked={active}
-              onChange={(_, checked) => (checked ? onEnable() : onDisable())}
-            />
-          }
-          label={
-            <Typography variant="caption" color="text.secondary">
-              Override
-            </Typography>
-          }
-          labelPlacement="start"
-          sx={{ m: 0, gap: 0.5 }}
-        />
-      </Box>
-      {children}
-    </Box>
-  )
-}
-
-function AutoSaveSetting({
-  mode,
-  intervalSec,
-  onModeChange,
-  onIntervalChange
-}: {
-  mode: AutoSaveMode
-  intervalSec: number
-  onModeChange: (m: AutoSaveMode) => void
-  onIntervalChange: (s: number) => void
-}): React.ReactElement {
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-      <Typography variant="body2" color="text.secondary">
-        Auto-save
-      </Typography>
-      <ToggleButtonGroup
-        value={mode}
-        exclusive
-        onChange={(_, v) => v && onModeChange(v as AutoSaveMode)}
-        size="small"
-        sx={{
-          '& .MuiToggleButton-root': {
-            py: 0.5,
-            px: 1.5,
-            fontSize: '0.75rem',
-            textTransform: 'none'
-          }
-        }}
-      >
-        <ToggleButton value="off">Off</ToggleButton>
-        <ToggleButton value="on-edit">On edit</ToggleButton>
-        <ToggleButton value="interval">Every N seconds</ToggleButton>
-      </ToggleButtonGroup>
-
-      {mode === 'interval' && (
-        <Box>
-          <Typography variant="caption" color="text.secondary">
-            Interval: {intervalSec}s
-          </Typography>
-          <Slider
-            min={5}
-            max={300}
-            step={5}
-            value={intervalSec}
-            onChange={(_, v) => onIntervalChange(v as number)}
-            marks={[
-              { value: 5, label: '5s' },
-              { value: 60, label: '60s' },
-              { value: 300, label: '5m' }
-            ]}
-            sx={{ mt: 1 }}
-          />
-        </Box>
-      )}
-    </Box>
-  )
-}
-
-function PrefillSetting({
-  value,
-  onChange
-}: {
-  value: boolean
-  onChange: (v: boolean) => void
-}): React.ReactElement {
-  return (
-    <FormControlLabel
-      control={<Switch size="small" checked={value} onChange={(_, checked) => onChange(checked)} />}
-      label={
-        <Box>
-          <Typography variant="body2">Prefill names</Typography>
-          <Typography variant="caption" color="text.secondary">
-            New groups/items get a default name like &quot;Group 1&quot;
-          </Typography>
-        </Box>
-      }
-      sx={{ alignItems: 'flex-start', mx: 0, gap: 1 }}
-    />
-  )
-}
-
-function autoSaveModeLabel(mode: AutoSaveMode): string {
-  if (mode === 'off') return 'Off'
-  if (mode === 'on-edit') return 'On edit'
-  return 'Interval'
 }

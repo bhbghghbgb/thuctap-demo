@@ -40,19 +40,19 @@ const DropZone: React.FC<Props> = ({ zone, label, isCorrect, correctLabelId, sho
       className={`px-3 py-2 flex flex-col items-center justify-center rounded-lg border-2 transition-all relative group shadow-md ${
         showAnnotations
           ? isOver
-            ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200 scale-110"
+            ? "border-cyan-400 bg-cyan-400/20 ring-2 ring-cyan-300/50 scale-125 shadow-elevated"
             : isCorrect === true
-            ? "border-green-400 bg-green-50 shadow-green-200"
+            ? "border-emerald-400 bg-emerald-400/15 shadow-lg shadow-emerald-500/30"
             : isCorrect === false
-            ? "border-red-400 bg-red-50 shadow-red-200"
-            : "border-gray-400 bg-yellow-50"
+            ? "border-red-400 bg-red-400/15 shadow-lg shadow-red-500/30"
+            : "border-purple-300/50 bg-purple-400/10 hover:border-purple-400"
           : "border-transparent bg-transparent shadow-none"
       } ${!showAnnotations ? "pointer-events-auto" : ""}`}
     >
       {/* Zone placeholder indicator */}
       {showAnnotations && !label && (
-        <div className="flex flex-col items-center justify-center bg-white bg-opacity-80 rounded px-2 py border border-gray-300 shadow-sm">
-          <div className="text-sm text-gray-500 text-center">⭕</div>
+        <div className="flex flex-col items-center justify-center bg-white/15 rounded-lg px-3 py-2 border border-purple-300/50 shadow-sm">
+          <div className="text-lg text-purple-300 animate-pulse">⭕</div>
         </div>
       )}
 
@@ -61,32 +61,36 @@ const DropZone: React.FC<Props> = ({ zone, label, isCorrect, correctLabelId, sho
           <motion.div
             key={label.id}
             layoutId={label.id}
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
+            initial={{ scale: 0.5, opacity: 0, rotateZ: -10 }}
+            animate={{ scale: 1, opacity: 1, rotateZ: 0 }}
+            exit={{ scale: 0.5, opacity: 0, rotateZ: 10 }}
             transition={layoutTransition}
             className="flex flex-col items-center justify-center"
           >
-            <div className="text-sm font-semibold text-center line-clamp-2 text-gray-800 bg-white bg-opacity-90 rounded px-2 py-1 border border-gray-400 shadow-sm">
+            <div className="text-sm font-bold text-center line-clamp-2 text-white bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg px-3 py-2 border border-purple-400/50 shadow-soft">
               {label.name}
             </div>
 
             {/* Correct indicator */}
             {isCorrect === true && (
-              <div className="absolute -top-1 -right-1 bg-green-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs font-bold">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="absolute -top-2 -right-2 bg-gradient-to-br from-emerald-400 to-teal-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg"
+              >
                 ✓
-              </div>
+              </motion.div>
             )}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* AI Insight tooltip - note style */}
+      {/* AI Insight tooltip - modern style */}
       {showAnnotations && advancedFeedback && (
-        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 bg-yellow-100 text-gray-800 text-xs rounded-lg p-2 opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-normal shadow-lg border border-yellow-300">
-          <p className="font-semibold mb-1 text-yellow-800">🧠 Vị trí:</p>
+        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 w-56 bg-gradient-to-br from-amber-400 to-orange-500 text-gray-900 text-xs rounded-lg p-3 opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-normal shadow-elevated border border-amber-300/50 font-semibold">
+          <p className="mb-1">🧠 AI Insight:</p>
           <p>{advancedFeedback}</p>
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-yellow-300"></div>
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-amber-400"></div>
         </div>
       )}
     </div>

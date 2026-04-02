@@ -46,7 +46,7 @@ export function TutorialViewer({
   isOpen,
   onClose,
   images,
-  basePath = "images/",
+  basePath = "assets/images/",
   filenamePattern = "tutorial",
   fileExtension = "png",
   startIndex = 1,

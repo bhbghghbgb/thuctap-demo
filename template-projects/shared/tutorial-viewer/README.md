@@ -114,7 +114,7 @@ function App() {
 <TutorialViewer
   isOpen={showTutorial}
   onClose={() => setShowTutorial(false)}
-  basePath="assets/tutorials/"
+  basePath="assets/images/tutorials/"
   filenamePattern="guide"
   fileExtension="jpg"
   startIndex={0}

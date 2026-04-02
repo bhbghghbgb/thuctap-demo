@@ -75,13 +75,13 @@ const Game: React.FC = () => {
   const [showResult, setShowResult] = useState(false);
   const [resultMessage, setResultMessage] = useState('');
   const [resultType, setResultType] = useState<'success' | 'error' | 'win'>('success');
-  const speedLevels = [1, 2, 4, 6];
+  const correctSoundRef = useRef<HTMLAudioElement | null>(null);
+  const wrongSoundRef = useRef<HTMLAudioElement | null>(null);
+  const completeSoundRef = useRef<HTMLAudioElement | null>(null);
 
-  const currentGameSpeedRef = useRef<number>(1);
   const currentBaseSpeedRef = useRef<number>(2);
   
   // Speed control states
-  const [gameSpeed, setGameSpeed] = useState<number>(1);
   const [isPaused, setIsPaused] = useState<boolean>(false);
   
   // Auto-increasing speed states
@@ -140,7 +140,7 @@ const Game: React.FC = () => {
       multipleCorrect: false,
       _answerCounter: 7
     },
-    {
+    /*{
       id: "4",
       question: "Question 4: What do you drink every day to stay hydrated?",
       imagePath: null,
@@ -251,7 +251,7 @@ const Game: React.FC = () => {
       ],
       multipleCorrect: false,
       _answerCounter: 7
-    }
+    }*/
   ];
   
   // State cho form nhập câu hỏi
@@ -273,6 +273,11 @@ const Game: React.FC = () => {
     answer7: '',
     correctAnswer: ''
   });
+  const playSound = (audio: HTMLAudioElement | null) => {
+  if (!audio) return;
+  audio.currentTime = 0;
+  audio.play().catch(e => console.log('Audio error:', e));
+};
   
   // IFrame states
   const [isInvincible, setIsInvincible] = useState(false);
@@ -341,11 +346,9 @@ const Game: React.FC = () => {
     setShowResult(false);
     setIsInvincible(false);
     setInvincibleTimer(0);
-    setGameSpeed(1);
     setBaseGameSpeed(2);
     setAnsweredCorrectCount(0);
     setIsPaused(false);
-    currentGameSpeedRef.current = 1;
     currentBaseSpeedRef.current = 2;
     cloudsRef.current = [];
     cloudSubPixelXRef.current.clear();
@@ -376,11 +379,9 @@ const Game: React.FC = () => {
     setShowResult(false);
     setIsInvincible(false);
     setInvincibleTimer(0);
-    setGameSpeed(1);
     setBaseGameSpeed(2);
     setAnsweredCorrectCount(0);
     setIsPaused(false);
-    currentGameSpeedRef.current = 1;
     currentBaseSpeedRef.current = 2;
     cloudsRef.current = [];
     cloudSubPixelXRef.current.clear();
@@ -405,33 +406,8 @@ const Game: React.FC = () => {
     cloudsRef.current = [];
   };
 
-  // Hàm thay đổi tốc độ
-  const changeSpeed = (speed: number) => {
-    setGameSpeed(speed);
-    currentGameSpeedRef.current = speed;
-    setIsPaused(false);
-  };
-
   const togglePause = () => {
-    setIsPaused(!isPaused);
-  };
-
-  const increaseSpeed = () => {
-    const currentIndex = speedLevels.indexOf(gameSpeed);
-    const nextIndex = (currentIndex + 1) % speedLevels.length;
-    const newSpeed = speedLevels[nextIndex];
-    setGameSpeed(newSpeed);
-    currentGameSpeedRef.current = newSpeed;
-    setIsPaused(false);
-  };
-
-  const decreaseSpeed = () => {
-    const currentIndex = speedLevels.indexOf(gameSpeed);
-    const prevIndex = (currentIndex - 1 + speedLevels.length) % speedLevels.length;
-    const newSpeed = speedLevels[prevIndex];
-    setGameSpeed(newSpeed);
-    currentGameSpeedRef.current = newSpeed;
-    setIsPaused(false);
+    setIsPaused(prev => !prev);
   };
 
   // Kích hoạt iframe (bất tử)
@@ -608,6 +584,13 @@ const Game: React.FC = () => {
     crossImage.current.src = './images/cross.png';
     explosionImage.current.src = './images/explosion.png';
 
+    correctSoundRef.current = new Audio('./sounds/true.mp3');
+    wrongSoundRef.current = new Audio('./sounds/wrong.mp3');
+    completeSoundRef.current = new Audio('/sounds/complete.mp3');
+    correctSoundRef.current.load();
+    wrongSoundRef.current.load();
+    completeSoundRef.current.load();
+
     const handleKeyDown = (e: KeyboardEvent) => {
       keysRef.current[e.key] = true;
       if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'w' || e.key === 's' || e.key === 'W' || e.key === 'S') {
@@ -616,30 +599,6 @@ const Game: React.FC = () => {
       if (e.code === 'Space') {
         e.preventDefault();
         togglePause();
-      }
-      if (e.key === '1') {
-        e.preventDefault();
-        changeSpeed(1);
-      }
-      if (e.key === '2') {
-        e.preventDefault();
-        changeSpeed(2);
-      }
-      if (e.key === '3') {
-        e.preventDefault();
-        changeSpeed(4);
-      }
-      if (e.key === '4') {
-        e.preventDefault();
-        changeSpeed(6);
-      }
-      if (e.key === 'd' || e.key === 'D') {
-        e.preventDefault();
-        increaseSpeed();
-      }
-      if (e.key === 'a' || e.key === 'A') {
-        e.preventDefault();
-        decreaseSpeed();
       }
     };
     
@@ -654,6 +613,18 @@ const Game: React.FC = () => {
     window.addEventListener('keyup', handleKeyUp);
 
     return () => {
+      if (correctSoundRef.current) {
+      correctSoundRef.current.pause();
+      correctSoundRef.current.src = '';
+    }
+    if (wrongSoundRef.current) {
+      wrongSoundRef.current.pause();
+      wrongSoundRef.current.src = '';
+    }
+    if (completeSoundRef.current) {
+      completeSoundRef.current.pause();
+      completeSoundRef.current.src = '';
+    }
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
@@ -735,6 +706,7 @@ const Game: React.FC = () => {
     activateInvincibility(2000);
 
     if (isCorrect) {
+      playSound(correctSoundRef.current);
       setScore(prev => prev + 10);
       setResultMessage('Correct! +10 points');
       setResultType('success');
@@ -743,13 +715,13 @@ const Game: React.FC = () => {
       const newCorrectCount = answeredCorrectCount + 1;
       setAnsweredCorrectCount(newCorrectCount);
       
-      const maxSpeed = 8;
       const minSpeed = 2;
-      const progress = newCorrectCount / totalQuestions;
-      const newSpeed = minSpeed + (maxSpeed - minSpeed) * progress;
-      const finalSpeed = Math.min(maxSpeed, Math.max(minSpeed, newSpeed));
-      setBaseGameSpeed(finalSpeed);
-      currentBaseSpeedRef.current = finalSpeed;
+      const maxSpeed = 5;
+      const step = 0.5;
+      let newSpeed = minSpeed + (newCorrectCount * step);
+      newSpeed = Math.min(maxSpeed, newSpeed); 
+      setBaseGameSpeed(newSpeed);
+      currentBaseSpeedRef.current = newSpeed;
 
       createExplosion(cloud.x, cloud.y, cloud.width, cloud.height);
       
@@ -758,6 +730,7 @@ const Game: React.FC = () => {
         setShowResult(false);
         
         if (currentQuestionIndex + 1 >= questions.length) {
+          playSound(completeSoundRef.current);
           setGameWin(true);
           setIsPlaying(false);
         } else {
@@ -766,6 +739,7 @@ const Game: React.FC = () => {
       }, 1500);
       
     } else {
+      playSound(wrongSoundRef.current);
       setLives(prev => {
         const newLives = prev - 1;
         if (newLives <= 0) {
@@ -813,8 +787,7 @@ const Game: React.FC = () => {
     updatePlayer();
 
     const currentBaseSpeed = currentBaseSpeedRef.current;
-    const currentMultiplier = currentGameSpeedRef.current;
-    const totalGameSpeed = currentBaseSpeed * currentMultiplier;
+    const totalGameSpeed = currentBaseSpeed;
     const currentBackgroundSpeed = BASE_BACKGROUND_SPEED * totalGameSpeed;
     const currentCloudSpeed = BASE_CLOUD_SPEED * totalGameSpeed;
     
@@ -1011,36 +984,32 @@ const Game: React.FC = () => {
       ctx.strokeText(`Question ${currentQuestionIndex + 1}/${questions.length}`, canvas.width / 2, 100);
       ctx.fillText(`Question ${currentQuestionIndex + 1}/${questions.length}`, canvas.width / 2, 100);
       
-      const totalSpeed = baseGameSpeed * gameSpeed;
+      // Hiển thị tốc độ
+      const totalSpeed = baseGameSpeed;
       ctx.font = `${Math.min(20, canvasSize.height * 0.03)}px Arial`;
-      ctx.fillStyle = gameSpeed !== 1 ? '#ffaa44' : '#ffd700';
+      ctx.fillStyle = '#ffd700';
       ctx.strokeStyle = 'black';
       ctx.lineWidth = 2;
-      ctx.strokeText(`Speed: ${totalSpeed.toFixed(1)}x (${baseGameSpeed.toFixed(1)} × ${gameSpeed})`, canvas.width - 180, 100);
-      ctx.fillText(`Speed: ${totalSpeed.toFixed(1)}x (${baseGameSpeed.toFixed(1)} × ${gameSpeed})`, canvas.width - 180, 100);
+      ctx.strokeText(`Speed: ${totalSpeed.toFixed(1)}x`, canvas.width - 150, 100);
+      ctx.fillText(`Speed: ${totalSpeed.toFixed(1)}x`, canvas.width - 150, 100);
       
-      const speedPercent = (baseGameSpeed - 2) / 6;
+      // Vẽ thanh tiến trình tốc độ
+      const speedPercent = (baseGameSpeed - 2) / 3;
       const barWidth = 130;
       const barHeight = 6;
-      const barX = canvas.width - 180;
+      const barX = canvas.width - 150;
       const barY = 115;
       
       ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
       ctx.fillRect(barX, barY, barWidth, barHeight);
       ctx.fillStyle = '#4CAF50';
       ctx.fillRect(barX, barY, barWidth * Math.min(1, Math.max(0, speedPercent)), barHeight);
-      
-      ctx.font = `${Math.min(12, canvasSize.height * 0.02)}px Arial`;
-      ctx.fillStyle = '#ffaa44';
-      ctx.fillText(`×${gameSpeed}`, barX + barWidth + 5, barY + 5);
 
       if (isInvincible && invincibleTimer > 0) {
         ctx.font = `bold ${Math.min(24, canvasSize.height * 0.04)}px Arial`;
         ctx.fillStyle = '#ffd700';
         ctx.strokeStyle = 'black';
         ctx.lineWidth = 2;
-        ctx.strokeText(`Invincible: ${invincibleTimer}s`, canvas.width / 2, 150);
-        ctx.fillText(`Invincible: ${invincibleTimer}s`, canvas.width / 2, 150);
       }
 
       if (showResult && resultMessage) {
@@ -1062,7 +1031,7 @@ const Game: React.FC = () => {
     
     animationId = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animationId);
-  }, [isPlaying, gameOver, gameWin, playerY, canvasSize, explosions, currentQuestion, score, lives, showResult, resultMessage, resultType, currentQuestionIndex, isInvincible, invincibleTimer, questions.length, baseGameSpeed, gameSpeed]);
+  }, [isPlaying, gameOver, gameWin, playerY, canvasSize, explosions, currentQuestion, score, lives, showResult, resultMessage, resultType, currentQuestionIndex, isInvincible, invincibleTimer, questions.length, baseGameSpeed]);
 
   return (
     <div ref={containerRef} className="game-container">
@@ -1096,30 +1065,6 @@ const Game: React.FC = () => {
                 <span className="key">Space</span>
                 <span>Pause / Resume</span>
               </div>
-              <div className="tutorial-item">
-                <span className="key">1</span>
-                <span>Speed x1</span>
-              </div>
-              <div className="tutorial-item">
-                <span className="key">2</span>
-                <span>Speed x2</span>
-              </div>
-              <div className="tutorial-item">
-                <span className="key">3</span>
-                <span>Speed x4</span>
-              </div>
-              <div className="tutorial-item">
-                <span className="key">4</span>
-                <span>Speed x6</span>
-              </div>
-              <div className="tutorial-item">
-                <span className="key">A</span>
-                <span>Decrease Speed</span>
-              </div>
-              <div className="tutorial-item">
-                <span className="key">D</span>
-                <span>Increase Speed</span>
-              </div>
             </div>
           </div>
           
@@ -1145,43 +1090,15 @@ const Game: React.FC = () => {
         </div>
       )}
       
-      {/* Speed Control Panel - only show when playing */}
+      {/* Speed Control Panel - chỉ giữ nút Pause */}
       {isPlaying && !gameOver && !gameWin && (
         <div className="speed-control">
           <button 
             className={`speed-btn ${isPaused ? 'active' : ''}`} 
             onClick={togglePause}
-            title="Pause"
+            title={isPaused ? "Resume" : "Pause"}
           >
-            ⏸️
-          </button>
-          <button 
-            className={`speed-btn ${gameSpeed === 1 && !isPaused ? 'active' : ''}`} 
-            onClick={() => changeSpeed(1)}
-            title="Normal Speed"
-          >
-            x1
-          </button>
-          <button 
-            className={`speed-btn ${gameSpeed === 2 ? 'active' : ''}`} 
-            onClick={() => changeSpeed(2)}
-            title="2x Speed"
-          >
-            x2
-          </button>
-          <button 
-            className={`speed-btn ${gameSpeed === 4 ? 'active' : ''}`} 
-            onClick={() => changeSpeed(4)}
-            title="4x Speed"
-          >
-            x4
-          </button>
-          <button 
-            className={`speed-btn ${gameSpeed === 6 ? 'active' : ''}`} 
-            onClick={() => changeSpeed(6)}
-            title="6x Speed"
-          >
-            x6
+            {isPaused ? '▶️' : '⏸️'}
           </button>
         </div>
       )}
@@ -1316,7 +1233,7 @@ const Game: React.FC = () => {
             <p>❤️ You have 3 lives</p>
             <p>✅ Answer correctly to proceed</p>
             <p>⚡ Speed increases with each correct answer!</p>
-            <p>⌨️ Shortcuts: Space (Pause/Resume), A/D (Speed override)</p>
+            <p>⌨️ Shortcuts: Space (Pause/Resume)</p>
           </div>
         </div>
       )}

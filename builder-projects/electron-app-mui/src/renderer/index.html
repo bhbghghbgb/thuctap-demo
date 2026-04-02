@@ -5,52 +5,219 @@
     <title>Minigame Builder</title>
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: file:;"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: file:;"
     />
-    <style>
-      #splash {
-        position: fixed;
-        inset: 0;
-        background: #0f1117;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        transition: opacity 0.35s ease;
-      }
-      #splash.hiding {
-        opacity: 0;
-        pointer-events: none;
-      }
-      .splash-ring {
-        width: 40px;
-        height: 40px;
-        border: 3px solid rgba(110, 231, 183, 0.18);
-        border-top-color: #6ee7b7;
-        border-radius: 50%;
-        animation: spin 0.75s linear infinite;
-      }
-      .splash-wordmark {
-        margin-top: 18px;
-        font-family: system-ui, sans-serif;
-        font-size: 13px;
-        font-weight: 600;
-        letter-spacing: 0.06em;
-        color: rgba(110, 231, 183, 0.7);
-      }
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
+
+    <!-- 
+      📦 HTML TEMPLATE 
+      Format this with Prettier/ESLint like any normal HTML. 
+      It stays inert until the Web Component clones it.
+    -->
+    <template id="minigame-splash-template">
+      <style>
+        :host {
+          position: fixed;
+          inset: 0;
+          background: #0f1117;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          z-index: 9999;
+          transition: opacity 0.35s ease;
+          font-family: system-ui, sans-serif;
+        }
+
+        :host([hiding]) {
+          opacity: 0;
+          pointer-events: none;
+        }
+
+        .splash-wordmark {
+          margin-top: 18px;
+          font-size: 28px;
+          font-weight: 600;
+          letter-spacing: 0.06em;
+          color: rgba(110, 231, 183, 0.7);
+        }
+
+        .spinner-container {
+          --spinner-size: 120px;
+          --spinner-scale: 0.8;
+          --dot-size: 10px;
+          --dot-color: #6ee7b7;
+          --dot-border-radius: 128px;
+          --spinner-duration: 3.8s;
+          --rotation-offset: 200deg;
+          --dot-orbit-radius: calc((var(--spinner-size) - var(--dot-size)) / 2);
+
+          position: relative;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          width: var(--spinner-size);
+          height: var(--spinner-size);
+          transform: scale(var(--spinner-scale));
+          transform-origin: center center;
+        }
+
+        .spinner-container > .dot {
+          position: absolute;
+          width: var(--dot-size);
+          height: var(--dot-size);
+          background-color: var(--dot-color);
+          border-radius: var(--dot-border-radius);
+          opacity: 0;
+          top: 50%;
+          left: 50%;
+          z-index: 10;
+
+          /* Single animation rule. Base easing is linear, but @keyframes overrides it per-segment. */
+          animation:
+            spin var(--spinner-duration) linear var(--delay) infinite,
+            fade var(--spinner-duration) linear var(--delay) infinite;
+        }
+
+        /* Phase offsets & staggered delays */
+        .spinner-container > .dot:nth-child(1) {
+          --angle-offset: 0deg;
+          --delay: 0ms;
+        }
+        .spinner-container > .dot:nth-child(2) {
+          --angle-offset: -6deg;
+          --delay: calc(var(--spinner-duration) * 0.0439);
+        }
+        .spinner-container > .dot:nth-child(3) {
+          --angle-offset: -12deg;
+          --delay: calc(var(--spinner-duration) * 0.0879);
+        }
+        .spinner-container > .dot:nth-child(4) {
+          --angle-offset: -18deg;
+          --delay: calc(var(--spinner-duration) * 0.1318);
+        }
+        .spinner-container > .dot:nth-child(5) {
+          --angle-offset: -24deg;
+          --delay: calc(var(--spinner-duration) * 0.1758);
+        }
+        .spinner-container > .dot:nth-child(6) {
+          --angle-offset: -30deg;
+          --delay: calc(var(--spinner-duration) * 0.2197);
+        }
+
+        @keyframes fade {
+          0%,
+          73.9145% {
+            opacity: 1;
+          }
+          73.9156%,
+          100% {
+            opacity: 0;
+          }
+        }
+
+        @keyframes spin {
+          0% {
+            transform: translate(-50%, -50%)
+              rotate(calc(-110deg + var(--rotation-offset) + var(--angle-offset)))
+              translateX(var(--dot-orbit-radius));
+            animation-timing-function: cubic-bezier(0.02, 0.33, 0.38, 0.77);
+          }
+          9.9704% {
+            transform: translate(-50%, -50%)
+              rotate(calc(10deg + var(--rotation-offset) + var(--angle-offset)))
+              translateX(var(--dot-orbit-radius));
+          }
+          27.6316% {
+            transform: translate(-50%, -50%)
+              rotate(calc(93deg + var(--rotation-offset) + var(--angle-offset)))
+              translateX(var(--dot-orbit-radius));
+            animation-timing-function: cubic-bezier(0.57, 0.17, 0.95, 0.75);
+          }
+          37.2341% {
+            transform: translate(-50%, -50%)
+              rotate(calc(205deg + var(--rotation-offset) + var(--angle-offset)))
+              translateX(var(--dot-orbit-radius));
+            animation-timing-function: cubic-bezier(0, 0.19, 0.07, 0.72);
+          }
+          46.4443% {
+            transform: translate(-50%, -50%)
+              rotate(calc(357deg + var(--rotation-offset) + var(--angle-offset)))
+              translateX(var(--dot-orbit-radius));
+          }
+          64.0821% {
+            transform: translate(-50%, -50%)
+              rotate(calc(439deg + var(--rotation-offset) + var(--angle-offset)))
+              translateX(var(--dot-orbit-radius));
+            animation-timing-function: cubic-bezier(0, 0, 0.95, 0.37);
+          }
+          74.0758% {
+            transform: translate(-50%, -50%)
+              rotate(calc(585deg + var(--rotation-offset) + var(--angle-offset)))
+              translateX(var(--dot-orbit-radius));
+            animation-timing-function: cubic-bezier(0.13, 0.21, 0.1, 0.7);
+          }
+          100% {
+            transform: translate(-50%, -50%)
+              rotate(calc(585deg + var(--rotation-offset) + var(--angle-offset)))
+              translateX(var(--dot-orbit-radius));
+          }
+        }
+      </style>
+
+      <div class="spinner-container">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+      <div class="splash-wordmark" data-placeholder>Title</div>
+    </template>
+
+    <!-- Web Component Definition (can also be moved to a .js file) -->
+    <script>
+      class MinigameSplash extends HTMLElement {
+        constructor() {
+          super()
+          const template = document.getElementById('minigame-splash-template')
+          if (!template) return console.error('Missing #minigame-splash-template')
+
+          const shadow = this.attachShadow({ mode: 'open' })
+          const content = template.content.cloneNode(true)
+
+          // Inject title from attribute
+          const titleEl = content.querySelector('.splash-wordmark')
+          if (titleEl) {
+            titleEl.textContent = this.getAttribute('title') || 'MINIGAME BUILDER'
+          }
+
+          shadow.appendChild(content)
+        }
+
+        /** Fade out, remove from DOM, and notify listeners */
+        hide() {
+          this.setAttribute('hiding', '')
+          this.addEventListener(
+            'transitionend',
+            (e) => {
+              if (e.propertyName === 'opacity') {
+                this.remove()
+                this.dispatchEvent(new CustomEvent('splash-removed'))
+              }
+            },
+            { once: true }
+          )
         }
       }
-    </style>
+
+      customElements.define('minigame-splash', MinigameSplash)
+    </script>
   </head>
   <body>
-    <div id="splash">
-      <div class="splash-ring"></div>
-      <div class="splash-wordmark">MINIGAME BUILDER</div>
-    </div>
+    <!-- Usage -->
+    <minigame-splash id="splash" title="MINIGAME BUILDER"></minigame-splash>
+
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
