@@ -10,8 +10,10 @@ export { useSettings } from './useSettings'
 
 // Templates
 export {
-  TEMPLATES_QUERY_KEY, useAllTemplates,
-  usePrefetchTemplates, useTemplateManager
+  TEMPLATES_QUERY_KEY,
+  useAllTemplates,
+  usePrefetchTemplates,
+  useTemplateManager
 } from './useTemplates'
 
 // Assets
@@ -36,3 +38,4 @@ export type { UseAutoSaveOptions } from './useAutoSave'
 // UI state (new)
 export { useSnackbar } from './useSnackbar'
 export type { UseSnackbarReturn } from './useSnackbar'
+

@@ -15,6 +15,7 @@ import type {
   AnyAppData,
   BalloonLetterPickerAppData,
   GroupSortAppData,
+  LabelledDiagramAppData,
   PairMatchingAppData,
   QuizAppData,
   WhackAMoleAppData,
@@ -172,6 +173,26 @@ export const GAME_DATA_TRANSFORMS: Record<string, DataTransform> = {
     )
 
     return omitInternalKeys(questions)
+  },
+
+  // Labelled Diagram
+  'labelled-diagram': (appData) => {
+    // Template expects:
+    // {
+    //   imagePath: string,
+    //   points: { id, text, xPercent, yPercent }[]
+    // }
+    const data = appData as LabelledDiagramAppData
+
+    return omitInternalKeys({
+      imagePath: data.imagePath,
+      points: (data.points ?? []).map(({ id, text, xPercent, yPercent }) => ({
+        id,
+        text,
+        xPercent,
+        yPercent
+      }))
+    })
   }
 }
 
