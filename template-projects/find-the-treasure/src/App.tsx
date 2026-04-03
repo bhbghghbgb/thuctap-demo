@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import { GameBoard } from './components/GameBoard'
 import { QuestionModal } from './components/QuestionModal'
@@ -8,11 +8,15 @@ import type { StageResult } from './types'
 const MASCOT_TRAVEL_MS = 900
 const COIN_RAIN_MS = 5000
 const coinImages = [
-  '/images/coin1.svg',
-  '/images/coin2.svg',
-  '/images/coin3.svg',
-  '/images/coin4.svg',
+  '/assets/images/coin1.svg',
+  '/assets/images/coin2.svg',
+  '/assets/images/coin3.svg',
+  '/assets/images/coin4.svg',
 ]
+const ANSWER_SOUND_PATHS = {
+  correct: '/assets/sounds/correct.mp3',
+  wrong: '/assets/sounds/failed.mp3',
+} as const
 const INTRO_STEPS = [
   'Follow the red route line and click the active island to open the next question.',
   'Choose one answer for each stage. Correct answers earn the stage points.',
@@ -56,6 +60,9 @@ function App() {
   const [isHeadingToTreasure, setIsHeadingToTreasure] = useState(false)
   const [showCoinRain, setShowCoinRain] = useState(false)
   const [coinDrops, setCoinDrops] = useState<CoinDrop[]>([])
+  const correctAnswerSoundRef = useRef<HTMLAudioElement | null>(null)
+  const wrongAnswerSoundRef = useRef<HTMLAudioElement | null>(null)
+  const fallbackSoundContextRef = useRef<AudioContext | null>(null)
 
   const currentStage = MY_APP_DATA[currentStageIndex]
   const totalStages = MY_APP_DATA.length
@@ -122,6 +129,91 @@ function App() {
     }
   }, [isHeadingToTreasure])
 
+  useEffect(() => {
+    correctAnswerSoundRef.current = new Audio(ANSWER_SOUND_PATHS.correct)
+    wrongAnswerSoundRef.current = new Audio(ANSWER_SOUND_PATHS.wrong)
+
+    correctAnswerSoundRef.current.preload = 'auto'
+    wrongAnswerSoundRef.current.preload = 'auto'
+    correctAnswerSoundRef.current.volume = 0.9
+    wrongAnswerSoundRef.current.volume = 0.9
+
+    return () => {
+      correctAnswerSoundRef.current?.pause()
+      wrongAnswerSoundRef.current?.pause()
+      void fallbackSoundContextRef.current?.close()
+      correctAnswerSoundRef.current = null
+      wrongAnswerSoundRef.current = null
+      fallbackSoundContextRef.current = null
+    }
+  }, [])
+
+  const playFallbackTone = (isCorrect: boolean) => {
+    const AudioContextClass = window.AudioContext
+
+    if (!AudioContextClass) {
+      return
+    }
+
+    const playTone = (audioContext: AudioContext) => {
+      const oscillator = audioContext.createOscillator()
+      const gainNode = audioContext.createGain()
+      const now = audioContext.currentTime
+      const duration = isCorrect ? 0.28 : 0.22
+
+      oscillator.type = isCorrect ? 'triangle' : 'square'
+      oscillator.frequency.setValueAtTime(isCorrect ? 740 : 220, now)
+      oscillator.frequency.exponentialRampToValueAtTime(
+        isCorrect ? 1040 : 160,
+        now + duration,
+      )
+
+      gainNode.gain.setValueAtTime(0.0001, now)
+      gainNode.gain.exponentialRampToValueAtTime(0.16, now + 0.02)
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, now + duration)
+
+      oscillator.connect(gainNode)
+      gainNode.connect(audioContext.destination)
+      oscillator.start(now)
+      oscillator.stop(now + duration)
+    }
+
+    const audioContext =
+      fallbackSoundContextRef.current ?? new AudioContextClass()
+
+    fallbackSoundContextRef.current = audioContext
+
+    if (audioContext.state === 'suspended') {
+      void audioContext.resume().then(() => playTone(audioContext))
+      return
+    }
+
+    playTone(audioContext)
+  }
+
+  const playAnswerSound = (isCorrect: boolean) => {
+    const answerSound = isCorrect
+      ? correctAnswerSoundRef.current
+      : wrongAnswerSoundRef.current
+
+    if (!answerSound) {
+      playFallbackTone(isCorrect)
+      return
+    }
+
+    answerSound.pause()
+    answerSound.currentTime = 0
+    const playPromise = answerSound.play()
+
+    if (playPromise === undefined) {
+      return
+    }
+
+    void playPromise.catch(() => {
+      playFallbackTone(isCorrect)
+    })
+  }
+
   const handleConfirmAnswer = () => {
     if (selectedOption === null || !currentStage || isAnswerLocked) {
       return
@@ -130,6 +222,7 @@ function App() {
     const isCorrect = selectedOption === currentStage.correctAnswer
     const pointsEarned = isCorrect ? currentStage.points : 0
 
+    playAnswerSound(isCorrect)
     setIsAnswerLocked(true)
     setStageResults((previous) => [
       ...previous,
