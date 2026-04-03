@@ -9,7 +9,7 @@ import { SummarySidebar, WordsTab } from './components'
 interface Props {
   appData: BalloonLetterPickerAppData
   projectDir: string
-  onChange: (data: BalloonLetterPickerAppData) => void
+  onCommit: (data: BalloonLetterPickerAppData) => void
 }
 
 function normalize(d: BalloonLetterPickerAppData): BalloonLetterPickerAppData {
@@ -19,7 +19,7 @@ function normalize(d: BalloonLetterPickerAppData): BalloonLetterPickerAppData {
 export default function BalloonLetterPickerEditor({
   appData: raw,
   projectDir,
-  onChange
+  onCommit
 }: Props): JSX.Element {
   const data = normalize(raw)
   const { resolved } = useSettings()
@@ -35,9 +35,9 @@ export default function BalloonLetterPickerEditor({
         imagePath: initialImagePath ?? '',
         hint: ''
       }
-      onChange({ ...data, _wordCounter: c, words: [...words, w] })
+      onCommit({ ...data, _wordCounter: c, words: [...words, w] })
     },
-    [data, words, resolved.prefillNames, onChange]
+    [data, words, resolved.prefillNames, onCommit]
   )
 
   const addWordFromDrop = useCallback(
@@ -52,23 +52,23 @@ export default function BalloonLetterPickerEditor({
         imagePath,
         hint: ''
       }
-      onChange({ ...data, _wordCounter: c, words: [...words, w] })
+      onCommit({ ...data, _wordCounter: c, words: [...words, w] })
     },
-    [data, words, projectDir, resolved.prefillNames, onChange]
+    [data, words, projectDir, resolved.prefillNames, onCommit]
   )
 
   const updateWord = useCallback(
     (id: string, patch: Partial<BalloonWord>) => {
-      onChange({ ...data, words: words.map((w) => (w.id === id ? { ...w, ...patch } : w)) })
+      onCommit({ ...data, words: words.map((w) => (w.id === id ? { ...w, ...patch } : w)) })
     },
-    [data, words, onChange]
+    [data, words, onCommit]
   )
 
   const deleteWord = useCallback(
     (id: string) => {
-      onChange({ ...data, words: words.filter((w) => w.id !== id) })
+      onCommit({ ...data, words: words.filter((w) => w.id !== id) })
     },
-    [data, words, onChange]
+    [data, words, onCommit]
   )
 
   // ── Keyboard shortcuts ────────────────────────────────────────────────────

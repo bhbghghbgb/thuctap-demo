@@ -11,7 +11,7 @@ import { QuestionsTab, SettingsTab } from './components'
 interface Props {
   appData: WhackAMoleAppData
   projectDir: string
-  onChange: (data: WhackAMoleAppData) => void
+  onCommit: (data: WhackAMoleAppData) => void
 }
 
 type Tab = 'questions' | 'settings'
@@ -29,7 +29,7 @@ function normalize(d: WhackAMoleAppData): WhackAMoleAppData {
 export default function WhackAMoleEditor({
   appData: raw,
   projectDir,
-  onChange
+  onCommit
 }: Props): React.ReactElement {
   const data = normalize(raw)
   const [tab, setTab] = useState<Tab>('questions')
@@ -48,9 +48,9 @@ export default function WhackAMoleEditor({
         answerText: resolved.prefillNames ? `Answer ${qc}` : '',
         answerImage: null
       }
-      onChange({ ...data, _questionCounter: qc, questions: [...questions, q] })
+      onCommit({ ...data, _questionCounter: qc, questions: [...questions, q] })
     },
-    [data, questions, resolved.prefillNames, onChange]
+    [data, questions, resolved.prefillNames, onCommit]
   )
 
   const addQuestionFromDrop = useCallback(
@@ -65,23 +65,23 @@ export default function WhackAMoleEditor({
         answerText: resolved.prefillNames ? `Answer ${qc}` : '',
         answerImage: null
       }
-      onChange({ ...data, _questionCounter: qc, questions: [...questions, q] })
+      onCommit({ ...data, _questionCounter: qc, questions: [...questions, q] })
     },
-    [data, questions, projectDir, resolved.prefillNames, onChange]
+    [data, questions, projectDir, resolved.prefillNames, onCommit]
   )
 
   const updateQuestion = useCallback(
     (id: string, patch: Partial<WhackAMoleQuestion>) => {
-      onChange({ ...data, questions: questions.map((q) => (q.id === id ? { ...q, ...patch } : q)) })
+      onCommit({ ...data, questions: questions.map((q) => (q.id === id ? { ...q, ...patch } : q)) })
     },
-    [data, questions, onChange]
+    [data, questions, onCommit]
   )
 
   const deleteQuestion = useCallback(
     (id: string) => {
-      onChange({ ...data, questions: questions.filter((q) => q.id !== id) })
+      onCommit({ ...data, questions: questions.filter((q) => q.id !== id) })
     },
-    [data, questions, onChange]
+    [data, questions, onCommit]
   )
 
   // ── Keyboard shortcuts ────────────────────────────────────────────────────
@@ -144,7 +144,7 @@ export default function WhackAMoleEditor({
           />
         )}
         {tab === 'settings' && (
-          <SettingsTab data={data} projectDir={projectDir} onChange={onChange} />
+          <SettingsTab data={data} projectDir={projectDir} onCommit={onCommit} />
         )}
       </Box>
     </Box>

@@ -4,7 +4,8 @@ import { useCallback, useRef } from 'react'
 export interface AtoZWordFieldProps {
   label: string
   value: string
-  onChange: (v: string) => void
+  onChange?: (v: string) => void
+  onBlur?: (v: string) => void
   placeholder?: string
   autoFocus?: boolean
   sx?: SxProps
@@ -20,6 +21,7 @@ export function AtoZWordField({
   label,
   value,
   onChange,
+  onBlur,
   placeholder,
   autoFocus,
   sx
@@ -56,7 +58,8 @@ export function AtoZWordField({
       <TextField
         label={label}
         value={value}
-        onChange={(e) => onChange(e.target.value.toUpperCase())}
+        onChange={onChange ? (e) => onChange(e.target.value.toUpperCase()) : undefined}
+        onBlur={onBlur ? (e) => onBlur(e.target.value.toUpperCase()) : undefined}
         placeholder={placeholder}
         size="small"
         error={!!isInvalid || !value.trim()}

@@ -7,12 +7,12 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber'
 import { Alert, Box, Button, Chip, IconButton, Paper, Tooltip, Typography } from '@mui/material'
 import React from 'react'
 import {
-  EmptyState,
-  FileDropTarget,
-  ImagePicker,
-  IndexBadge,
-  NameField,
-  StickyHeader
+    EmptyState,
+    FileDropTarget,
+    ImagePicker,
+    IndexBadge,
+    NameField,
+    StickyHeader
 } from '../../../components'
 import { GroupSortGroup, GroupSortItem } from '../../../types'
 import { GroupCard } from './GroupCard'
@@ -256,7 +256,7 @@ export function OverviewTab({
                     <NameField
                       label="Group name"
                       value={group.name}
-                      onChange={(v) => onUpdateGroup(group.id, { name: v })}
+                      onBlur={(v) => onUpdateGroup(group.id, { name: v })}
                       placeholder="Group name…"
                     />
                     <Chip

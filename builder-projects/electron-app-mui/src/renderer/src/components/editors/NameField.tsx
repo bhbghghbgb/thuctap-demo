@@ -4,7 +4,8 @@ import React, { useCallback, useRef } from 'react'
 export interface NameFieldProps {
   label: string
   value: string
-  onChange: (v: string) => void
+  onChange?: (v: string) => void
+  onBlur?: (v: string) => void
   placeholder?: string
   autoFocus?: boolean
   multiline?: boolean
@@ -19,6 +20,7 @@ export function NameField({
   label,
   value,
   onChange,
+  onBlur,
   placeholder,
   autoFocus,
   multiline,
@@ -42,7 +44,8 @@ export function NameField({
     <TextField
       label={label}
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={onChange ? (e) => onChange(e.target.value) : undefined}
+      onBlur={onBlur ? (e) => onBlur(e.target.value) : undefined}
       placeholder={placeholder}
       multiline={multiline}
       minRows={multiline ? 2 : undefined}

@@ -1,13 +1,13 @@
 import DeleteIcon from '@mui/icons-material/Delete'
 import {
-  FormControl,
-  IconButton,
-  InputLabel,
-  MenuItem,
-  Paper,
-  Select,
-  Tooltip,
-  Typography
+    FormControl,
+    IconButton,
+    InputLabel,
+    MenuItem,
+    Paper,
+    Select,
+    Tooltip,
+    Typography
 } from '@mui/material'
 import React from 'react'
 import { FileDropTarget, ImagePicker, IndexBadge, NameField } from '../../../components'
@@ -72,7 +72,7 @@ export function ItemCard({
         <NameField
           label="Item name"
           value={item.name}
-          onChange={(v) => onUpdate(item.id, { name: v })}
+          onBlur={(v) => onUpdate(item.id, { name: v })}
           placeholder="e.g. Dog, Apple, Red…"
           autoFocus={autoFocus}
         />

@@ -58,7 +58,7 @@ export function WordCard({
         <AtoZWordField
           label="Word"
           value={item.word}
-          onChange={(v) => onUpdate(item.id, { word: v })}
+          onBlur={(v) => onUpdate(item.id, { word: v })}
           placeholder="e.g. JUMP"
           autoFocus={autoFocus}
         />

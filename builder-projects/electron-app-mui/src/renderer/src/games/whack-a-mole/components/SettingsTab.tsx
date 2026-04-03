@@ -6,14 +6,14 @@ import { WhackAMoleAppData } from '../../../types'
 export interface SettingsTabProps {
   data: WhackAMoleAppData
   projectDir: string
-  onChange: (data: WhackAMoleAppData) => void
+  onCommit: (data: WhackAMoleAppData) => void
 }
 
 /**
  * Settings tab component for WhackAMoleEditor.
  * Handles global game configuration.
  */
-export function SettingsTab({ data, onChange }: SettingsTabProps): React.ReactElement {
+export function SettingsTab({ data, onCommit }: SettingsTabProps): React.ReactElement {
   return (
     <Box>
       <StickyHeader
@@ -35,7 +35,7 @@ export function SettingsTab({ data, onChange }: SettingsTabProps): React.ReactEl
               label="Title"
               size="small"
               value={data.title}
-              onChange={(e) => onChange({ ...data, title: e.target.value })}
+              onBlur={(e) => onCommit({ ...data, title: e.target.value })}
               fullWidth
               placeholder="Enter game title"
               helperText="The title displayed for this game."
@@ -45,7 +45,7 @@ export function SettingsTab({ data, onChange }: SettingsTabProps): React.ReactEl
               size="small"
               type="number"
               value={data.class}
-              onChange={(e) => onChange({ ...data, class: e.target.value })}
+              onBlur={(e) => onCommit({ ...data, class: e.target.value })}
               fullWidth
               placeholder="e.g., 1, 2, 3, 4, 5"
               helperText="The grade level this game is for (1-5)."

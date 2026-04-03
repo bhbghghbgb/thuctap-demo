@@ -7,14 +7,14 @@ import { PairMatchingAppData } from '../../../types'
 export interface SettingsTabProps {
   data: PairMatchingAppData
   projectDir: string
-  onChange: (data: PairMatchingAppData) => void
+  onCommit: (data: PairMatchingAppData) => void
 }
 
 /**
  * Settings tab component for PairMatchingEditor.
  * Handles global game configuration.
  */
-export function SettingsTab({ data, projectDir, onChange }: SettingsTabProps): React.ReactElement {
+export function SettingsTab({ data, projectDir, onCommit }: SettingsTabProps): React.ReactElement {
   return (
     <Box>
       <StickyHeader
@@ -36,9 +36,9 @@ export function SettingsTab({ data, projectDir, onChange }: SettingsTabProps): R
             type="number"
             size="small"
             value={data.minTotalPairs ?? ''}
-            onChange={(e) => {
+            onBlur={(e) => {
               const val = e.target.value === '' ? null : Number(e.target.value)
-              onChange({ ...data, minTotalPairs: val })
+              onCommit({ ...data, minTotalPairs: val })
             }}
             fullWidth
             placeholder="No minimum (empty)"
@@ -60,7 +60,7 @@ export function SettingsTab({ data, projectDir, onChange }: SettingsTabProps): R
                 label="Card Back Color"
                 size="small"
                 value={data.cardBackColor ?? ''}
-                onChange={(e) => onChange({ ...data, cardBackColor: e.target.value })}
+                onBlur={(e) => onCommit({ ...data, cardBackColor: e.target.value })}
                 fullWidth
                 placeholder="e.g. #FF0000 or red"
                 helperText="Color used for the back of cards if no image is provided."
@@ -76,7 +76,7 @@ export function SettingsTab({ data, projectDir, onChange }: SettingsTabProps): R
                 projectDir={projectDir}
                 desiredNamePrefix="global-card-back"
                 value={data.cardBackImage ?? null}
-                onChange={(p) => onChange({ ...data, cardBackImage: p })}
+                onChange={(p) => onCommit({ ...data, cardBackImage: p })}
                 label="Select Background"
                 size={100}
               />

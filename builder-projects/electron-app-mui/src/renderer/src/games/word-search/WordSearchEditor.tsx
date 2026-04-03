@@ -12,7 +12,7 @@ import { SettingsTab, WordsTab } from './components'
 interface Props {
   appData: WordSearchAppData
   projectDir: string
-  onChange: (data: WordSearchAppData) => void
+  onCommit: (data: WordSearchAppData) => void
 }
 
 type Tab = 'words' | 'settings'
@@ -24,7 +24,7 @@ function normalize(d: WordSearchAppData): WordSearchAppData {
 export default function WordSearchEditor({
   appData: raw,
   projectDir,
-  onChange
+  onCommit
 }: Props): React.JSX.Element {
   const data = normalize(raw)
   const [tab, setTab] = useState<Tab>('words')
@@ -44,9 +44,9 @@ export default function WordSearchEditor({
         word: resolved.prefillNames ? `WORD${getExcelName(counter)}` : '',
         imagePath: initialImage ?? null
       }
-      onChange({ ...data, _itemCounter: counter, items: [...items, i] })
+      onCommit({ ...data, _itemCounter: counter, items: [...items, i] })
     },
-    [data, items, resolved.prefillNames, onChange, nextItemId]
+    [data, items, resolved.prefillNames, onCommit, nextItemId]
   )
 
   const addItemFromDrop = useCallback(
@@ -58,23 +58,23 @@ export default function WordSearchEditor({
         word: resolved.prefillNames ? `WORD${getExcelName(counter)}` : '',
         imagePath
       }
-      onChange({ ...data, _itemCounter: counter, items: [...items, i] })
+      onCommit({ ...data, _itemCounter: counter, items: [...items, i] })
     },
-    [data, items, projectDir, resolved.prefillNames, onChange, nextItemId]
+    [data, items, projectDir, resolved.prefillNames, onCommit, nextItemId]
   )
 
   const updateItem = useCallback(
     (id: string, patch: Partial<WordSearchItem>) => {
-      onChange({ ...data, items: items.map((i) => (i.id === id ? { ...i, ...patch } : i)) })
+      onCommit({ ...data, items: items.map((i) => (i.id === id ? { ...i, ...patch } : i)) })
     },
-    [data, items, onChange]
+    [data, items, onCommit]
   )
 
   const deleteItem = useCallback(
     (id: string) => {
-      onChange({ ...data, items: items.filter((i) => i.id !== id) })
+      onCommit({ ...data, items: items.filter((i) => i.id !== id) })
     },
-    [data, items, onChange]
+    [data, items, onCommit]
   )
 
   useEntityCreateShortcut({
@@ -138,7 +138,7 @@ export default function WordSearchEditor({
           />
         )}
         {tab === 'settings' && (
-          <SettingsTab data={data} projectDir={projectDir} onChange={onChange} />
+          <SettingsTab data={data} projectDir={projectDir} onCommit={onCommit} />
         )}
       </Box>
     </Box>

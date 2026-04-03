@@ -8,7 +8,7 @@ import { QuizTab, SummarySidebar } from './components'
 interface Props {
   appData: QuizAppData
   projectDir: string
-  onChange: (data: QuizAppData) => void
+  onCommit: (data: QuizAppData) => void
 }
 
 function normalize(d: QuizAppData): QuizAppData {
@@ -22,7 +22,7 @@ function normalize(d: QuizAppData): QuizAppData {
 export default function QuizEditor({
   appData: raw,
   projectDir,
-  onChange
+  onCommit
 }: Props): React.ReactElement {
   const data = normalize(raw)
   const { resolved } = useSettings()
@@ -44,9 +44,9 @@ export default function QuizEditor({
           { id: `${qid}-a-2`, text: resolved.prefillNames ? 'Answer B' : '', isCorrect: false }
         ]
       }
-      onChange({ ...data, _questionCounter: qc, questions: [...questions, q] })
+      onCommit({ ...data, _questionCounter: qc, questions: [...questions, q] })
     },
-    [data, questions, resolved.prefillNames, onChange]
+    [data, questions, resolved.prefillNames, onCommit]
   )
 
   const addQuestionFromDrop = useCallback(
@@ -65,28 +65,28 @@ export default function QuizEditor({
           { id: `${qid}-a-2`, text: resolved.prefillNames ? 'Answer B' : '', isCorrect: false }
         ]
       }
-      onChange({ ...data, _questionCounter: qc, questions: [...questions, q] })
+      onCommit({ ...data, _questionCounter: qc, questions: [...questions, q] })
     },
-    [data, questions, projectDir, resolved.prefillNames, onChange]
+    [data, questions, projectDir, resolved.prefillNames, onCommit]
   )
 
   const updateQuestion = useCallback(
     (id: string, patch: Partial<QuizQuestion>) => {
-      onChange({ ...data, questions: questions.map((q) => (q.id === id ? { ...q, ...patch } : q)) })
+      onCommit({ ...data, questions: questions.map((q) => (q.id === id ? { ...q, ...patch } : q)) })
     },
-    [data, questions, onChange]
+    [data, questions, onCommit]
   )
 
   const deleteQuestion = useCallback(
     (id: string) => {
-      onChange({ ...data, questions: questions.filter((q) => q.id !== id) })
+      onCommit({ ...data, questions: questions.filter((q) => q.id !== id) })
     },
-    [data, questions, onChange]
+    [data, questions, onCommit]
   )
 
   const addAnswer = useCallback(
     (qid: string) => {
-      onChange({
+      onCommit({
         ...data,
         questions: questions.map((q) => {
           if (q.id !== qid) return q
@@ -100,12 +100,12 @@ export default function QuizEditor({
         })
       })
     },
-    [data, questions, resolved.prefillNames, onChange]
+    [data, questions, resolved.prefillNames, onCommit]
   )
 
   const updateAnswer = useCallback(
     (qid: string, aid: string, patch: Partial<QuizAnswer>) => {
-      onChange({
+      onCommit({
         ...data,
         questions: questions.map((q) => {
           if (q.id !== qid) return q
@@ -117,19 +117,19 @@ export default function QuizEditor({
         })
       })
     },
-    [data, questions, onChange]
+    [data, questions, onCommit]
   )
 
   const deleteAnswer = useCallback(
     (qid: string, aid: string) => {
-      onChange({
+      onCommit({
         ...data,
         questions: questions.map((q) =>
           q.id !== qid ? q : { ...q, answers: q.answers.filter((a) => a.id !== aid) }
         )
       })
     },
-    [data, questions, onChange]
+    [data, questions, onCommit]
   )
 
   // ── Keyboard shortcuts ────────────────────────────────────────────────────

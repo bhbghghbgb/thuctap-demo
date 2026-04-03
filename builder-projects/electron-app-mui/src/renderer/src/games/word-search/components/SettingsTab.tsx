@@ -7,14 +7,14 @@ import { WordSearchAppData } from '../../../types'
 export interface SettingsTabProps {
   data: WordSearchAppData
   projectDir: string
-  onChange: (data: WordSearchAppData) => void
+  onCommit: (data: WordSearchAppData) => void
 }
 
 /**
  * Settings tab component for WordSearchEditor.
  * Handles global game configuration.
  */
-export function SettingsTab({ data, projectDir, onChange }: SettingsTabProps): React.ReactElement {
+export function SettingsTab({ data, projectDir, onCommit }: SettingsTabProps): React.ReactElement {
   return (
     <Box>
       <StickyHeader
@@ -39,7 +39,7 @@ export function SettingsTab({ data, projectDir, onChange }: SettingsTabProps): R
                 projectDir={projectDir}
                 desiredNamePrefix="global-background"
                 value={data.backgroundImagePath ?? null}
-                onChange={(p) => onChange({ ...data, backgroundImagePath: p })}
+                onChange={(p) => onCommit({ ...data, backgroundImagePath: p })}
                 label="Select Background"
                 size={160}
               />

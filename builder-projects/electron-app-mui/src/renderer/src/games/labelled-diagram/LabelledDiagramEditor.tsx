@@ -6,16 +6,16 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import ZoomOutIcon from '@mui/icons-material/ZoomOut'
 import {
-  Box,
-  Button,
-  Divider,
-  IconButton,
-  Paper,
-  TextField,
-  Tooltip,
-  Typography,
-  keyframes,
-  styled
+    Box,
+    Button,
+    Divider,
+    IconButton,
+    Paper,
+    TextField,
+    Tooltip,
+    Typography,
+    keyframes,
+    styled
 } from '@mui/material'
 import { useEntityCreateShortcut } from '@renderer/hooks/useEntityCreateShortcut'
 import { JSX, MouseEvent, useCallback, useEffect, useRef, useState } from 'react'
@@ -27,7 +27,7 @@ import { LabelledDiagramAppData, LabelledDiagramPoint } from '../../types'
 interface Props {
   appData: LabelledDiagramAppData
   projectDir: string
-  onChange: (data: LabelledDiagramAppData) => void
+  onCommit: (data: LabelledDiagramAppData) => void
 }
 
 const BADGE_COLORS = [
@@ -84,7 +84,7 @@ const SelectedBadgeOutline = styled(Box)(({}) => ({
 export default function LabelledDiagramEditor({
   appData,
   projectDir,
-  onChange
+  onCommit
 }: Props): JSX.Element {
   const { points, imagePath } = appData
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -132,14 +132,14 @@ export default function LabelledDiagramEditor({
         xPercent,
         yPercent
       }
-      onChange({
+      onCommit({
         ...appData,
         points: [...localPoints, newPoint],
         _pointCounter: appData._pointCounter + 1
       })
       setSelectedPointId(id)
     },
-    [appData, localPoints, onChange]
+    [appData, localPoints, onCommit]
   )
 
   const updatePoint = useCallback(
@@ -148,24 +148,24 @@ export default function LabelledDiagramEditor({
       setLocalPoints(nextPoints)
 
       if (commit) {
-        onChange({
+        onCommit({
           ...appData,
           points: nextPoints
         })
       }
     },
-    [appData, localPoints, onChange]
+    [appData, localPoints, onCommit]
   )
 
   const deletePoint = useCallback(
     (id: string) => {
-      onChange({
+      onCommit({
         ...appData,
         points: localPoints.filter((p) => p.id !== id)
       })
       if (selectedPointId === id) setSelectedPointId(null)
     },
-    [appData, localPoints, selectedPointId, onChange]
+    [appData, localPoints, selectedPointId, onCommit]
   )
 
   const moveToPoint = useCallback((point: LabelledDiagramPoint) => {
@@ -290,7 +290,7 @@ export default function LabelledDiagramEditor({
 
       if (draggingPointId) {
         // Commit final position to history
-        onChange({
+        onCommit({
           ...appData,
           points: localPoints
         })
@@ -299,7 +299,7 @@ export default function LabelledDiagramEditor({
       setMouseDownPos(null)
       setPendingSelectedPointId(null)
     },
-    [draggingPointId, appData, localPoints, onChange, mouseDownPos, pendingSelectedPointId]
+    [draggingPointId, appData, localPoints, onCommit, mouseDownPos, pendingSelectedPointId]
   )
 
   useEffect(() => {
@@ -514,7 +514,7 @@ export default function LabelledDiagramEditor({
                     size="small"
                     variant="standard"
                     value={p.text}
-                    onChange={(e) => updatePoint(p.id, { text: e.target.value })}
+                    onBlur={(e) => updatePoint(p.id, { text: e.target.value })}
                     fullWidth
                     placeholder="Enter point label..."
                     InputProps={{
@@ -590,7 +590,7 @@ export default function LabelledDiagramEditor({
                 value={imagePath}
                 projectDir={projectDir}
                 desiredNamePrefix="diagram"
-                onChange={(path) => onChange({ ...appData, imagePath: path })}
+                onChange={(path) => onCommit({ ...appData, imagePath: path })}
               />
             </Box>
           </Box>
@@ -732,7 +732,7 @@ export default function LabelledDiagramEditor({
               </Typography>
               <IconButton
                 size="small"
-                onClick={() => onChange({ ...appData, imagePath: null })}
+                onClick={() => onCommit({ ...appData, imagePath: null })}
                 color="inherit"
                 sx={{ ml: 1, opacity: 0.7, '&:hover': { opacity: 1 } }}
               >

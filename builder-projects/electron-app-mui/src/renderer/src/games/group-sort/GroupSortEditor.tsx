@@ -13,7 +13,7 @@ import { GroupsTab, ItemsTab, OverviewTab } from './components'
 interface Props {
   appData: GroupSortAppData
   projectDir: string
-  onChange: (data: GroupSortAppData) => void
+  onCommit: (data: GroupSortAppData) => void
 }
 
 type Tab = 'groups' | 'items' | 'overview'
@@ -25,7 +25,7 @@ function normalize(d: GroupSortAppData): GroupSortAppData {
 export default function GroupSortEditor({
   appData: raw,
   projectDir,
-  onChange
+  onCommit
 }: Props): JSX.Element {
   const data = normalize(raw)
   const [tab, setTab] = useState<Tab>('groups')
@@ -51,9 +51,9 @@ export default function GroupSortEditor({
         name: resolved.prefillNames ? `Group ${counter}` : '',
         imagePath: initialImage ?? null
       }
-      onChange({ ...data, _groupCounter: counter, groups: [...groups, g] })
+      onCommit({ ...data, _groupCounter: counter, groups: [...groups, g] })
     },
-    [data, groups, resolved.prefillNames, onChange, nextGroupId]
+    [data, groups, resolved.prefillNames, onCommit, nextGroupId]
   )
 
   const addGroupFromDrop = useCallback(
@@ -65,27 +65,27 @@ export default function GroupSortEditor({
         name: resolved.prefillNames ? `Group ${counter}` : '',
         imagePath
       }
-      onChange({ ...data, _groupCounter: counter, groups: [...groups, g] })
+      onCommit({ ...data, _groupCounter: counter, groups: [...groups, g] })
     },
-    [data, groups, projectDir, resolved.prefillNames, onChange, nextGroupId]
+    [data, groups, projectDir, resolved.prefillNames, onCommit, nextGroupId]
   )
 
   const updateGroup = useCallback(
     (id: string, patch: Partial<GroupSortGroup>) => {
-      onChange({ ...data, groups: groups.map((g) => (g.id === id ? { ...g, ...patch } : g)) })
+      onCommit({ ...data, groups: groups.map((g) => (g.id === id ? { ...g, ...patch } : g)) })
     },
-    [data, groups, onChange]
+    [data, groups, onCommit]
   )
 
   const deleteGroup = useCallback(
     (id: string) => {
-      onChange({
+      onCommit({
         ...data,
         groups: groups.filter((g) => g.id !== id),
         items: items.map((i) => (i.groupId === id ? { ...i, groupId: '' } : i))
       })
     },
-    [data, groups, items, onChange]
+    [data, groups, items, onCommit]
   )
 
   const addItem = useCallback(
@@ -98,9 +98,9 @@ export default function GroupSortEditor({
         imagePath: initialImage ?? null,
         groupId: targetGroupId
       }
-      onChange({ ...data, _itemCounter: counter, items: [...items, i] })
+      onCommit({ ...data, _itemCounter: counter, items: [...items, i] })
     },
-    [data, items, groups, resolved.prefillNames, onChange, nextItemId]
+    [data, items, groups, resolved.prefillNames, onCommit, nextItemId]
   )
 
   const addItemFromDrop = useCallback(
@@ -114,23 +114,23 @@ export default function GroupSortEditor({
         imagePath,
         groupId: targetGroupId
       }
-      onChange({ ...data, _itemCounter: counter, items: [...items, i] })
+      onCommit({ ...data, _itemCounter: counter, items: [...items, i] })
     },
-    [data, items, groups, projectDir, resolved.prefillNames, onChange, nextItemId]
+    [data, items, groups, projectDir, resolved.prefillNames, onCommit, nextItemId]
   )
 
   const updateItem = useCallback(
     (id: string, patch: Partial<GroupSortItem>) => {
-      onChange({ ...data, items: items.map((i) => (i.id === id ? { ...i, ...patch } : i)) })
+      onCommit({ ...data, items: items.map((i) => (i.id === id ? { ...i, ...patch } : i)) })
     },
-    [data, items, onChange]
+    [data, items, onCommit]
   )
 
   const deleteItem = useCallback(
     (id: string) => {
-      onChange({ ...data, items: items.filter((i) => i.id !== id) })
+      onCommit({ ...data, items: items.filter((i) => i.id !== id) })
     },
-    [data, items, onChange]
+    [data, items, onCommit]
   )
 
   // ── Keyboard shortcuts ────────────────────────────────────────────────────

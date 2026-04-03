@@ -304,7 +304,7 @@ const status = await window.electronAPI.checkFolderStatus('/some/path')
 ```
 ┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
 │  Editor (UI)    │─────►│  Project State  │─────►│  Save to Disk   │
-│  (onChange)     │      │  (Context)      │      │  (IPC: save)    │
+│  (onCommit)     │      │  (Context)      │      │  (IPC: save)    │
 └─────────────────┘      └─────────────────┘      └─────────────────┘
                                 │
                                 ▼
@@ -404,12 +404,12 @@ import type { MyNewGameAppData } from '../../types'
 interface Props {
   appData: MyNewGameAppData
   projectDir: string
-  onChange: (data: MyNewGameAppData) => void
+  onCommit: (data: MyNewGameAppData) => void
 }
 
-export default function MyNewGameEditor({ appData, projectDir, onChange }: Props) {
+export default function MyNewGameEditor({ appData, projectDir, onCommit }: Props) {
   // Giao diện editor của bạn ở đây
-  // Gọi onChange với dữ liệu mới khi người dùng thực hiện thay đổi
+  // Gọi onCommit với dữ liệu mới khi người dùng thực hiện thay đổi
 
   return (
     <div>
@@ -421,8 +421,8 @@ export default function MyNewGameEditor({ appData, projectDir, onChange }: Props
 
 **Yêu cầu chính**:
 
-- Chấp nhận các props `appData`, `projectDir`, và `onChange`
-- Gọi `onChange` với một bản sao **bất biến mới** của `appData` mỗi khi có thay đổi
+- Chấp nhận các props `appData`, `projectDir`, và `onCommit`
+- Gọi `onCommit` với một bản sao **bất biến mới** của `appData` mỗi khi có thay đổi
 - Sử dụng các thành phần dùng chung từ `src/renderer/src/components/EditorShared`
 - Sử dụng `ImagePicker` để chọn hình ảnh
 
@@ -527,10 +527,10 @@ Builder sẽ hot-reload khi bạn thay đổi code renderer. Các thay đổi ga
 
 Khi tạo một editor mới, hãy nghiên cứu các editor hiện có để biết các mẫu:
 
-1. **Quản lý State**: Sử dụng controlled components với callbacks `onChange`
+1. **Quản lý State**: Sử dụng controlled components với callbacks `onCommit`
 2. **Shared Components**: Tái sử dụng `EditorShared` cho tabs, counters, list editors
 3. **Xử lý Hình ảnh**: Sử dụng `ImagePicker` và phương thức IPC `importImage`
-4. **Undo/Redo**: Project context xử lý việc này tự động—chỉ cần gọi `onChange` với dữ liệu mới
+4. **Undo/Redo**: Project context xử lý việc này tự động—chỉ cần gọi `onCommit` với dữ liệu mới
 5. **Keyboard Shortcuts**: Sử dụng `useEntityCreateShortcut` cho hotkey tạo entity
 
 Mẫu ví dụ:
@@ -541,7 +541,7 @@ function handleAddItem() {
     id: crypto.randomUUID(),
     text: ''
   }
-  onChange({
+  onCommit({
     ...appData,
     items: [...appData.items, newItem],
     _itemCounter: appData._itemCounter + 1
@@ -560,7 +560,7 @@ Sử dụng hook `useEntityCreateShortcut` để đăng ký keyboard shortcuts c
 ```typescript
 import { useEntityCreateShortcut } from '@renderer/hooks/useEntityCreateShortcut'
 
-export default function MyGameEditor({ appData, onChange }: Props) {
+export default function MyGameEditor({ appData, onCommit }: Props) {
   // Đăng ký shortcuts cho việc thêm items (tier 1) và groups (tier 2)
   useEntityCreateShortcut({
     onTier1: addItem, // Ctrl+N
@@ -680,21 +680,41 @@ npx electron-icon-builder --input=resources/icon.png --output=resources --flatte
 
 ### Cập nhật State Bất biến
 
-Luôn tạo đối tượng mới khi gọi `onChange`:
+Luôn tạo đối tượng mới khi gọi `onCommit`:
 
 ```typescript
 // ✅ Đúng
-onChange({
+onCommit({
   ...appData,
   items: [...appData.items, newItem]
 })
 
 // ❌ Sai (đột biến state hiện có)
 appData.items.push(newItem)
-onChange(appData)
+onCommit(appData)
 ```
 
 > 💡 **Mẹo**: Ứng dụng sử dụng thư viện `mutative` cho một số thao tác bất biến. Xem các trình soạn thảo hiện có để biết ví dụ.
+
+### onBlur cho Trường Văn bản
+
+Sử dụng `onBlur` thay vì `onChange` cho các trường văn bản để tránh làm phồng lịch sử undo/redo:
+
+```typescript
+// ✅ Đúng - commit khi người dùng rời khỏi trường
+<TextField
+  value={item.name}
+  onBlur={(e) => onCommit({ ...appData, items: [{ ...item, name: e.target.value }] })}
+/>
+
+// ❌ Tránh - commit trên mỗi lần gõ phím
+<TextField
+  value={item.name}
+  onChange={(e) => onCommit({ ...appData, items: [{ ...item, name: e.target.value }] })}
+/>
+```
+
+**Lưu ý**: `ImagePicker` và các thành phần tương tự vẫn dùng `onChange` vì chúng đại diện cho các hành động rời rạc (không phải gõ liên tục).
 
 ### Mẫu Counter
 
@@ -705,7 +725,7 @@ const newItem = {
   id: `item-${appData._itemCounter}`
   // ...
 }
-onChange({
+onCommit({
   ...appData,
   items: [...appData.items, newItem],
   _itemCounter: appData._itemCounter + 1
@@ -816,7 +836,7 @@ Chạy `../../build-templates.sh` từ gốc repo để đảm bảo tất cả 
 
 ### State Không Được Lưu Sau Khi Save
 
-1. Đảm bảo `onChange` được gọi với một đối tượng bất biến mới
+1. Đảm bảo `onCommit` được gọi với một đối tượng bất biến mới
 2. Kiểm tra rằng project context được kết nối đúng
 3. Xác minh cài đặt auto-save trong global settings
 4. Kiểm tra logs của main process để biết lỗi save

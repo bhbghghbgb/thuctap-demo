@@ -403,12 +403,12 @@ import type { MyNewGameAppData } from '../../types'
 interface Props {
   appData: MyNewGameAppData
   projectDir: string
-  onChange: (data: MyNewGameAppData) => void
+  onCommit: (data: MyNewGameAppData) => void
 }
 
-export default function MyNewGameEditor({ appData, projectDir, onChange }: Props) {
+export default function MyNewGameEditor({ appData, projectDir, onCommit }: Props) {
   // Your editor UI here
-  // Call onChange with new data when user makes changes
+  // Call onCommit with new data when user makes changes (e.g., on onBlur events)
 
   return (
     <div>
@@ -420,10 +420,11 @@ export default function MyNewGameEditor({ appData, projectDir, onChange }: Props
 
 **Key requirements**:
 
-- Accept `appData`, `projectDir`, and `onChange` props
-- Call `onChange` with a **new immutable copy** of `appData` on every change
+- Accept `appData`, `projectDir`, and `onCommit` props
+- Call `onCommit` with a **new immutable copy** of `appData` when user completes an edit (e.g., on `onBlur` for text inputs)
 - Use shared components from `src/renderer/src/components/EditorShared`
-- Use `ImagePicker` for image selection
+- Use `ImagePicker` for image selection (ImagePicker still uses `onChange` for immediate updates)
+- **Important**: Use `onBlur` instead of `onChange` for text inputs to avoid bloating the undo/redo history with single-character changes
 
 ### Step 6: Register the Editor
 
@@ -526,10 +527,10 @@ The builder will hot-reload when you change renderer code. Game template changes
 
 When creating a new editor, study existing ones for patterns:
 
-1. **State Management**: Use controlled components with `onChange` callbacks
+1. **State Management**: Use controlled components with `onBlur` for text inputs, `onChange` for image pickers
 2. **Shared Components**: Reuse `EditorShared` for tabs, counters, list editors
 3. **Image Handling**: Use `ImagePicker` and the `importImage` IPC method
-4. **Undo/Redo**: The project context handles this automatically—just call `onChange` with new data
+4. **Undo/Redo**: The project context handles this automatically—call `onCommit` with new data after user completes an edit
 5. **Keyboard Shortcuts**: Use `useEntityCreateShortcut` for entity creation hotkeys
 
 Example pattern:
@@ -540,7 +541,7 @@ function handleAddItem() {
     id: crypto.randomUUID(),
     text: ''
   }
-  onChange({
+  onCommit({
     ...appData,
     items: [...appData.items, newItem],
     _itemCounter: appData._itemCounter + 1
@@ -559,7 +560,7 @@ Use the `useEntityCreateShortcut` hook to register keyboard shortcuts for adding
 ```typescript
 import { useEntityCreateShortcut } from '@renderer/hooks/useEntityCreateShortcut'
 
-export default function MyGameEditor({ appData, onChange }: Props) {
+export default function MyGameEditor({ appData, onCommit }: Props) {
   // Register shortcuts for adding items (tier 1) and groups (tier 2)
   useEntityCreateShortcut({
     onTier1: addItem, // Ctrl+N
@@ -679,19 +680,39 @@ npx electron-icon-builder --input=resources/icon.png --output=resources --flatte
 
 ### Immutable State Updates
 
-Always create new objects when calling `onChange`:
+Always create new objects when calling `onCommit`:
 
 ```typescript
 // ✅ Correct
-onChange({
+onCommit({
   ...appData,
   items: [...appData.items, newItem]
 })
 
 // ❌ Wrong (mutates existing state)
 appData.items.push(newItem)
-onChange(appData)
+onCommit(appData)
 ```
+
+### onBlur for Text Inputs
+
+Use `onBlur` instead of `onChange` for text inputs to avoid bloating the undo/redo history:
+
+```typescript
+// ✅ Correct - commits when user leaves the field
+<TextField
+  value={item.name}
+  onBlur={(e) => onCommit({ ...appData, items: [{ ...item, name: e.target.value }] })}
+/>
+
+// ❌ Avoid - commits on every keystroke
+<TextField
+  value={item.name}
+  onChange={(e) => onCommit({ ...appData, items: [{ ...item, name: e.target.value }] })}
+/>
+```
+
+**Note**: `ImagePicker` and similar components still use `onChange` since they represent discrete actions (not continuous typing).
 
 ### Counter Pattern
 
@@ -702,7 +723,7 @@ const newItem = {
   id: `item-${appData._itemCounter}`
   // ...
 }
-onChange({
+onCommit({
   ...appData,
   items: [...appData.items, newItem],
   _itemCounter: appData._itemCounter + 1
@@ -813,7 +834,7 @@ Run `../../build-templates.sh` from the repo root to ensure all templates are bu
 
 ### State Not Persisting After Save
 
-1. Ensure `onChange` is called with a new immutable object
+1. Ensure `onCommit` is called with a new immutable object
 2. Check that the project context is properly wired
 3. Verify auto-save settings in global settings
 4. Check the main process logs for save errors

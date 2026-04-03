@@ -72,7 +72,7 @@ export function WordCard({
             <AtoZWordField
               label="Word (uppercase letters only)"
               value={word.word}
-              onChange={(v) => onUpdate(word.id, { word: v })}
+              onBlur={(v) => onUpdate(word.id, { word: v })}
               placeholder="e.g. JUMP"
               autoFocus={autoFocus}
             />
@@ -80,7 +80,7 @@ export function WordCard({
             <TextField
               label="Hint"
               value={word.hint}
-              onChange={(e) => onUpdate(word.id, { hint: e.target.value })}
+              onBlur={(e) => onUpdate(word.id, { hint: e.target.value })}
               placeholder="e.g. He pushes his body off the ground and rises into the air."
               size="small"
               multiline

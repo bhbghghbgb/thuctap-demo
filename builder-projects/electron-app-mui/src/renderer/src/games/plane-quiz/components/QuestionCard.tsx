@@ -1,14 +1,14 @@
 import DeleteIcon from '@mui/icons-material/Delete'
 import WarningAmberIcon from '@mui/icons-material/WarningAmber'
 import {
-  Box,
-  Chip,
-  FormControlLabel,
-  IconButton,
-  Paper,
-  Switch,
-  Tooltip,
-  Typography
+    Box,
+    Chip,
+    FormControlLabel,
+    IconButton,
+    Paper,
+    Switch,
+    Tooltip,
+    Typography
 } from '@mui/material'
 import React from 'react'
 import { FileDropTarget, ImagePicker, IndexBadge, NameField } from '../../../components'
@@ -79,7 +79,7 @@ export function QuestionCard({
             <NameField
               label="Question text"
               value={question.question}
-              onChange={(v) => onUpdate(question.id, { question: v })}
+              onBlur={(v) => onUpdate(question.id, { question: v })}
               placeholder="e.g. Which animal is the largest?"
               autoFocus={autoFocus}
               multiline

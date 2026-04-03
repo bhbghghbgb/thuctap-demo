@@ -11,7 +11,7 @@ import { PairsTab, SettingsTab } from './components'
 interface Props {
   appData: PairMatchingAppData
   projectDir: string
-  onChange: (data: PairMatchingAppData) => void
+  onCommit: (data: PairMatchingAppData) => void
 }
 
 type Tab = 'pairs' | 'settings'
@@ -23,7 +23,7 @@ function normalize(d: PairMatchingAppData): PairMatchingAppData {
 export default function PairMatchingEditor({
   appData: raw,
   projectDir,
-  onChange
+  onCommit
 }: Props): JSX.Element {
   const data = normalize(raw)
   const [tab, setTab] = useState<Tab>('pairs')
@@ -44,9 +44,9 @@ export default function PairMatchingEditor({
         imagePath: initialImage ?? null,
         minPairs: 1
       }
-      onChange({ ...data, _itemCounter: counter, items: [...items, i] })
+      onCommit({ ...data, _itemCounter: counter, items: [...items, i] })
     },
-    [data, items, resolved.prefillNames, onChange, nextItemId]
+    [data, items, resolved.prefillNames, onCommit, nextItemId]
   )
 
   const addItemFromDrop = useCallback(
@@ -58,23 +58,23 @@ export default function PairMatchingEditor({
         keyword: resolved.prefillNames ? `Pair ${counter}` : '',
         imagePath
       }
-      onChange({ ...data, _itemCounter: counter, items: [...items, i] })
+      onCommit({ ...data, _itemCounter: counter, items: [...items, i] })
     },
-    [data, items, projectDir, resolved.prefillNames, onChange, nextItemId]
+    [data, items, projectDir, resolved.prefillNames, onCommit, nextItemId]
   )
 
   const updateItem = useCallback(
     (id: string, patch: Partial<PairMatchingItem>) => {
-      onChange({ ...data, items: items.map((i) => (i.id === id ? { ...i, ...patch } : i)) })
+      onCommit({ ...data, items: items.map((i) => (i.id === id ? { ...i, ...patch } : i)) })
     },
-    [data, items, onChange]
+    [data, items, onCommit]
   )
 
   const deleteItem = useCallback(
     (id: string) => {
-      onChange({ ...data, items: items.filter((i) => i.id !== id) })
+      onCommit({ ...data, items: items.filter((i) => i.id !== id) })
     },
-    [data, items, onChange]
+    [data, items, onCommit]
   )
 
   useEntityCreateShortcut({
@@ -136,7 +136,7 @@ export default function PairMatchingEditor({
           />
         )}
         {tab === 'settings' && (
-          <SettingsTab data={data} projectDir={projectDir} onChange={onChange} />
+          <SettingsTab data={data} projectDir={projectDir} onCommit={onCommit} />
         )}
       </Box>
     </Box>

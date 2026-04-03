@@ -58,7 +58,7 @@ export function GroupCard({
         <NameField
           label="Group name"
           value={group.name}
-          onChange={(v) => onUpdate(group.id, { name: v })}
+          onBlur={(v) => onUpdate(group.id, { name: v })}
           placeholder="e.g. Animals, Fruits, Colors…"
           autoFocus={autoFocus}
         />

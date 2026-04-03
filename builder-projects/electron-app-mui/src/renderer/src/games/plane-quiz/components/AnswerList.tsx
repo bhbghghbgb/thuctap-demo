@@ -63,7 +63,7 @@ export function AnswerList({
               size="small"
               fullWidth
               value={answer.text}
-              onChange={(e) => onUpdateAnswer(question.id, answer.id, { text: e.target.value })}
+              onBlur={(e) => onUpdateAnswer(question.id, answer.id, { text: e.target.value })}
               placeholder={`Answer ${String.fromCharCode(64 + aIdx + 1)}…`}
               error={!answer.text.trim()}
               sx={{

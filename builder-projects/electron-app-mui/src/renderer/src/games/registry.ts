@@ -25,7 +25,7 @@ export interface GameRegistryEntry {
   Editor: ComponentType<{
     appData: AnyAppData
     projectDir: string
-    onChange: (data: AnyAppData) => void
+    onCommit: (data: AnyAppData) => void
   }>
   /** Returns a fresh, empty appData object for new projects */
   createInitialData: () => AnyAppData

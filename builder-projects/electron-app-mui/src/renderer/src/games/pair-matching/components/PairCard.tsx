@@ -58,7 +58,7 @@ export function PairCard({
         <NameField
           label="Keyword"
           value={item.keyword}
-          onChange={(v) => onUpdate(item.id, { keyword: v })}
+          onBlur={(v) => onUpdate(item.id, { keyword: v })}
           placeholder="e.g. Apple, Dog…"
           autoFocus={autoFocus}
         />
@@ -67,7 +67,7 @@ export function PairCard({
           type="number"
           size="small"
           value={item.minPairs ?? ''}
-          onChange={(e) => {
+          onBlur={(e) => {
             const val = e.target.value === '' ? null : Number(e.target.value)
             onUpdate(item.id, { minPairs: val })
           }}

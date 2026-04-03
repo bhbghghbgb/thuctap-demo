@@ -1,5 +1,6 @@
 import { Box, Button, Typography } from '@mui/material'
 import { useSettings } from '@renderer/hooks/useSettings'
+import { deepEqual } from 'fast-equals'
 import { JSX, useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
@@ -196,6 +197,8 @@ function ProjectPageInner({ templateId, locationState }: ProjectPageInnerProps):
   // ── App data change (from editor) ─────────────────────────────────────────
   const handleAppDataChange = useCallback(
     (newData: AnyAppData) => {
+      if (deepEqual(appDataRef.current, newData)) return
+
       // Update history state (for undo/redo)
       setPresent(newData)
 
@@ -363,7 +366,7 @@ function ProjectPageInner({ templateId, locationState }: ProjectPageInnerProps):
             )
           const { Editor } = entry
           return (
-            <Editor appData={appData} projectDir={meta.projectDir} onChange={handleAppDataChange} />
+            <Editor appData={appData} projectDir={meta.projectDir} onCommit={handleAppDataChange} />
           )
         })()}
       </Box>

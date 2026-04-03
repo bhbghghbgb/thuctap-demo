@@ -78,7 +78,7 @@ export function QuestionCard({
           <NameField
             label="Question text"
             value={question.question}
-            onChange={(v) => onUpdate(question.id, { question: v })}
+            onBlur={(v) => onUpdate(question.id, { question: v })}
             placeholder="e.g. Con chuột đang ở vị trí nào?"
             autoFocus={autoFocus}
             multiline
@@ -149,7 +149,7 @@ export function QuestionCard({
           <NameField
             label="Answer text"
             value={question.answerText}
-            onChange={(v) => onUpdate(question.id, { answerText: v })}
+            onBlur={(v) => onUpdate(question.id, { answerText: v })}
             placeholder="e.g. Dưới đất"
             multiline={false}
           />
