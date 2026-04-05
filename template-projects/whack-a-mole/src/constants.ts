@@ -27,24 +27,24 @@ export const data: GameData = {
     },
     {
       groupId: 4,
-      question: "hope",
-      questionImage: "./assets/images/mascots/hope.png",
-      answerText: "Dưới đất",
-      answerImage: "./assets/images/mascots/hope.png"
+      question: "Hope",
+      questionImage: "./assets/images/mascots/Hope.png",
+      answerText: "Hope",
+      answerImage: "./assets/images/mascots/Hope.png"
     },
     {
       groupId: 5,
       question: "icon",
-      questionImage: "./assets/images/icon.png",
+      questionImage: "./assets/images/icons/32x32.png",
       answerText: "icon",
-      answerImage: "./assets/images/icon.png"
+      answerImage: "./assets/images/icons/32x32.png"
     },
     {
       groupId: 6,
-      question: "chicky",
+      question: "Chicky",
       // questionImage: "./assets/images/toupeira2.svg",
       // answerText: "Nửa trên nửa dưới",
-      answerImage: "./assets/images/mascots/chicky.png"
+      answerImage: "./assets/images/mascots/Chicky.png"
     }
   ]
 };
