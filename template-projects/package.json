@@ -11,7 +11,8 @@
     "plane-quiz",
     "whack-a-mole",
     "word-search",
-    "find-the-treasure"
+    "find-the-treasure",
+    "jumping-frog"
   ],
   "scripts": {
     "build:shared": "yarn workspaces foreach -A -p --include '@minigame/*' run build",
@@ -23,7 +24,8 @@
     "build:whack-a-mole": "yarn workspace whack-a-mole run build",
     "build:word-search": "yarn workspace word-search run build",
     "build:labelled-diagram": "yarn workspace labelled-diagram run build",
-    "build:find-the-treasure": "yarn workspace find-the-treasure run build"
+    "build:find-the-treasure": "yarn workspace find-the-treasure run build",
+    "build:jumping-frog": "yarn workspace jumping-frog run build"
   },
   "packageManager": "yarn@4.13.0"
 }
