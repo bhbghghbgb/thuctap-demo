@@ -1,5 +1,14 @@
 import type { Stage } from '../types'
 
+type RuntimeWindow = Window &
+  typeof globalThis & {
+    APP_DATA?: unknown
+    MY_APP_DATA?: unknown
+    __MY_APP_DATA__?: unknown
+    win?: {
+      DATA?: unknown
+    }
+  }
 
 const defaultStages: Stage[] = [
   {
@@ -73,8 +82,7 @@ const defaultStages: Stage[] = [
     prompt: 'What is 7 + 5?',
     options: ['11', '12', '13'],
     correctAnswer: 1,
-    explanation:
-      '7 + 5 equals 12.',
+    explanation: '7 + 5 equals 12.',
     points: 10,
   },
   {
@@ -95,8 +103,7 @@ const defaultStages: Stage[] = [
     prompt: 'What is 9 - 4?',
     options: ['3', '4', '5'],
     correctAnswer: 2,
-    explanation:
-      '9 minus 4 equals 5.',
+    explanation: '9 minus 4 equals 5.',
     points: 10,
   },
   {
@@ -114,11 +121,10 @@ const defaultStages: Stage[] = [
     id: 'sky-temple',
     location: 'Sky Temple',
     story: 'Floating stones guide you with one final question.',
-    prompt: 'What is 6 × 2?',
+    prompt: 'What is 6 x 2?',
     options: ['10', '12', '14'],
     correctAnswer: 1,
-    explanation:
-      '6 multiplied by 2 equals 12.',
+    explanation: '6 multiplied by 2 equals 12.',
     points: 15,
   },
   {
@@ -139,8 +145,7 @@ const defaultStages: Stage[] = [
     prompt: 'What is 8 + 6?',
     options: ['12', '13', '14'],
     correctAnswer: 2,
-    explanation:
-      '8 plus 6 equals 14.',
+    explanation: '8 plus 6 equals 14.',
     points: 10,
   },
   {
@@ -158,20 +163,142 @@ const defaultStages: Stage[] = [
     id: 'volcano-core',
     location: 'Burning Volcano',
     story: 'The heat intensifies as a final equation appears.',
-    prompt: 'What is 5 × 3?',
+    prompt: 'What is 5 x 3?',
     options: ['10', '15', '20'],
     correctAnswer: 1,
-    explanation:
-      '5 multiplied by 3 equals 15.',
+    explanation: '5 multiplied by 3 equals 15.',
     points: 15,
   },
 ]
 
-export const MY_APP_DATA: Stage[] = 
-  import.meta.env.PROD && 
-  typeof window !== 'undefined' &&  
-  (window as Window & typeof globalThis & { __MY_APP_DATA__: Stage[] })[
-    '__MY_APP_DATA__'
-  ]
-    ? (window as Window & typeof globalThis & { __MY_APP_DATA__: Stage[] }) ['__MY_APP_DATA__']
-    : defaultStages
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function readString(value: unknown, fallback = ''): string {
+  return typeof value === 'string' ? value : fallback
+}
+
+function readNumber(value: unknown, fallback = 0): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback
+}
+
+function readOptionList(value: unknown): string[] | null {
+  if (!Array.isArray(value)) {
+    return null
+  }
+
+  return value
+    .map((option) => (typeof option === 'string' ? option : null))
+    .filter((option): option is string => option !== null)
+}
+
+function readCorrectAnswerIndex(value: unknown, optionsLength: number): number | null {
+  if (
+    typeof value !== 'number' ||
+    !Number.isInteger(value) ||
+    optionsLength <= 0
+  ) {
+    return null
+  }
+
+  return Math.min(optionsLength - 1, Math.max(0, value))
+}
+
+function normalizeStage(value: unknown, index: number): Stage | null {
+  if (!isRecord(value)) {
+    return null
+  }
+
+  const directOptions = readOptionList(value.options)
+  const editorAnswers = Array.isArray(value.answers) ? value.answers : null
+  const editorOptions =
+    editorAnswers?.map((answer) =>
+      isRecord(answer) ? readString(answer.text) : '',
+    ) ?? null
+  const options = directOptions ?? editorOptions
+
+  if (options === null) {
+    return null
+  }
+
+  const directCorrectAnswer = readCorrectAnswerIndex(
+    value.correctAnswer,
+    options.length,
+  )
+  const editorCorrectAnswer =
+    editorAnswers?.findIndex(
+      (answer) => isRecord(answer) && answer.isCorrect === true,
+    ) ?? -1
+  const correctAnswer =
+    directCorrectAnswer ??
+    (options.length > 0 && editorCorrectAnswer >= 0
+      ? editorCorrectAnswer
+      : 0)
+
+  return {
+    id: readString(value.id, `stage-${index + 1}`),
+    location: readString(
+      value.location,
+      readString(value.stageName, `Stage ${index + 1}`),
+    ),
+    story: readString(value.story, readString(value.stageText)),
+    prompt: readString(value.prompt, readString(value.question)),
+    options,
+    correctAnswer,
+    explanation: readString(
+      value.explanation,
+      readString(value.stageDescription),
+    ),
+    points: Math.max(
+      0,
+      readNumber(value.points, readNumber(value.stageValue)),
+    ),
+  }
+}
+
+function normalizeStageList(value: unknown): Stage[] | null {
+  if (!Array.isArray(value)) {
+    return null
+  }
+
+  return value
+    .map((stage, index) => normalizeStage(stage, index))
+    .filter((stage): stage is Stage => stage !== null)
+}
+
+function readRuntimeAppData(): unknown {
+  if (typeof window === 'undefined') {
+    return undefined
+  }
+
+  const runtimeWindow = window as RuntimeWindow
+
+  return (
+    runtimeWindow.APP_DATA ??
+    runtimeWindow.MY_APP_DATA ??
+    runtimeWindow.win?.DATA ??
+    runtimeWindow.__MY_APP_DATA__
+  )
+}
+
+function resolveRuntimeStages(runtimeData: unknown): Stage[] | null {
+  const directStages = normalizeStageList(runtimeData)
+
+  if (directStages !== null) {
+    return directStages
+  }
+
+  if (!isRecord(runtimeData)) {
+    return null
+  }
+
+  return normalizeStageList(runtimeData.stages)
+}
+
+const runtimeAppData = readRuntimeAppData()
+
+export const MY_APP_DATA: Stage[] =
+  runtimeAppData === undefined
+    ? defaultStages
+    : resolveRuntimeStages(runtimeAppData) ?? defaultStages

@@ -66,13 +66,15 @@ function App() {
 
   const currentStage = MY_APP_DATA[currentStageIndex]
   const totalStages = MY_APP_DATA.length
+  const hasStages = totalStages > 0
   const totalScore = stageResults.reduce(
     (sum, result) => sum + result.pointsEarned,
     0,
   )
   const completedStages = stageResults.length
-  const perfectRun = stageResults.every((result) => result.isCorrect)
-  const gameFinished = completedStages === totalStages
+  const perfectRun =
+    hasStages && stageResults.every((result) => result.isCorrect)
+  const gameFinished = hasStages && completedStages === totalStages
 
   const latestResult = stageResults.at(-1)
 
@@ -376,6 +378,32 @@ function App() {
             </section>
           </section>
         ) : null}
+      </main>
+    )
+  }
+
+  if (!hasStages) {
+    return (
+      <main className="app-shell app-shell-intro">
+        <section className="intro-screen">
+          <div className="intro-card">
+            <p className="eyebrow">Classroom Adventure</p>
+            <h1>Find the Treasure Box</h1>
+            <p className="hero-text">
+              No stages are available yet. Add content in the editor, then preview
+              the game again to see it on the adventure map.
+            </p>
+            <div className="intro-actions">
+              <button
+                className="secondary-button intro-secondary-button"
+                type="button"
+                onClick={() => setHasStarted(false)}
+              >
+                Back
+              </button>
+            </div>
+          </div>
+        </section>
       </main>
     )
   }

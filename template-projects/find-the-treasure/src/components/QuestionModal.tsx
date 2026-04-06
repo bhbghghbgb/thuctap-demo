@@ -54,7 +54,7 @@ export function QuestionModal({
 
             return (
               <button
-                key={option}
+                key={`${stage.id}-option-${index}`}
                 type="button"
                 className={[
                   'option-button',
