@@ -1,0 +1,6 @@
+{
+    "name": "Find the Treasure",
+    "description": "A simple game where players navigate through a maze to find hidden treasure.",
+    "gameType": "find-the-treasure",
+    "version": "0.0.1"
+}

@@ -18,6 +18,8 @@ const TREASURE_ROUTE_EDGE_OFFSET = 38
 const STAGES_PER_PAGE = 5
 const MAP_WIDTH = 940
 const MAP_HEIGHT = 430
+const START_POSITION = { top: 300, left: 8 }
+const TREASURE_POSITION = { top: 100, left: 994 }
 const MAP_SIDE_PADDING = ISLAND_NODE_WIDTH / 2 + 12
 const MAP_TOP_PADDING = ISLAND_ART_SIZE / 2 + 12
 const MAP_BOTTOM_PADDING = ISLAND_ART_SIZE / 2 + 12
@@ -259,14 +261,12 @@ export function GameBoard({
     () => createRouteLayout(stagePage, currentPage, layoutSeed),
     [currentPage, layoutSeed, stagePage],
   )
-  const startPosition = { top: 300, left: 8 }
-  const treasurePosition = { top: 100, left: 994 }
   const showTreasureMarker = currentPage === totalPages - 1
   const islandPositions = routeLayout.islandPositions
   const landingPositions = routeLayout.routePoints
   const routeSegments = createRouteSegments(
     landingPositions,
-    showTreasureMarker ? treasurePosition : null,
+    showTreasureMarker ? TREASURE_POSITION : null,
   )
   const visibleStageStart = currentPage * STAGES_PER_PAGE
   const visibleStageEnd = visibleStageStart + stagePage.length - 1
@@ -284,11 +284,11 @@ export function GameBoard({
   const pageCompleted = visibleStageEnd < stageResults.length
   const mascotPosition =
     isFreshRun
-      ? startPosition
+      ? START_POSITION
       : isHeadingToTreasure
-      ? treasurePosition
+      ? TREASURE_POSITION
       : mascotTargetIndex === null || !currentStageVisible || !mascotTargetVisible
-      ? startPosition
+      ? START_POSITION
       : landingPositions[
           gameFinished
             ? Math.min(stagePage.length - 1, stages.length - 1 - visibleStageStart)
