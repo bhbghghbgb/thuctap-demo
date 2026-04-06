@@ -1,5 +1,16 @@
 import type { Stage } from '../types'
 
+type RecordValue = Record<string, unknown>
+
+type RuntimeWindow = Window &
+  typeof globalThis & {
+    __MY_APP_DATA__?: unknown
+    MY_APP_DATA?: unknown
+    APP_DATA?: unknown
+    win?: {
+      DATA?: unknown
+    }
+  }
 
 const defaultStages: Stage[] = [
   {
@@ -55,123 +66,170 @@ const defaultStages: Stage[] = [
       'The pattern adds 5 each time, so the next number after 20 is 25.',
     points: 15,
   },
-  {
-    id: 'forest-gate',
-    location: 'Whispering Forest',
-    story: 'A glowing tree asks you to solve a simple number riddle.',
-    prompt: 'What number comes next in the pattern 2, 4, 6, 8, ...?',
-    options: ['10', '12', '14'],
-    correctAnswer: 0,
-    explanation:
-      'The pattern increases by 2 each time, so the next number is 10.',
-    points: 10,
-  },
-  {
-    id: 'river-crossing',
-    location: 'Crystal River',
-    story: 'A bridge appears only if you answer correctly.',
-    prompt: 'What is 7 + 5?',
-    options: ['11', '12', '13'],
-    correctAnswer: 1,
-    explanation:
-      '7 + 5 equals 12.',
-    points: 10,
-  },
-  {
-    id: 'cave-door',
-    location: 'Dark Cave',
-    story: 'A stone door blocks your path with a math puzzle.',
-    prompt: 'What number comes next in the pattern 3, 6, 9, 12, ...?',
-    options: ['14', '15', '18'],
-    correctAnswer: 1,
-    explanation:
-      'The pattern adds 3 each time, so the next number is 15.',
-    points: 10,
-  },
-  {
-    id: 'mountain-peak',
-    location: 'High Mountain',
-    story: 'The wind whispers a question as you climb higher.',
-    prompt: 'What is 9 - 4?',
-    options: ['3', '4', '5'],
-    correctAnswer: 2,
-    explanation:
-      '9 minus 4 equals 5.',
-    points: 10,
-  },
-  {
-    id: 'hidden-lake',
-    location: 'Hidden Lake',
-    story: 'A magical fish asks you to solve its puzzle.',
-    prompt: 'What number comes next in the pattern 10, 20, 30, ...?',
-    options: ['35', '40', '50'],
-    correctAnswer: 1,
-    explanation:
-      'The pattern increases by 10 each time, so the next number is 40.',
-    points: 10,
-  },
-  {
-    id: 'sky-temple',
-    location: 'Sky Temple',
-    story: 'Floating stones guide you with one final question.',
-    prompt: 'What is 6 × 2?',
-    options: ['10', '12', '14'],
-    correctAnswer: 1,
-    explanation:
-      '6 multiplied by 2 equals 12.',
-    points: 15,
-  },
-  {
-    id: 'desert-ruins',
-    location: 'Ancient Desert',
-    story: 'The sand reveals a hidden number puzzle from the past.',
-    prompt: 'What number comes next in the pattern 1, 3, 5, 7, ...?',
-    options: ['8', '9', '10'],
-    correctAnswer: 1,
-    explanation:
-      'The pattern increases by 2 each time, so the next number is 9.',
-    points: 10,
-  },
-  {
-    id: 'icy-cavern',
-    location: 'Frozen Cave',
-    story: 'A block of ice glows with a simple math challenge.',
-    prompt: 'What is 8 + 6?',
-    options: ['12', '13', '14'],
-    correctAnswer: 2,
-    explanation:
-      '8 plus 6 equals 14.',
-    points: 10,
-  },
-  {
-    id: 'jungle-path',
-    location: 'Deep Jungle',
-    story: 'The path is blocked by vines forming a number sequence.',
-    prompt: 'What number comes next in the pattern 4, 8, 12, 16, ...?',
-    options: ['18', '20', '24'],
-    correctAnswer: 1,
-    explanation:
-      'The pattern increases by 4 each time, so the next number is 20.',
-    points: 10,
-  },
-  {
-    id: 'volcano-core',
-    location: 'Burning Volcano',
-    story: 'The heat intensifies as a final equation appears.',
-    prompt: 'What is 5 × 3?',
-    options: ['10', '15', '20'],
-    correctAnswer: 1,
-    explanation:
-      '5 multiplied by 3 equals 15.',
-    points: 15,
-  },
 ]
 
-export const MY_APP_DATA: Stage[] = 
-  import.meta.env.PROD && 
-  typeof window !== 'undefined' &&  
-  (window as Window & typeof globalThis & { __MY_APP_DATA__: Stage[] })[
-    '__MY_APP_DATA__'
-  ]
-    ? (window as Window & typeof globalThis & { __MY_APP_DATA__: Stage[] }) ['__MY_APP_DATA__']
-    : defaultStages
+function isRecord(value: unknown): value is RecordValue {
+  return typeof value === 'object' && value !== null
+}
+
+function readString(record: RecordValue, key: string): string | undefined {
+  const value = record[key]
+  return typeof value === 'string' ? value : undefined
+}
+
+function readNumber(record: RecordValue, key: string): number | undefined {
+  const value = record[key]
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value
+  }
+
+  if (typeof value === 'string' && value.trim().length > 0) {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : undefined
+  }
+
+  return undefined
+}
+
+function readBoolean(record: RecordValue, key: string): boolean | undefined {
+  const value = record[key]
+  return typeof value === 'boolean' ? value : undefined
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value))
+}
+
+function normalizeOptionsFromAnswers(
+  stageRecord: RecordValue,
+): { options: string[]; correctAnswer: number | undefined } {
+  const answers = stageRecord.answers
+
+  if (!Array.isArray(answers)) {
+    return {
+      options: [],
+      correctAnswer: undefined,
+    }
+  }
+
+  const optionEntries = answers
+    .map((answer) => {
+      if (!isRecord(answer)) {
+        return null
+      }
+
+      const text = readString(answer, 'text')
+
+      if (!text) {
+        return null
+      }
+
+      return {
+        text,
+        isCorrect: readBoolean(answer, 'isCorrect') ?? false,
+      }
+    })
+    .filter((entry): entry is { text: string; isCorrect: boolean } => {
+      return entry !== null
+    })
+
+  const correctAnswer = optionEntries.findIndex((entry) => entry.isCorrect)
+
+  return {
+    options: optionEntries.map((entry) => entry.text),
+    correctAnswer: correctAnswer >= 0 ? correctAnswer : undefined,
+  }
+}
+
+function normalizeOptionsFromStage(
+  stageRecord: RecordValue,
+): { options: string[]; correctAnswer: number } {
+  const optionsFromStage = Array.isArray(stageRecord.options)
+    ? stageRecord.options.filter((option): option is string => typeof option === 'string')
+    : []
+  const answersData = normalizeOptionsFromAnswers(stageRecord)
+  const options =
+    optionsFromStage.length > 0 ? optionsFromStage : answersData.options
+  const explicitCorrectAnswer = readNumber(stageRecord, 'correctAnswer')
+  const rawCorrectAnswer =
+    explicitCorrectAnswer ?? answersData.correctAnswer ?? 0
+  const boundedCorrectAnswer =
+    options.length > 0
+      ? clamp(Math.round(rawCorrectAnswer), 0, options.length - 1)
+      : 0
+
+  return {
+    options,
+    correctAnswer: boundedCorrectAnswer,
+  }
+}
+
+function normalizeStage(stage: unknown, index: number): Stage | null {
+  if (!isRecord(stage)) {
+    return null
+  }
+
+  const { options, correctAnswer } = normalizeOptionsFromStage(stage)
+  const id = readString(stage, 'id') ?? `stage-${index + 1}`
+  const location = readString(stage, 'location') ?? readString(stage, 'stageName')
+  const story = readString(stage, 'story') ?? readString(stage, 'stageText')
+  const prompt = readString(stage, 'prompt') ?? readString(stage, 'question')
+  const explanation =
+    readString(stage, 'explanation') ?? readString(stage, 'stageDescription')
+  const points = readNumber(stage, 'points') ?? readNumber(stage, 'stageValue') ?? 0
+
+  return {
+    id,
+    location: location?.trim() || `Location ${index + 1}`,
+    story: story?.trim() || 'A new clue appears on this island.',
+    prompt: prompt?.trim() || 'Choose the best answer to continue the adventure.',
+    options,
+    correctAnswer,
+    explanation:
+      explanation?.trim() || 'Check the stage setup in the editor for the explanation.',
+    points: Math.max(0, Math.round(points)),
+  }
+}
+
+function normalizeRuntimeData(runtimeData: unknown): Stage[] | null {
+  if (!runtimeData) {
+    return null
+  }
+
+  const stageSource = Array.isArray(runtimeData)
+    ? runtimeData
+    : isRecord(runtimeData) && Array.isArray(runtimeData.stages)
+      ? runtimeData.stages
+      : null
+
+  if (!stageSource) {
+    return null
+  }
+
+  return stageSource
+    .map((stage, index) => normalizeStage(stage, index))
+    .filter((stage): stage is Stage => stage !== null)
+}
+
+function getRuntimeData(): unknown {
+  if (typeof window === 'undefined') {
+    return undefined
+  }
+
+  const runtimeWindow = window as RuntimeWindow
+
+  return (
+    runtimeWindow.__MY_APP_DATA__ ??
+    runtimeWindow.MY_APP_DATA ??
+    runtimeWindow.APP_DATA ??
+    runtimeWindow.win?.DATA
+  )
+}
+
+function getAppData(): Stage[] {
+  const runtimeStages = normalizeRuntimeData(getRuntimeData())
+  return runtimeStages ?? defaultStages
+}
+
+export const MY_APP_DATA: Stage[] = getAppData()

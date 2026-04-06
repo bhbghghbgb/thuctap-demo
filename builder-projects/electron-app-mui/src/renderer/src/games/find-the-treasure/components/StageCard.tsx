@@ -81,8 +81,6 @@ export function StageCard({
           value={stage.stageName}
           onChange={(e) => onUpdateStage(stage.id, { stageName: e.target.value })}
           placeholder="e.g. Coral Island"
-          error={!stage.stageName.trim()}
-          helperText={!stage.stageName.trim() ? 'Required' : ''}
           autoFocus={autoFocus}
         />
 
@@ -96,8 +94,6 @@ export function StageCard({
           value={stage.stageText}
           onChange={(e) => onUpdateStage(stage.id, { stageText: e.target.value })}
           placeholder="A short backstory paragraph for this location..."
-          error={!stage.stageText.trim()}
-          helperText={!stage.stageText.trim() ? 'Required' : ''}
         />
 
         {/* Prompt */}
@@ -202,8 +198,6 @@ export function StageCard({
           value={stage.stageDescription}
           onChange={(e) => onUpdateStage(stage.id, { stageDescription: e.target.value })}
           placeholder="Explanation shown after the player answers..."
-          error={!stage.stageDescription.trim()}
-          helperText={!stage.stageDescription.trim() ? 'Required' : ''}
         />
 
         {/* Points */}

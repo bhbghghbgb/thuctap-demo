@@ -66,17 +66,22 @@ function App() {
 
   const currentStage = MY_APP_DATA[currentStageIndex]
   const totalStages = MY_APP_DATA.length
+  const hasStages = totalStages > 0
   const totalScore = stageResults.reduce(
     (sum, result) => sum + result.pointsEarned,
     0,
   )
   const completedStages = stageResults.length
-  const perfectRun = stageResults.every((result) => result.isCorrect)
-  const gameFinished = completedStages === totalStages
+  const perfectRun = hasStages && stageResults.every((result) => result.isCorrect)
+  const gameFinished = hasStages && completedStages === totalStages
 
   const latestResult = stageResults.at(-1)
 
   const mascotMood = useMemo(() => {
+    if (!hasStages) {
+      return 'ready'
+    }
+
     if (!latestResult) {
       return 'ready'
     }
@@ -86,7 +91,7 @@ function App() {
     }
 
     return latestResult.isCorrect ? 'cheering' : 'thinking'
-  }, [gameFinished, latestResult, totalScore])
+  }, [gameFinished, hasStages, latestResult, totalScore])
 
   useEffect(() => {
     if (pendingStageIndex === null) {
@@ -277,6 +282,10 @@ function App() {
   }
 
   const handleOpenStage = (stageIndex: number) => {
+    if (!hasStages) {
+      return
+    }
+
     setMascotTargetIndex(stageIndex)
     setOpenedStageIndex(null)
     setSelectedOption(null)
@@ -311,6 +320,23 @@ function App() {
   }
 
   if (!hasStarted) {
+    if (!hasStages) {
+      return (
+        <main className="app-shell app-shell-intro">
+          <section className="intro-screen">
+            <div className="intro-card">
+              <p className="eyebrow">Adventure setup</p>
+              <h1>Find the Treasure Box</h1>
+              <p className="hero-text">
+                No stages were sent from the editor yet. Add at least one stage,
+                then open the preview again to see the game content.
+              </p>
+            </div>
+          </section>
+        </main>
+      )
+    }
+
     return (
       <main className="app-shell app-shell-intro">
         <section className="intro-screen">

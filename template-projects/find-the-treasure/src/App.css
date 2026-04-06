@@ -43,14 +43,14 @@
 }
 
 .game-layout {
-  width: min(1120px, 100%);
+  width: 100%;
   margin: 0 auto;
   display: block;
   position: relative;
 }
 
 .intro-screen {
-  width: min(1180px, 100%);
+  width: 100%;
   display: grid;
   place-items: center;
   min-height: calc(100dvh - 96px);
@@ -244,7 +244,7 @@
   width: 80%;
   overflow: visible;
   pointer-events: none;
-  transform: translateX(-58px);
+  transform: none;
   z-index: 0;
 }
 
@@ -307,6 +307,7 @@
   position: relative;
   min-height: clamp(470px, calc(100dvh - 210px), 660px);
   z-index: 1;
+  transform: translate(70px);
 }
 
 .island-node {
