@@ -35,8 +35,7 @@ export function WordCard({
     <FileDropTarget
       onFileDrop={async (fp) => {
         const rel = await window.electronAPI.importImage(fp, projectDir, word.id)
-        const imagePath = rel ? `${rel.replace(/\\/g, '/')}` : ''
-        onUpdate(word.id, { imagePath })
+        onUpdate(word.id, { imagePath: rel })
       }}
     >
       <Paper
@@ -60,10 +59,7 @@ export function WordCard({
             projectDir={projectDir}
             desiredNamePrefix={word.id}
             value={imageRelative}
-            onChange={(p) => {
-              const imagePath = p ? `${p.replace(/\\/g, '/')}` : ''
-              onUpdate(word.id, { imagePath })
-            }}
+            onChange={(p) => onUpdate(word.id, { imagePath: p })}
             label="Word image"
             size={80}
           />

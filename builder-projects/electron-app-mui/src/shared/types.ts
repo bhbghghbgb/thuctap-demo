@@ -72,7 +72,7 @@ export interface QuizAppData {
 export interface BalloonWord {
   id: string
   word: string
-  imagePath: string
+  imagePath: string | null
   hint: string
 }
 export interface BalloonLetterPickerAppData {

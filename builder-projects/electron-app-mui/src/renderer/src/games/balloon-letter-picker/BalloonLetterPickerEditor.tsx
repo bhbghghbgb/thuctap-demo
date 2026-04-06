@@ -32,7 +32,7 @@ export default function BalloonLetterPickerEditor({
       const w: BalloonWord = {
         id: `word-${c}`,
         word: resolved.prefillNames ? `WORD${getExcelName(c)}` : '',
-        imagePath: initialImagePath ?? '',
+        imagePath: initialImagePath ?? null,
         hint: resolved.prefillNames ? `Hint ${c}` : ''
       }
       onChange({ ...data, _wordCounter: c, words: [...words, w] })
