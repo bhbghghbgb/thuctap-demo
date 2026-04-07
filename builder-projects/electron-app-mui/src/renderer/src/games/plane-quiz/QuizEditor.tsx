@@ -1,10 +1,8 @@
 import { Box } from '@mui/material'
-import { useEntityCreateShortcut } from '@renderer/hooks/useEntityCreateShortcut'
-import { useSettings } from '@renderer/hooks/useSettings'
-import { toBb26 } from '@renderer/utils'
-import React, { useCallback } from 'react'
-import { QuizAnswer, QuizAppData, QuizQuestion } from '../../types'
+import React from 'react'
+import { QuizAppData } from '../../types'
 import { QuizTab, SummarySidebar } from './components'
+import { usePlaneQuizCrud } from './usePlaneQuizCrud'
 
 interface Props {
   appData: QuizAppData
@@ -26,118 +24,16 @@ export default function QuizEditor({
   onChange
 }: Props): React.ReactElement {
   const data = normalize(raw)
-  const { resolved } = useSettings()
-  const { questions } = data
-
-  // ── CRUD ──────────────────────────────────────────────────────────────────
-  const addQuestion = useCallback(
-    (initialImage?: string) => {
-      const qc = data._questionCounter + 1
-      const qid = `q-${qc}`
-      const q: QuizQuestion = {
-        id: qid,
-        question: resolved.prefillNames ? `Question ${qc}` : '',
-        imagePath: initialImage ?? null,
-        multipleCorrect: false,
-        _answerCounter: 2,
-        answers: [
-          { id: `${qid}-a-1`, text: resolved.prefillNames ? 'Answer A' : '', isCorrect: true },
-          { id: `${qid}-a-2`, text: resolved.prefillNames ? 'Answer B' : '', isCorrect: false }
-        ]
-      }
-      onChange({ ...data, _questionCounter: qc, questions: [...questions, q] })
-    },
-    [data, questions, resolved.prefillNames, onChange]
-  )
-
-  const addQuestionFromDrop = useCallback(
-    async (filePath: string) => {
-      const qc = data._questionCounter + 1
-      const qid = `q-${qc}`
-      const imagePath = await window.electronAPI.importImage(filePath, projectDir, qid)
-      const q: QuizQuestion = {
-        id: qid,
-        question: resolved.prefillNames ? `Question ${qc}` : '',
-        imagePath,
-        multipleCorrect: false,
-        _answerCounter: 2,
-        answers: [
-          { id: `${qid}-a-1`, text: resolved.prefillNames ? 'Answer A' : '', isCorrect: true },
-          { id: `${qid}-a-2`, text: resolved.prefillNames ? 'Answer B' : '', isCorrect: false }
-        ]
-      }
-      onChange({ ...data, _questionCounter: qc, questions: [...questions, q] })
-    },
-    [data, questions, projectDir, resolved.prefillNames, onChange]
-  )
-
-  const updateQuestion = useCallback(
-    (id: string, patch: Partial<QuizQuestion>) => {
-      onChange({ ...data, questions: questions.map((q) => (q.id === id ? { ...q, ...patch } : q)) })
-    },
-    [data, questions, onChange]
-  )
-
-  const deleteQuestion = useCallback(
-    (id: string) => {
-      onChange({ ...data, questions: questions.filter((q) => q.id !== id) })
-    },
-    [data, questions, onChange]
-  )
-
-  const addAnswer = useCallback(
-    (qid: string) => {
-      onChange({
-        ...data,
-        questions: questions.map((q) => {
-          if (q.id !== qid) return q
-          const ac = q._answerCounter + 1
-          const newAnswer: QuizAnswer = {
-            id: `${qid}-a-${ac}`,
-            text: resolved.prefillNames ? `Answer ${toBb26(ac)}` : '',
-            isCorrect: false
-          }
-          return { ...q, _answerCounter: ac, answers: [...q.answers, newAnswer] }
-        })
-      })
-    },
-    [data, questions, resolved.prefillNames, onChange]
-  )
-
-  const updateAnswer = useCallback(
-    (qid: string, aid: string, patch: Partial<QuizAnswer>) => {
-      onChange({
-        ...data,
-        questions: questions.map((q) => {
-          if (q.id !== qid) return q
-          let answers = q.answers.map((a) => (a.id === aid ? { ...a, ...patch } : a))
-          if (patch.isCorrect && !q.multipleCorrect) {
-            answers = answers.map((a) => (a.id === aid ? a : { ...a, isCorrect: false }))
-          }
-          return { ...q, answers }
-        })
-      })
-    },
-    [data, questions, onChange]
-  )
-
-  const deleteAnswer = useCallback(
-    (qid: string, aid: string) => {
-      onChange({
-        ...data,
-        questions: questions.map((q) =>
-          q.id !== qid ? q : { ...q, answers: q.answers.filter((a) => a.id !== aid) }
-        )
-      })
-    },
-    [data, questions, onChange]
-  )
-
-  // ── Keyboard shortcuts ────────────────────────────────────────────────────
-  // Quiz has only one unit (question), so all tiers do the same
-  useEntityCreateShortcut({
-    onTier1: addQuestion
-  })
+  const {
+    questions,
+    addQuestion,
+    addQuestionFromDrop,
+    updateQuestion,
+    deleteQuestion,
+    addAnswer,
+    updateAnswer,
+    deleteAnswer
+  } = usePlaneQuizCrud(data, projectDir, onChange)
 
   return (
     <Box sx={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
