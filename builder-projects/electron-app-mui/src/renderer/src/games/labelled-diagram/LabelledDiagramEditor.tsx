@@ -17,12 +17,12 @@ import {
   keyframes,
   styled
 } from '@mui/material'
-import { useEntityCreateShortcut } from '@renderer/hooks/useEntityCreateShortcut'
 import { JSX, MouseEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
 import ImagePicker from '../../components/ImagePicker'
 import { useAssetUrl } from '../../hooks/useAssetUrl'
 import { LabelledDiagramAppData, LabelledDiagramPoint } from '../../types'
+import { useLabelledDiagramCrud } from './useLabelledDiagramCrud'
 
 interface Props {
   appData: LabelledDiagramAppData
@@ -86,37 +86,33 @@ export default function LabelledDiagramEditor({
   projectDir,
   onChange
 }: Props): JSX.Element {
-  const { points, imagePath } = appData
+  const { imagePath } = appData
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [transform, setTransform] = useState<{
     scale: number
     positionX: number
     positionY: number
   } | null>(null)
-  const [selectedPointId, setSelectedPointId] = useState<string | null>(null)
   const [hoveredPointId, setHoveredPointId] = useState<string | null>(null)
   const [draggingPointId, setDraggingPointId] = useState<string | null>(null)
   const [pendingSelectedPointId, setPendingSelectedPointId] = useState<string | null>(null)
   const [mouseDownPos, setMouseDownPos] = useState<{ x: number; y: number } | null>(null)
-  const [localPoints, setLocalPoints] = useState<LabelledDiagramPoint[]>(points)
   const [imgSize, setImgSize] = useState<{ width: number; height: number } | null>(null)
 
-  const [prevPoints, setPrevPoints] = useState(points)
+  // Track imagePath changes to reset imgSize
   const [prevImagePath, setPrevImagePath] = useState(imagePath)
-
-  // If points prop changed and we aren't dragging, sync localPoints
-  if (points !== prevPoints) {
-    setPrevPoints(points)
-    if (!draggingPointId) {
-      setLocalPoints(points)
-    }
-  }
-
-  // If imagePath changed, reset imgSize
   if (imagePath !== prevImagePath) {
     setPrevImagePath(imagePath)
-    setImgSize(null)
+    setImgSize(null) // Reset dimensions when image changes
   }
+
+  // ── CRUD Hook ───────────────────────────────────────────────────────────
+  const { localPoints, selectedPointId, setSelectedPointId, addPoint, updatePoint, deletePoint } =
+    useLabelledDiagramCrud({
+      appData,
+      onChange,
+      isDragging: draggingPointId !== null
+    })
 
   const transformRef = useRef<ReactZoomPanPinchRef>(null)
   const imgRef = useRef<HTMLImageElement>(null)
@@ -128,70 +124,28 @@ export default function LabelledDiagramEditor({
     return BADGE_COLORS[index % BADGE_COLORS.length]
   }
 
-  const addPoint = useCallback(
-    (xPercent: number, yPercent: number) => {
-      const id = `point-${Date.now()}`
-      const newPoint: LabelledDiagramPoint = {
-        id,
-        text: `Point ${appData._pointCounter + 1}`,
-        xPercent,
-        yPercent
-      }
-      onChange({
-        ...appData,
-        points: [...localPoints, newPoint],
-        _pointCounter: appData._pointCounter + 1
-      })
-      setSelectedPointId(id)
+  const moveToPoint = useCallback(
+    (point: LabelledDiagramPoint) => {
+      if (!transformRef.current || !imgRef.current) return
+
+      const { scale } = transformRef.current.instance.transformState
+      const imgWidth = imgRef.current.offsetWidth
+      const imgHeight = imgRef.current.offsetHeight
+
+      const targetX = (point.xPercent / 100) * imgWidth
+      const targetY = (point.yPercent / 100) * imgHeight
+
+      const wrapperWidth = wrapperRef.current?.offsetWidth ?? 0
+      const wrapperHeight = wrapperRef.current?.offsetHeight ?? 0
+
+      const posX = wrapperWidth / 2 - targetX * scale
+      const posY = wrapperHeight / 2 - targetY * scale
+
+      transformRef.current.setTransform(posX, posY, scale)
+      setSelectedPointId(point.id)
     },
-    [appData, localPoints, onChange]
+    [setSelectedPointId]
   )
-
-  const updatePoint = useCallback(
-    (id: string, patch: Partial<LabelledDiagramPoint>, commit = true) => {
-      const nextPoints = localPoints.map((p) => (p.id === id ? { ...p, ...patch } : p))
-      setLocalPoints(nextPoints)
-
-      if (commit) {
-        onChange({
-          ...appData,
-          points: nextPoints
-        })
-      }
-    },
-    [appData, localPoints, onChange]
-  )
-
-  const deletePoint = useCallback(
-    (id: string) => {
-      onChange({
-        ...appData,
-        points: localPoints.filter((p) => p.id !== id)
-      })
-      if (selectedPointId === id) setSelectedPointId(null)
-    },
-    [appData, localPoints, selectedPointId, onChange]
-  )
-
-  const moveToPoint = useCallback((point: LabelledDiagramPoint) => {
-    if (!transformRef.current || !imgRef.current) return
-
-    const { scale } = transformRef.current.instance.transformState
-    const imgWidth = imgRef.current.offsetWidth
-    const imgHeight = imgRef.current.offsetHeight
-
-    const targetX = (point.xPercent / 100) * imgWidth
-    const targetY = (point.yPercent / 100) * imgHeight
-
-    const wrapperWidth = wrapperRef.current?.offsetWidth ?? 0
-    const wrapperHeight = wrapperRef.current?.offsetHeight ?? 0
-
-    const posX = wrapperWidth / 2 - targetX * scale
-    const posY = wrapperHeight / 2 - targetY * scale
-
-    transformRef.current.setTransform(posX, posY, scale)
-    setSelectedPointId(point.id)
-  }, [])
 
   // ── Keyboard shortcuts ─────────────────────────────────────────────────────
 
@@ -214,10 +168,6 @@ export default function LabelledDiagramEditor({
 
     addPoint(Math.max(0, Math.min(100, xPercent)), Math.max(0, Math.min(100, yPercent)))
   }, [addPoint, transform, imgSize])
-
-  useEntityCreateShortcut({
-    onTier1: addCenterPointView
-  })
 
   useEffect(() => {
     const handleKeyDown = (e: globalThis.KeyboardEvent): void => {
@@ -304,7 +254,15 @@ export default function LabelledDiagramEditor({
       setMouseDownPos(null)
       setPendingSelectedPointId(null)
     },
-    [draggingPointId, appData, localPoints, onChange, mouseDownPos, pendingSelectedPointId]
+    [
+      draggingPointId,
+      appData,
+      localPoints,
+      onChange,
+      mouseDownPos,
+      pendingSelectedPointId,
+      setSelectedPointId
+    ]
   )
 
   useEffect(() => {
@@ -726,7 +684,7 @@ export default function LabelledDiagramEditor({
               }}
             >
               <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                {points.length} Points Added
+                {localPoints.length} Points Added
               </Typography>
               <Divider
                 orientation="vertical"
