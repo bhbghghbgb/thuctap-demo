@@ -2,6 +2,7 @@ import AddIcon from '@mui/icons-material/Add'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import FilterListIcon from '@mui/icons-material/FilterList'
 import FolderOffIcon from '@mui/icons-material/FolderOff'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import HistoryIcon from '@mui/icons-material/History'
@@ -13,6 +14,7 @@ import {
   CardActionArea,
   CardContent,
   Chip,
+  ClickAwayListener,
   Collapse,
   Dialog,
   DialogActions,
@@ -20,12 +22,14 @@ import {
   DialogContentText,
   DialogTitle,
   IconButton,
+  MenuItem,
+  Paper,
   Tooltip,
   Typography
 } from '@mui/material'
 import { timeRelative } from '@renderer/utils/stringUtils'
 import type { GameTemplate, RecentProject } from '@shared/types'
-import React from 'react'
+import React, { useState } from 'react'
 
 // ── Enriched Recent Project (with runtime icon inference) ─────────────────────
 export interface EnrichedRecentProject extends RecentProject {
@@ -35,23 +39,58 @@ export interface EnrichedRecentProject extends RecentProject {
 // ── Recent Projects Section ───────────────────────────────────────────────────
 export interface RecentProjectsSectionProps {
   recent: EnrichedRecentProject[]
+  allTemplates: GameTemplate[]
   showRecent: boolean
   onToggleShow: () => void
   onBrowse: () => void
   onOpenRecent: (entry: EnrichedRecentProject) => void
   onRemoveRecent: (filePath: string) => void
   onOpenInExplorer: (filePath: string) => void
+  filterTemplateId: string | null
+  onFilterTemplate: (templateId: string | null) => void
 }
 
 export function RecentProjectsSection({
   recent,
+  allTemplates,
   showRecent,
   onToggleShow,
   onBrowse,
   onOpenRecent,
   onRemoveRecent,
-  onOpenInExplorer
+  onOpenInExplorer,
+  filterTemplateId,
+  onFilterTemplate
 }: RecentProjectsSectionProps): React.ReactElement {
+  const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null)
+
+  const filteredRecent = filterTemplateId
+    ? recent.filter((rp) => rp.templateId === filterTemplateId)
+    : recent
+
+  const activeFilterTemplate = filterTemplateId
+    ? allTemplates.find((t) => t.id === filterTemplateId)
+    : null
+
+  const handleFilterClick = (e: React.MouseEvent): void => {
+    e.stopPropagation()
+    setFilterAnchorEl(e.currentTarget as HTMLElement)
+  }
+
+  const handleFilterClose = (): void => {
+    setFilterAnchorEl(null)
+  }
+
+  const handleSelectFilter = (templateId: string | null): void => {
+    onFilterTemplate(templateId)
+    handleFilterClose()
+  }
+
+  const handleClearFilter = (e: React.MouseEvent): void => {
+    e.stopPropagation()
+    onFilterTemplate(null)
+  }
+
   return (
     <Box>
       <Box
@@ -77,8 +116,43 @@ export function RecentProjectsSection({
           }}
         >
           Continue working {recent.length > 0 && `(${recent.length})`}
+          {activeFilterTemplate && ` · ${activeFilterTemplate.name}`}
         </Typography>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <Tooltip title={activeFilterTemplate ? 'Change filter' : 'Filter by template'}>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<FilterListIcon />}
+              onClick={handleFilterClick}
+              sx={{
+                borderStyle: 'dashed',
+                fontSize: '0.75rem',
+                ...(activeFilterTemplate && {
+                  borderColor: 'primary.main',
+                  color: 'primary.main',
+                  background: 'rgba(110,231,183,0.08)'
+                })
+              }}
+            >
+              {activeFilterTemplate ? 'Filtered' : 'Filter'}
+            </Button>
+          </Tooltip>
+          {activeFilterTemplate && (
+            <Chip
+              label={activeFilterTemplate.name}
+              size="small"
+              onDelete={handleClearFilter}
+              sx={{
+                height: 22,
+                fontSize: '0.7rem',
+                '& .MuiChip-deleteIcon': {
+                  fontSize: '0.9rem',
+                  '&:hover': { color: 'error.main' }
+                }
+              }}
+            />
+          )}
           <Button
             variant="outlined"
             size="small"
@@ -99,20 +173,97 @@ export function RecentProjectsSection({
         </Box>
       </Box>
 
+      {/* Filter Menu */}
+      <ClickAwayListener onClickAway={handleFilterClose}>
+        <Collapse in={filterAnchorEl !== null} mountOnEnter unmountOnExit>
+          <Paper
+            sx={{
+              position: 'absolute',
+              right: 0,
+              zIndex: 1000,
+              mt: 1,
+              maxWidth: 320,
+              maxHeight: 400,
+              overflow: 'auto',
+              background: '#1a1d27',
+              border: '1px solid rgba(255,255,255,0.1)'
+            }}
+          >
+            <MenuItem
+              selected={filterTemplateId === null}
+              onClick={() => handleSelectFilter(null)}
+              sx={{
+                fontSize: '0.85rem',
+                py: 1
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+                <SportsEsportsIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                <Typography>All templates</Typography>
+              </Box>
+            </MenuItem>
+            {allTemplates.map((template) => (
+              <MenuItem
+                key={template.id}
+                selected={filterTemplateId === template.id}
+                onClick={() => handleSelectFilter(template.id)}
+                sx={{
+                  fontSize: '0.85rem',
+                  py: 1
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+                  {template.iconUrl ? (
+                    <Box
+                      component="img"
+                      src={template.iconUrl}
+                      alt={template.name}
+                      sx={{
+                        width: 18,
+                        height: 18,
+                        borderRadius: 0.5,
+                        objectFit: 'cover'
+                      }}
+                    />
+                  ) : (
+                    <SportsEsportsIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                  )}
+                  <Typography
+                    sx={{
+                      flex: 1,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {template.name}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.7rem' }}>
+                    {recent.filter((rp) => rp.templateId === template.id).length}
+                  </Typography>
+                </Box>
+              </MenuItem>
+            ))}
+          </Paper>
+        </Collapse>
+      </ClickAwayListener>
+
       <Collapse in={showRecent}>
-        {recent.length === 0 ? (
+        {filteredRecent.length === 0 ? (
           <Typography variant="body2" color="text.disabled" sx={{ py: 2, textAlign: 'center' }}>
-            No recently opened projects yet.
+            {filterTemplateId
+              ? `No recent projects for "${activeFilterTemplate?.name ?? 'this template'}".`
+              : 'No recently opened projects yet.'}
           </Typography>
         ) : (
           <Box
             sx={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(440px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))',
               gap: 1.5
             }}
           >
-            {recent.map((r) => (
+            {filteredRecent.map((r) => (
               <RecentProjectItem
                 key={r.filePath}
                 entry={r}
@@ -247,9 +398,14 @@ function RecentProjectItem({
 export interface TemplateGridProps {
   templates: GameTemplate[]
   onSelect: (template: GameTemplate) => void
+  onShowRecentForTemplate?: (templateId: string) => void
 }
 
-export function TemplateGrid({ templates, onSelect }: TemplateGridProps): React.ReactElement {
+export function TemplateGrid({
+  templates,
+  onSelect,
+  onShowRecentForTemplate
+}: TemplateGridProps): React.ReactElement {
   return (
     <Box>
       <Typography variant="overline" color="text.secondary" sx={{ letterSpacing: 2 }}>
@@ -264,7 +420,12 @@ export function TemplateGrid({ templates, onSelect }: TemplateGridProps): React.
         }}
       >
         {templates.map((t) => (
-          <GameTemplateCard key={t.id} template={t} onSelect={onSelect} />
+          <GameTemplateCard
+            key={t.id}
+            template={t}
+            onSelect={onSelect}
+            onShowRecentForTemplate={onShowRecentForTemplate}
+          />
         ))}
       </Box>
     </Box>
@@ -275,11 +436,13 @@ export function TemplateGrid({ templates, onSelect }: TemplateGridProps): React.
 export interface GameTemplateCardProps {
   template: GameTemplate
   onSelect: (template: GameTemplate) => void
+  onShowRecentForTemplate?: (templateId: string) => void
 }
 
 export function GameTemplateCard({
   template,
-  onSelect
+  onSelect,
+  onShowRecentForTemplate
 }: GameTemplateCardProps): React.ReactElement {
   const iconSrc = template.iconUrl || null
 
@@ -353,7 +516,7 @@ export function GameTemplateCard({
               gap: 1
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, minWidth: 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, flex: 1, minWidth: 0 }}>
               {iconSrc ? (
                 <Box
                   component="img"
@@ -364,7 +527,8 @@ export function GameTemplateCard({
                     height: 20,
                     borderRadius: 0.5,
                     objectFit: 'cover',
-                    flexShrink: 0
+                    flexShrink: 0,
+                    mt: 0.15
                   }}
                 />
               ) : null}
@@ -372,10 +536,7 @@ export function GameTemplateCard({
                 variant="h6"
                 sx={{
                   fontSize: '1rem',
-                  lineHeight: 1.3,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap'
+                  lineHeight: 1.3
                 }}
               >
                 {template.name}
@@ -395,14 +556,41 @@ export function GameTemplateCard({
               mt: 1.5,
               display: 'flex',
               alignItems: 'center',
-              gap: 0.5,
+              gap: 1,
               marginTop: 'auto'
             }}
           >
             <AddIcon sx={{ fontSize: 16, color: 'primary.main' }} />
             <Typography variant="caption" color="primary.main" sx={{ fontWeight: 600 }}>
-              Create new project
+              Create Project
             </Typography>
+            {onShowRecentForTemplate && (
+              <Tooltip title={`Show recent "${template.name}" projects`}>
+                <Button
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onShowRecentForTemplate(template.id)
+                  }}
+                  startIcon={<HistoryIcon sx={{ fontSize: 14 }} />}
+                  sx={{
+                    ml: 'auto',
+                    fontSize: '0.7rem',
+                    fontWeight: 600,
+                    textTransform: 'none',
+                    color: 'text.secondary',
+                    borderColor: 'rgba(255,255,255,0.1)',
+                    '&:hover': {
+                      color: 'primary.main',
+                      borderColor: 'primary.main',
+                      background: 'rgba(110,231,183,0.08)'
+                    }
+                  }}
+                >
+                  Show Recent
+                </Button>
+              </Tooltip>
+            )}
           </Box>
         </CardContent>
       </CardActionArea>

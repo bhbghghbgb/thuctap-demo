@@ -10,7 +10,7 @@ import { useAppDocumentTitle } from '@renderer/hooks/useAppDocumentTitle'
 import { useTemplateManager } from '@renderer/hooks/useTemplates'
 import { useSettingsStore } from '@renderer/stores/settingsStore'
 import type { GameTemplate, RecentProject } from '@shared/types'
-import { JSX, useCallback, useMemo, useState } from 'react'
+import { JSX, useCallback, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useBoolean } from 'usehooks-ts'
 
@@ -32,6 +32,8 @@ export default function HomePage(): JSX.Element {
   const manager = useTemplateManager()
   const [folderDlg, setFolderDlg] = useState<FolderDialogState>(null)
   const showRecent = useBoolean(false)
+  const [filterTemplateId, setFilterTemplateId] = useState<string | null>(null)
+  const recentSectionRef = useRef<HTMLDivElement | null>(null)
   useAppDocumentTitle('Home Page')
 
   // Use Zustand store for recent projects
@@ -53,6 +55,20 @@ export default function HomePage(): JSX.Element {
 
   const addRecentProject = useSettingsStore((s) => s.addRecentProject)
   const removeRecentProject = useSettingsStore((s) => s.removeRecentProject)
+
+  const handleShowRecentForTemplate = useCallback(
+    (templateId: string): void => {
+      setFilterTemplateId(templateId)
+      if (!showRecent.value) {
+        showRecent.setTrue()
+      }
+      // Scroll to recent projects section and center it on screen
+      setTimeout(() => {
+        recentSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }, 100)
+    },
+    [showRecent]
+  )
 
   const openProject = useCallback(
     async (filePath: string, data: ReturnType<typeof JSON.parse>) => {
@@ -168,20 +184,29 @@ export default function HomePage(): JSX.Element {
       </Box>
 
       {/* ── Recent projects (collapsible) ── */}
-      <RecentProjectsSection
-        recent={enrichedRecentProjects}
-        showRecent={showRecent.value}
-        onToggleShow={showRecent.toggle}
-        onBrowse={handleOpenExisting}
-        onOpenRecent={openRecent}
-        onRemoveRecent={removeRecent}
-        onOpenInExplorer={handleOpenInExplorer}
-      />
+      <Box ref={recentSectionRef}>
+        <RecentProjectsSection
+          recent={enrichedRecentProjects}
+          allTemplates={manager.getAllTemplates()}
+          showRecent={showRecent.value}
+          onToggleShow={showRecent.toggle}
+          onBrowse={handleOpenExisting}
+          onOpenRecent={openRecent}
+          onRemoveRecent={removeRecent}
+          onOpenInExplorer={handleOpenInExplorer}
+          filterTemplateId={filterTemplateId}
+          onFilterTemplate={setFilterTemplateId}
+        />
+      </Box>
 
       <Divider sx={{ borderColor: 'rgba(255,255,255,0.06)' }} />
 
       {/* ── Templates ── */}
-      <TemplateGrid templates={manager.getAllTemplates()} onSelect={handleNewProject} />
+      <TemplateGrid
+        templates={manager.getAllTemplates()}
+        onSelect={handleNewProject}
+        onShowRecentForTemplate={handleShowRecentForTemplate}
+      />
 
       {/* ── Folder conflict dialogs ── */}
       <HasProjectDialog
