@@ -4,6 +4,7 @@ import { usePrefetchTemplates } from '@renderer/hooks/useTemplates'
 import HomePage from '@renderer/pages/HomePage'
 import ProjectPage from '@renderer/pages/ProjectPage'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { createHead, UnheadProvider } from '@unhead/react/client'
 import React, { Suspense, useEffect } from 'react'
 import { HashRouter, Route, Routes } from 'react-router-dom'
 
@@ -13,6 +14,15 @@ const queryClient = new QueryClient({
       gcTime: 1000 * 60 * 60 // Keep in memory for 1 hour
     }
   }
+})
+
+// Create Unhead instance with global title template
+const head = createHead({
+  init: [
+    {
+      titleTemplate: '%s | Minigame Builder'
+    }
+  ]
 })
 
 function AppContent(): React.ReactElement {
@@ -38,7 +48,9 @@ export default function App(): React.ReactElement {
   return (
     <QueryClientProvider client={queryClient}>
       <SettingsProvider>
-        <AppContent />
+        <UnheadProvider head={head}>
+          <AppContent />
+        </UnheadProvider>
       </SettingsProvider>
     </QueryClientProvider>
   )

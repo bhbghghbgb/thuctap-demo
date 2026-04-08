@@ -28,6 +28,7 @@
     "@mui/icons-material": "^7.3.9",
     "@mui/material": "^7.3.9",
     "@tanstack/react-query": "^5.96.2",
+    "@unhead/react": "3.0.0-beta.9",
     "archiver": "^7.0.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",

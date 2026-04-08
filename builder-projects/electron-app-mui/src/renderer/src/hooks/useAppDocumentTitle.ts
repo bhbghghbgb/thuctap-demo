@@ -1,14 +1,15 @@
-import { useDocumentTitle } from 'usehooks-ts'
+import { useHead } from '@unhead/react'
 
 /**
- * Custom hook that sets the document title.
+ * Custom hook that sets the document title using Unhead.
+ * Title is automatically formatted with " — Minigame Builder" suffix via global titleTemplate.
  * @param {string} title - The title to set.
  * @public
  * @example
  * ```tsx
- * useAppDocumentTitle('My new title');
+ * useAppDocumentTitle('Home Page');
  * ```
  */
 export function useAppDocumentTitle(title: string): void {
-  useDocumentTitle(`Minigame Builder — ${title}`, { preserveTitleOnUnmount: false })
+  useHead({ title })
 }
