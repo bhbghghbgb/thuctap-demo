@@ -4,7 +4,6 @@ import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { viteSingleFile } from "vite-plugin-singlefile";
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
@@ -12,4 +11,16 @@ export default defineConfig({
     tailwindcss(),
     viteSingleFile(),
   ],
+
+  // 🔥 FIX WARNING + CHUẨN BUILDER
+  build: {
+    // thay thế inlineDynamicImports
+    cssCodeSplit: false,
+
+    rollupOptions: {
+      output: {
+        manualChunks: undefined, // 🔥 tránh split file
+      },
+    },
+  },
 });

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import DropZone from "./DropZone";
 import type { DiagramData } from "../types/diagram";
 
@@ -8,8 +7,6 @@ interface Props {
 }
 
 const DiagramBoard: React.FC<Props> = ({ data, placed }) => {
-  const [imageError, setImageError] = useState(false);
-
   return (
     <div className="w-full max-w-[600px]">
       {/* 🔥 CONTAINER FIX TỈ LỆ */}
@@ -18,8 +15,8 @@ const DiagramBoard: React.FC<Props> = ({ data, placed }) => {
         rounded-3xl overflow-hidden
         bg-slate-700 shadow-2xl border border-white/10"
       >
-        {/* 🔥 BACKGROUND IMAGE (QUAN TRỌNG) */}
-        {!imageError && data?.imagePath ? (
+        {/* 🔥 BACKGROUND IMAGE */}
+        {data?.imagePath ? (
           <div
             className="absolute inset-0 bg-center bg-contain bg-no-repeat"
             style={{
@@ -32,7 +29,7 @@ const DiagramBoard: React.FC<Props> = ({ data, placed }) => {
           </div>
         )}
 
-        {/* 🔥 LAYER POINTS */}
+        {/* 🔥 POINTS */}
         <div className="absolute inset-0">
           {data.points.map((point) => {
             const labelId = placed?.[point.id];
