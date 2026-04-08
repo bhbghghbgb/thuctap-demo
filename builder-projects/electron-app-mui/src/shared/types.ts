@@ -209,6 +209,7 @@ export interface GameTemplate {
   gameType: string
   version: string
   thumbnailUrl: string | null
+  iconUrl: string | null
 }
 
 export type AutoSaveMode = 'off' | 'on-edit' | 'interval'

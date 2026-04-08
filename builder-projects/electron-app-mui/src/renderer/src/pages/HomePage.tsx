@@ -10,12 +10,16 @@ import { useAppDocumentTitle } from '@renderer/hooks/useAppDocumentTitle'
 import { useTemplateManager } from '@renderer/hooks/useTemplates'
 import { useSettingsStore } from '@renderer/stores/settingsStore'
 import type { GameTemplate, RecentProject } from '@shared/types'
-import { JSX, useCallback, useState } from 'react'
+import { JSX, useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useBoolean } from 'usehooks-ts'
 
 // Constant empty array to prevent infinite re-renders in Zustand selector
 const EMPTY_RECENT_PROJECTS: RecentProject[] = []
+
+interface EnrichedRecentProject extends RecentProject {
+  iconUrl: string | null
+}
 
 type FolderDialogState =
   | { type: 'non-empty'; folder: string; template: GameTemplate }
@@ -35,6 +39,18 @@ export default function HomePage(): JSX.Element {
   const recentProjects = useSettingsStore(
     (s) => (s.globalSettings.recentProjects ?? EMPTY_RECENT_PROJECTS) as RecentProject[]
   )
+
+  // Enrich recent projects with iconUrl from templates
+  const enrichedRecentProjects = useMemo<EnrichedRecentProject[]>(() => {
+    return recentProjects.map((rp) => {
+      const template = manager.getTemplate(rp.templateId)
+      return {
+        ...rp,
+        iconUrl: template?.iconUrl ?? null
+      }
+    })
+  }, [recentProjects, manager])
+
   const addRecentProject = useSettingsStore((s) => s.addRecentProject)
   const removeRecentProject = useSettingsStore((s) => s.removeRecentProject)
 
@@ -153,7 +169,7 @@ export default function HomePage(): JSX.Element {
 
       {/* ── Recent projects (collapsible) ── */}
       <RecentProjectsSection
-        recent={recentProjects}
+        recent={enrichedRecentProjects}
         showRecent={showRecent.value}
         onToggleShow={showRecent.toggle}
         onBrowse={handleOpenExisting}

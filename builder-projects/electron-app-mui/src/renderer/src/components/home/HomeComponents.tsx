@@ -27,13 +27,18 @@ import { timeRelative } from '@renderer/utils/stringUtils'
 import type { GameTemplate, RecentProject } from '@shared/types'
 import React from 'react'
 
+// ── Enriched Recent Project (with runtime icon inference) ─────────────────────
+export interface EnrichedRecentProject extends RecentProject {
+  iconUrl: string | null
+}
+
 // ── Recent Projects Section ───────────────────────────────────────────────────
 export interface RecentProjectsSectionProps {
-  recent: RecentProject[]
+  recent: EnrichedRecentProject[]
   showRecent: boolean
   onToggleShow: () => void
   onBrowse: () => void
-  onOpenRecent: (entry: RecentProject) => void
+  onOpenRecent: (entry: EnrichedRecentProject) => void
   onRemoveRecent: (filePath: string) => void
   onOpenInExplorer: (filePath: string) => void
 }
@@ -103,7 +108,7 @@ export function RecentProjectsSection({
           <Box
             sx={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(440px, 1fr))',
               gap: 1.5
             }}
           >
@@ -131,7 +136,7 @@ export function RecentProjectsSection({
 
 // ── Recent Project Item ───────────────────────────────────────────────────────
 interface RecentProjectItemProps {
-  entry: RecentProject
+  entry: EnrichedRecentProject
   onClick: () => void
   onRemove: (e: React.MouseEvent) => void
   onOpenInExplorer: (e: React.MouseEvent) => void
@@ -143,6 +148,8 @@ function RecentProjectItem({
   onRemove,
   onOpenInExplorer
 }: RecentProjectItemProps): React.ReactElement {
+  const iconSrc = entry.iconUrl || null
+
   return (
     <Box
       onClick={onClick}
@@ -159,9 +166,24 @@ function RecentProjectItem({
         '&:hover': { borderColor: 'rgba(255,255,255,0.14)', background: '#1e2130' }
       }}
     >
-      <SportsEsportsIcon
-        sx={{ fontSize: 28, color: 'primary.main', opacity: 0.6, flexShrink: 0 }}
-      />
+      {iconSrc ? (
+        <Box
+          component="img"
+          src={iconSrc}
+          alt={entry.templateName}
+          sx={{
+            width: 28,
+            height: 28,
+            borderRadius: 1,
+            objectFit: 'cover',
+            flexShrink: 0
+          }}
+        />
+      ) : (
+        <SportsEsportsIcon
+          sx={{ fontSize: 28, color: 'primary.main', opacity: 0.6, flexShrink: 0 }}
+        />
+      )}
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography
           variant="body2"
@@ -259,6 +281,8 @@ export function GameTemplateCard({
   template,
   onSelect
 }: GameTemplateCardProps): React.ReactElement {
+  const iconSrc = template.iconUrl || null
+
   return (
     <Card
       sx={{
@@ -329,13 +353,38 @@ export function GameTemplateCard({
               gap: 1
             }}
           >
-            <Typography variant="h6" sx={{ fontSize: '1rem', lineHeight: 1.3 }}>
-              {template.name}
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, minWidth: 0 }}>
+              {iconSrc ? (
+                <Box
+                  component="img"
+                  src={iconSrc}
+                  alt={template.name}
+                  sx={{
+                    width: 20,
+                    height: 20,
+                    borderRadius: 0.5,
+                    objectFit: 'cover',
+                    flexShrink: 0
+                  }}
+                />
+              ) : null}
+              <Typography
+                variant="h6"
+                sx={{
+                  fontSize: '1rem',
+                  lineHeight: 1.3,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {template.name}
+              </Typography>
+            </Box>
             <Chip
               label={`v${template.version}`}
               size="small"
-              sx={{ fontSize: '0.65rem', height: 18 }}
+              sx={{ fontSize: '0.65rem', height: 18, flexShrink: 0 }}
             />
           </Box>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontSize: '0.8rem' }}>

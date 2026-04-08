@@ -350,6 +350,52 @@ createHandler('get-templates', async () => {
   if (!fs.existsSync(templatesDir)) return []
 
   const IMAGE_EXTS = ['.png', '.jpg', '.jpeg', '.webp', '.gif']
+  const ICON_SIZES = [
+    '1024x1024',
+    '512x512',
+    '256x256',
+    '128x128',
+    '96x96',
+    '64x64',
+    '48x48',
+    '32x32',
+    '24x24',
+    '16x16'
+  ]
+
+  /**
+   * Resolve icon path with priority:
+   * 1. <template-dir>/icon.* (sibling of thumbnail.*)
+   * 2. <template-dir>/game/assets/images/icons/<size>.* (prioritize larger sizes)
+   * 3. null (fallback to thumbnail)
+   */
+  const resolveIconPath = (templateBaseDir: string): string | null => {
+    // Priority 1: Look for icon.* sibling of thumbnail.*
+    const iconFile = IMAGE_EXTS.map((ext) => path.join(templateBaseDir, `icon${ext}`)).find(
+      fs.existsSync
+    )
+    if (iconFile) return pathToFileURL(iconFile).href
+
+    // Priority 2: Look for sized icons in game/assets/images/icons/
+    const iconsDir = path.join(templateBaseDir, 'game', 'assets', 'images', 'icons')
+    if (fs.existsSync(iconsDir)) {
+      // Try each size in priority order (larger is better)
+      for (const size of ICON_SIZES) {
+        const sizeIconFile = IMAGE_EXTS.map((ext) => path.join(iconsDir, `${size}${ext}`)).find(
+          fs.existsSync
+        )
+        if (sizeIconFile) return pathToFileURL(sizeIconFile).href
+      }
+
+      // If no sized icon found, look for any icon.* in the icons directory
+      const anyIconFile = IMAGE_EXTS.map((ext) => path.join(iconsDir, `icon${ext}`)).find(
+        fs.existsSync
+      )
+      if (anyIconFile) return pathToFileURL(anyIconFile).href
+    }
+
+    return null
+  }
 
   return fs
     .readdirSync(templatesDir, { withFileTypes: true })
@@ -369,7 +415,10 @@ createHandler('get-templates', async () => {
       )
       const thumbnailUrl = thumbFile ? pathToFileURL(thumbFile).href : null
 
-      return { id: dir.name, ...meta, thumbnailUrl }
+      // Resolve icon path
+      const iconUrl = resolveIconPath(base)
+
+      return { id: dir.name, ...meta, thumbnailUrl, iconUrl }
     })
     .filter(Boolean) as GameTemplate[]
 })
