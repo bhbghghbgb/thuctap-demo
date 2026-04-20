@@ -1,13 +1,13 @@
 import { Box } from '@mui/material'
 import { QuizAppData } from '@shared/types'
-import React from 'react'
+import React, { useImperativeHandle, useState } from 'react'
 import { QuizTab, SummarySidebar } from './components'
 import { usePlaneQuizCrud } from './hooks/usePlaneQuizCrud'
 
 interface Props {
-  appData: QuizAppData
+  initialData: QuizAppData
   projectDir: string
-  onChange: (data: QuizAppData) => void
+  onCommit: (data: QuizAppData) => void
 }
 
 function normalize(d: QuizAppData): QuizAppData {
@@ -18,42 +18,63 @@ function normalize(d: QuizAppData): QuizAppData {
   }
 }
 
-export default function QuizEditor({
-  appData: raw,
-  projectDir,
-  onChange
-}: Props): React.ReactElement {
-  const data = normalize(raw)
-  const {
-    questions,
-    addQuestion,
-    addQuestionFromDrop,
-    updateQuestion,
-    deleteQuestion,
-    addAnswer,
-    updateAnswer,
-    deleteAnswer
-  } = usePlaneQuizCrud(data, projectDir, onChange)
-
-  return (
-    <Box sx={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
-      {/* ── Sidebar ── */}
-      <SummarySidebar questions={questions} />
-
-      {/* ── Main ── */}
-      <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
-        <QuizTab
-          questions={questions}
-          projectDir={projectDir}
-          onAddQuestion={addQuestion}
-          onAddQuestionFromDrop={addQuestionFromDrop}
-          onUpdateQuestion={updateQuestion}
-          onDeleteQuestion={deleteQuestion}
-          onAddAnswer={addAnswer}
-          onUpdateAnswer={updateAnswer}
-          onDeleteAnswer={deleteAnswer}
-        />
-      </Box>
-    </Box>
-  )
+export interface QuizEditorRef {
+  getValue(): QuizAppData
+  setValue(data: QuizAppData): void
 }
+
+const QuizEditorComponent = React.forwardRef<QuizEditorRef, Props>(
+  ({ initialData, projectDir, onCommit }, ref): React.ReactElement => {
+    const [data, setData] = useState<QuizAppData>(normalize(initialData))
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        getValue: () => data,
+        setValue: (newData: QuizAppData) => {
+          setData(normalize(newData))
+        }
+      }),
+      [data]
+    )
+
+    const handleCommit = (newData: QuizAppData) => {
+      setData(newData)
+      onCommit(newData)
+    }
+
+    const {
+      questions,
+      addQuestion,
+      addQuestionFromDrop,
+      updateQuestion,
+      deleteQuestion,
+      addAnswer,
+      updateAnswer,
+      deleteAnswer
+    } = usePlaneQuizCrud(data, projectDir, handleCommit)
+
+    return (
+      <Box sx={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
+        <SummarySidebar questions={questions} />
+        <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
+          <QuizTab
+            questions={questions}
+            projectDir={projectDir}
+            onAddQuestion={addQuestion}
+            onAddQuestionFromDrop={addQuestionFromDrop}
+            onUpdateQuestion={updateQuestion}
+            onDeleteQuestion={deleteQuestion}
+            onAddAnswer={addAnswer}
+            onUpdateAnswer={updateAnswer}
+            onDeleteAnswer={deleteAnswer}
+          />
+        </Box>
+      </Box>
+    )
+  }
+)
+
+QuizEditorComponent.displayName = 'QuizEditor'
+
+export default QuizEditorComponent

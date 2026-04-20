@@ -25,6 +25,7 @@ export interface QuestionCardProps {
   onAddAnswer: (qid: string) => void
   onUpdateAnswer: (qid: string, aid: string, patch: Partial<QuizAnswer>) => void
   onDeleteAnswer: (qid: string, aid: string) => void
+  onCommit?: () => void
 }
 
 /**
@@ -40,7 +41,8 @@ export function QuestionCard({
   onDelete,
   onAddAnswer,
   onUpdateAnswer,
-  onDeleteAnswer
+  onDeleteAnswer,
+  onCommit
 }: QuestionCardProps): React.ReactElement {
   const hasNoCorrect = !question.answers.some((a) => a.isCorrect)
   const isSingle = !question.multipleCorrect
@@ -80,6 +82,7 @@ export function QuestionCard({
               label="Question text"
               value={question.question}
               onChange={(v) => onUpdate(question.id, { question: v })}
+              onBlur={onCommit}
               placeholder="e.g. Which animal is the largest?"
               autoFocus={autoFocus}
               multiline
