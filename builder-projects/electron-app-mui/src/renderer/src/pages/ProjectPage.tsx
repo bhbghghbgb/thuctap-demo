@@ -18,7 +18,6 @@ import { useSettings } from '@renderer/hooks/useSettings'
 import { useTemplateManager } from '@renderer/hooks/useTemplates'
 import { useSettingsStore } from '@renderer/stores/settingsStore'
 import { getHistoryArray } from '@renderer/utils/historyUtils'
-import { EditorRef } from '@renderer/games/registry'
 import { buildProjectFile, buildProjectTitle } from '@renderer/utils/projectFileUtils'
 import type { AnyAppData, ProjectFile, ProjectMeta } from '@shared/types'
 import { JSX, useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -86,30 +85,16 @@ function ProjectPageInner({ templateId, locationState }: ProjectPageInnerProps):
   }, [meta, templateId, manager])
   useAppDocumentTitle(documentTitle)
 
-  const editorRef = useRef<EditorRef>(null)
-
-  // Helper to get current data even if uncommitted (focused)
-  const getCurrentAppData = useCallback(() => {
-    return editorRef.current?.getValue() ?? appData
-  }, [appData])
-
   // Wrapped undo/redo that marks document as dirty
   const handleUndo = useCallback(() => {
-    const current = getCurrentAppData()
-    setPresent(current) // Capture any uncommitted changes first
     historyUndo()
     setIsDirty(true)
-  }, [getCurrentAppData, historyUndo, setPresent])
+  }, [historyUndo])
 
   const handleRedo = useCallback(() => {
     historyRedo()
     setIsDirty(true)
   }, [historyRedo])
-
-  // Sync history state (present) to editor on undo/redo
-  useEffect(() => {
-    editorRef.current?.setValue(appData)
-  }, [appData])
 
   // Sync project settings to context
   useEffect(() => {
@@ -232,7 +217,7 @@ function ProjectPageInner({ templateId, locationState }: ProjectPageInnerProps):
   })
 
   // ── App data change (from editor) ─────────────────────────────────────────
-  const handleCommit = useCallback(
+  const handleAppDataChange = useCallback(
     (newData: AnyAppData) => {
       // Update history state (for undo/redo)
       setPresent(newData)
@@ -249,24 +234,21 @@ function ProjectPageInner({ templateId, locationState }: ProjectPageInnerProps):
         if (onEditTimerRef.current) clearTimeout(onEditTimerRef.current)
         onEditTimerRef.current = setTimeout(() => {
           if (metaRef.current) {
-            // Use current value from editor for auto-save
-            const currentData = getCurrentAppData()
-            doSave(metaRef.current, currentData).catch(() => {
+            doSave(metaRef.current, newData).catch(() => {
               // Silently fail - user will see dirty indicator
             })
           }
         }, AUTO_SAVE_DEBOUNCE_MS)
       }
     },
-    [setPresent, resolved.autoSave.mode, doSave, getCurrentAppData]
+    [setPresent, resolved.autoSave.mode, doSave]
   )
 
   // ── Save As ───────────────────────────────────────────────────────────────
   const handleSaveAs = useCallback(async (): Promise<void> => {
     if (!meta) return
-    const currentData = getCurrentAppData()
     const result = await window.electronAPI.saveProjectAs({
-      projectData: buildProjectFile(meta, currentData),
+      projectData: buildProjectFile(meta, appData),
       oldProjectDir: meta.projectDir
     })
     if (!result) return
@@ -278,12 +260,11 @@ function ProjectPageInner({ templateId, locationState }: ProjectPageInnerProps):
       }
     }
     await performSaveAs(result.folder)
-  }, [meta, getCurrentAppData, showSnack, performSaveAs])
+  }, [meta, appData, showSnack, performSaveAs])
 
   const handleSave = useCallback(async (): Promise<void> => {
     if (!meta) return
 
-    const currentData = getCurrentAppData()
     // If temporary, trigger save-as instead
     if (meta.isTemporary) {
       await handleSaveAs()
@@ -291,22 +272,21 @@ function ProjectPageInner({ templateId, locationState }: ProjectPageInnerProps):
     }
 
     try {
-      await doSave(meta, currentData)
+      await doSave(meta, appData)
       showSnack('Project saved!')
     } catch (e) {
       showSnack(`Save failed: ${e}`, 'error')
     }
-  }, [meta, getCurrentAppData, doSave, showSnack, handleSaveAs])
+  }, [meta, appData, doSave, showSnack, handleSaveAs])
 
   // ── Export / Preview ───────────────────────────────────────────────────────
   const handleExport = async (mode: 'folder' | 'zip'): Promise<void> => {
     setExportAnchor(null)
     if (!meta) return
     try {
-      const currentData = getCurrentAppData()
       const result = await window.electronAPI.exportProject({
         templateId: meta.templateId,
-        appData: currentData,
+        appData: appData,
         projectDir: meta.projectDir,
         mode
       })
@@ -320,10 +300,9 @@ function ProjectPageInner({ templateId, locationState }: ProjectPageInnerProps):
   const handlePreview = async (): Promise<void> => {
     if (!meta) return
     try {
-      const currentData = getCurrentAppData()
       await window.electronAPI.previewProject({
         templateId: meta.templateId,
-        appData: currentData,
+        appData: appData,
         projectDir: meta.projectDir
       })
       showSnack('Preview opened')
@@ -340,8 +319,7 @@ function ProjectPageInner({ templateId, locationState }: ProjectPageInnerProps):
     setIsDirty(true)
     renameOpen.setFalse()
     try {
-      const currentData = getCurrentAppData()
-      await doSave(updated, currentData)
+      await doSave(updated, appData)
     } catch (e) {
       setMeta(meta)
       showSnack(`Rename failed: ${e}`, 'error')
@@ -421,12 +399,7 @@ function ProjectPageInner({ templateId, locationState }: ProjectPageInnerProps):
             )
           const { Editor } = entry
           return (
-            <Editor
-              ref={editorRef}
-              initialData={appData}
-              projectDir={meta.projectDir}
-              onCommit={handleCommit}
-            />
+            <Editor appData={appData} projectDir={meta.projectDir} onChange={handleAppDataChange} />
           )
         })()}
       </Box>

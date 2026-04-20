@@ -20,17 +20,11 @@ export interface QuestionCardProps {
   index: number
   projectDir: string
   autoFocus?: boolean
-  onUpdate: (id: string, patch: Partial<QuizQuestion>, shouldCommit?: boolean) => void
+  onUpdate: (id: string, patch: Partial<QuizQuestion>) => void
   onDelete: (id: string) => void
   onAddAnswer: (qid: string) => void
-  onUpdateAnswer: (
-    qid: string,
-    aid: string,
-    patch: Partial<QuizAnswer>,
-    shouldCommit?: boolean
-  ) => void
+  onUpdateAnswer: (qid: string, aid: string, patch: Partial<QuizAnswer>) => void
   onDeleteAnswer: (qid: string, aid: string) => void
-  onCommit: () => void
 }
 
 /**
@@ -46,8 +40,7 @@ export function QuestionCard({
   onDelete,
   onAddAnswer,
   onUpdateAnswer,
-  onDeleteAnswer,
-  onCommit
+  onDeleteAnswer
 }: QuestionCardProps): React.ReactElement {
   const hasNoCorrect = !question.answers.some((a) => a.isCorrect)
   const isSingle = !question.multipleCorrect
@@ -86,8 +79,7 @@ export function QuestionCard({
             <NameField
               label="Question text"
               value={question.question}
-              onChange={(v) => onUpdate(question.id, { question: v }, false)}
-              onBlur={onCommit}
+              onChange={(v) => onUpdate(question.id, { question: v })}
               placeholder="e.g. Which animal is the largest?"
               autoFocus={autoFocus}
               multiline
@@ -140,7 +132,6 @@ export function QuestionCard({
           onAddAnswer={onAddAnswer}
           onUpdateAnswer={onUpdateAnswer}
           onDeleteAnswer={onDeleteAnswer}
-          onCommit={onCommit}
         />
       </Paper>
     </FileDropTarget>

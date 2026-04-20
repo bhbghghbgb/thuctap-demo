@@ -51,9 +51,16 @@ interface Props {
 
 ### Implementation Strategy
 
-1. **Wrapper Component**: Create a backward-compatible wrapper that allows the old editors to still be usable after the project Page has been changed to use the new API, and gradually migrate existing editors to new API
+1. **Wrapper Component**: Create a backward-compatible wrapper that:
+   - Accepts old API (`appData`, `onChange`)
+   - Internally uses new API (`initialData`, `setValue`, `getValue`, `onCommit`)
+   - Handles the conversion between old and new patterns
 
-2. **Form Library**: Use **Tanstack Form** because it is "controlled" by nature (best for use with UI libraries, currently using MUI)
+2. **Form Library**: Use **React Hook Form** because:
+   - Works with uncontrolled components (ref-based)
+   - Has `useForm` with `reset` for setValue
+   - Has `formState` for tracking dirty state
+   - Minimal re-renders
 
 3. **useImperativeHandle**: Expose `getValue` and `setValue` to parent without re-rendering child
 
@@ -63,9 +70,12 @@ interface Props {
 
 ### Phase 1: Infrastructure (Wrapper + Types)
 
-1. Create `EditorWrapper.tsx`.
+1. Create `EditorWrapper.tsx` that:
+   - Accepts old API props
+   - Uses `useImperativeHandle` internally to expose getValue/setValue
+   - Manages the "pending commits" logic
 
-2. Update `GameRegistryEntry` type with the new editor and wrapped old editors
+2. Update `GameRegistryEntry` type to support both APIs
 
 3. Keep all existing Editors working with old API via wrapper
 
@@ -75,11 +85,12 @@ interface Props {
 
 Reasons:
 - Has text fields (QuestionCard, AnswerList) that trigger onChange on every keystroke
-- Moderate complexity - not too simple nor too complex, uses shared "text-type" components that may need to be updated to allow onBlur as well
+- Moderate complexity - not too simple (won't show the problem) nor too complex
 - Clear commit points: blur from text field should commit
+- When user clicks undo/save while typing, need to capture current state
 
 Changes to QuizEditor:
-1. Use Tanstack Form with `useForm<QuizAppData>`
+1. Use React Hook Form with `useForm<QuizAppData>`
 2. Call `onCommit` on text field blur
 3. Expose `getValue()` and `setValue()` via `useImperativeHandle`
 4. Rename `onChange` prop to `onCommit`
@@ -89,7 +100,7 @@ Changes to QuizEditor:
 1. Update Editor rendering to:
    - Pass `initialData` (only on first load)
    - Use ref to call `getValue()` synchronously when user clicks Save/Undo
-   - Call `setValue` callback for undo operations
+   - Pass `setValue` callback for undo operations
 
 2. Handle the case where user types but hasn't blurred:
    - On Save: call `getValue()` to get current form state before saving
@@ -114,8 +125,9 @@ Repeat for each editor:
 ### 1. When to Commit?
 
 Options:
-- **On blur**: For text fields
-- **On explicit action**: Virtually any other actions: remove/add item, add/remove image, togging something, etc
+- **On blur**: Good for history (every field change is captured)
+- **On explicit action** (Save button): Better performance, but loses intermediate states
+- **Hybrid**: Commit on blur, but also have "draft" state for undo
 
 **Recommendation**: Commit on blur for most fields. For undo/save operations, always call `getValue()` first to capture any uncommitted changes.
 
@@ -125,6 +137,13 @@ When user presses Ctrl+Z while focused on a text field:
 1. Parent calls `getValue()` to capture current (unblurred) state to history
 2. Parent calls `setValue(historyPreviousState)` to reset form
 3. Editor updates its internal form state
+
+### 3. Backward Compatibility
+
+The wrapper should:
+- Accept both old and new API props
+- Log deprecation warnings for old API usage
+- Provide migration path for each editor
 
 ---
 
@@ -140,9 +159,18 @@ When user presses Ctrl+Z while focused on a text field:
 
 ---
 
-## Some additional details
+## Open Questions for Discussion
 
-1. How to handle validation errors? (currently some fields have `required` flag): Errors should not and will not prevent any operations, it will only show an error state, or more advanced editors may aggerate errors and show on an alert components, etc
-3. Should each Editor use Tanstack Form directly, or share a common hook?: Use Tanstack Form directly originally, refactors may be attempted after we have good implementation results
-4. What's the expected behavior for auto-save while typing?: Same as pressing Save, gets the current value to save but do not commit to history
+1. Should the form library track "dirty" state? (i.e., only commit if actually changed)
+2. How to handle validation errors? (currently some fields have `required` flag)
+3. Should each Editor use RHF directly, or share a common hook?
+4. What's the expected behavior for auto-save while typing?
 
+---
+
+## Next Steps
+
+1. Review this plan
+2. Confirm starting editor (recommend `plane-quiz`)
+3. Create the EditorWrapper infrastructure
+4. Begin Phase 2 (pilot migration)

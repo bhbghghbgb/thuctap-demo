@@ -4271,6 +4271,7 @@ __metadata:
     react-dom: "npm:^19.2.4"
     react-dropzone: "npm:^15.0.0"
     react-fast-marquee: "npm:^1.6.5"
+    react-hook-form: "npm:^7.72.1"
     react-hotkeys-hook: "npm:^5.2.4"
     react-router-dom: "npm:^7.14.0"
     react-use: "npm:^17.6.0"
@@ -8262,6 +8263,15 @@ __metadata:
     react: ">= 16.8.0 || ^18.0.0"
     react-dom: ">= 16.8.0 || ^18.0.0"
   checksum: 10c0/ea2378c4cd1eb323d004e8c2ff6222a7a4def311e00f0bd0c99adebc906aa56a078c2101b3c6697109b15dcf177bfa31edd95b9f7a114887072e3103fe234ecd
+  languageName: node
+  linkType: hard
+
+"react-hook-form@npm:^7.72.1":
+  version: 7.72.1
+  resolution: "react-hook-form@npm:7.72.1"
+  peerDependencies:
+    react: ^16.8.0 || ^17 || ^18 || ^19
+  checksum: 10c0/b96fb9c10893fd5b31151c412fe3dd475a207e2ca7e7d41f0b3d98c05e3d6e556b9c2edfb568820fcbf598f257871a87b91c9909cc6e07a7ab7bf6b36e22035a
   languageName: node
   linkType: hard
 
