@@ -167,4 +167,5 @@ templates/**
 !templates/*/meta*.*
 *PLAN*.md
 !FORM_LIBRARY_MIGRATION_PLAN.md
+!CURRENT_PLAN_CONTEXT.md
 asar/

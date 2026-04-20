@@ -5,22 +5,25 @@
 ### Current Architecture
 
 **ProjectPage** (`pages/ProjectPage.tsx`):
+
 - Uses `useProjectHistory` hook to manage undo/redo state
 - Renders Editor with: `<Editor appData={appData} projectDir={meta.projectDir} onChange={handleAppDataChange} />`
 - `handleAppDataChange` calls `setPresent(newData)` to update history state on every change
 
 **Current Editor API** (`games/registry.ts:25-34`):
+
 ```typescript
 interface Props {
-  appData: AnyAppData      // Current project data
-  projectDir: string      // Project directory for image imports
-  onChange: (data: AnyAppData) => void  // Called on EVERY change
+  appData: AnyAppData // Current project data
+  projectDir: string // Project directory for image imports
+  onChange: (data: AnyAppData) => void // Called on EVERY change
 }
 ```
 
 ### The Problem
 
 Every keystroke triggers:
+
 1. `NameField.onChange(e.target.value)` (line 48 in NameField.tsx)
 2. Propagates up through component tree
 3. Each change creates a **new immutable copy** of entire appData
@@ -36,31 +39,24 @@ This causes performance issues with many text fields.
 
 ```typescript
 interface EditorRef {
-  getValue(): AnyAppData    // Synchronous get - even if field is focused
-  setValue(data: AnyAppData): void  // Reset form to specific value (undo)
+  getValue(): AnyAppData // Synchronous get - even if field is focused
+  setValue(data: AnyAppData): void // Reset form to specific value (undo)
 }
 
 interface Props {
-  initialData: AnyAppData   // Only for initial load (project open)
+  initialData: AnyAppData // Only for initial load (project open)
   projectDir: string
-  setValue?: (fn: () => AnyAppData) => void  // Parent provides callback to get current value
-  getValue?: (fn: (get: () => AnyAppData) => void) => void  // Parent registers getter
-  onCommit: (data: AnyAppData) => void  // Called when user explicitly commits (blur, save, etc.)
+  setValue?: (fn: () => AnyAppData) => void // Parent provides callback to get current value
+  getValue?: (fn: (get: () => AnyAppData) => void) => void // Parent registers getter
+  onCommit: (data: AnyAppData) => void // Called when user explicitly commits (blur, save, etc.)
 }
 ```
 
 ### Implementation Strategy
 
-1. **Wrapper Component**: Create a backward-compatible wrapper that:
-   - Accepts old API (`appData`, `onChange`)
-   - Internally uses new API (`initialData`, `setValue`, `getValue`, `onCommit`)
-   - Handles the conversion between old and new patterns
+1. **Wrapper Component**: Create a backward-compatible wrapper that allows the old editors to still be usable after the project Page has been changed to use the new API, and gradually migrate existing editors to new API
 
-2. **Form Library**: Use **React Hook Form** because:
-   - Works with uncontrolled components (ref-based)
-   - Has `useForm` with `reset` for setValue
-   - Has `formState` for tracking dirty state
-   - Minimal re-renders
+2. **Form Library**: Use **React Hook Form**
 
 3. **useImperativeHandle**: Expose `getValue` and `setValue` to parent without re-rendering child
 
@@ -70,12 +66,9 @@ interface Props {
 
 ### Phase 1: Infrastructure (Wrapper + Types)
 
-1. Create `EditorWrapper.tsx` that:
-   - Accepts old API props
-   - Uses `useImperativeHandle` internally to expose getValue/setValue
-   - Manages the "pending commits" logic
+1. Create `EditorWrapper.tsx`.
 
-2. Update `GameRegistryEntry` type to support both APIs
+2. Update `GameRegistryEntry` type with the new editor and wrapped old editors
 
 3. Keep all existing Editors working with old API via wrapper
 
@@ -84,12 +77,13 @@ interface Props {
 **Recommendation: Start with `plane-quiz` (QuizEditor)**
 
 Reasons:
+
 - Has text fields (QuestionCard, AnswerList) that trigger onChange on every keystroke
-- Moderate complexity - not too simple (won't show the problem) nor too complex
+- Moderate complexity - not too simple nor too complex, uses shared "text-type" components that may need to be updated to allow onBlur as well
 - Clear commit points: blur from text field should commit
-- When user clicks undo/save while typing, need to capture current state
 
 Changes to QuizEditor:
+
 1. Use React Hook Form with `useForm<QuizAppData>`
 2. Call `onCommit` on text field blur
 3. Expose `getValue()` and `setValue()` via `useImperativeHandle`
@@ -100,7 +94,7 @@ Changes to QuizEditor:
 1. Update Editor rendering to:
    - Pass `initialData` (only on first load)
    - Use ref to call `getValue()` synchronously when user clicks Save/Undo
-   - Pass `setValue` callback for undo operations
+   - Call `setValue` callback for undo operations
 
 2. Handle the case where user types but hasn't blurred:
    - On Save: call `getValue()` to get current form state before saving
@@ -109,6 +103,7 @@ Changes to QuizEditor:
 ### Phase 4: Migrate Remaining Editors
 
 Repeat for each editor:
+
 - `group-sort`
 - `balloon-letter-picker`
 - `pair-matching`
@@ -125,52 +120,39 @@ Repeat for each editor:
 ### 1. When to Commit?
 
 Options:
-- **On blur**: Good for history (every field change is captured)
-- **On explicit action** (Save button): Better performance, but loses intermediate states
-- **Hybrid**: Commit on blur, but also have "draft" state for undo
+
+- **On blur**: For text fields
+- **On explicit action**: Virtually any other actions: remove/add item, add/remove image, togging something, etc
 
 **Recommendation**: Commit on blur for most fields. For undo/save operations, always call `getValue()` first to capture any uncommitted changes.
 
 ### 2. Handling Undo While Typing
 
 When user presses Ctrl+Z while focused on a text field:
+
 1. Parent calls `getValue()` to capture current (unblurred) state to history
 2. Parent calls `setValue(historyPreviousState)` to reset form
 3. Editor updates its internal form state
-
-### 3. Backward Compatibility
-
-The wrapper should:
-- Accept both old and new API props
-- Log deprecation warnings for old API usage
-- Provide migration path for each editor
 
 ---
 
 ## File Changes Summary
 
 ### New Files
+
 - `src/renderer/src/components/EditorWrapper.tsx` - Backward-compatible wrapper
 
 ### Modified Files
+
 - `src/renderer/src/games/registry.ts` - Update GameRegistryEntry type
 - `src/renderer/src/pages/ProjectPage.tsx` - Use new Editor API
 - Individual Editor files (one at a time)
 
 ---
 
-## Open Questions for Discussion
+## Some additional details
 
-1. Should the form library track "dirty" state? (i.e., only commit if actually changed)
-2. How to handle validation errors? (currently some fields have `required` flag)
-3. Should each Editor use RHF directly, or share a common hook?
-4. What's the expected behavior for auto-save while typing?
-
----
-
-## Next Steps
-
-1. Review this plan
-2. Confirm starting editor (recommend `plane-quiz`)
-3. Create the EditorWrapper infrastructure
-4. Begin Phase 2 (pilot migration)
+1. How to handle validation errors? (currently some fields have `required` flag): Errors should not and will not prevent any operations, it will only show an error state, or more advanced editors may aggerate errors and show on an alert components, etc
+2. Should each Editor use React Hook Form directly, or share a common hook?: Use React Hook Form directly originally, refactors may be attempted after we have good implementation results
+3. What's the expected behavior for auto-save while typing?: Same as pressing Save, gets the current value to save but do not commit to history
+4. The Editors DO NOT manage history, when it wants to commit, simply calls onCommit with immutable copy and the parent does that.
