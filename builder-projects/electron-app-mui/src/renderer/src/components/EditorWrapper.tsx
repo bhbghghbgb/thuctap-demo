@@ -1,5 +1,6 @@
 import { AnyAppData } from '@shared'
 import React, { forwardRef, useImperativeHandle, useState } from 'react'
+import { LegacyEditorProps } from '../games/legacyEditorProps'
 
 // Lightweight wrapper to adapt existing editors to a new API surface
 // - Forwards onChange to onCommit (to move towards onCommit-per-action)
@@ -7,21 +8,21 @@ import React, { forwardRef, useImperativeHandle, useState } from 'react'
 // - Exposes a minimal imperative handle with getValue / setValue
 
 // NOTE: To keep this wrapper generic and avoid tight coupling to AppData types,
-// we loosely type data as any. In a real migration this would be the shared AppData union.
+// we loosely type data as AnyAppData. In a real migration this would be the shared AppData union.
 
 export type EditorWrapperHandle = {
-  getValue: () => any
-  setValue: (data: any) => void
+  getValue: () => AnyAppData
+  setValue: (data: AnyAppData) => void
 }
 type EditorWrapperProps = {
-  // The actual editor component to render (expects props: appData, projectDir, onChange)
-  EditorComponent: React.ComponentType<any>
+  // The actual editor component to render (expects props defined by LegacyEditorProps)
+  EditorComponent: React.ComponentType<LegacyEditorProps>
   // Initial data passed from the parent/editor container
-  initialData?: any
+  initialData?: AnyAppData
   // Project directory for assets, images, etc.
   projectDir: string
   // Callback used by the parent to persist changes (archive/history)
-  onCommit: (data: any) => void
+  onCommit: (data: AnyAppData) => void
   // Forwarded props to the inner editor (e.g., appData for the initial render, etc.)
   [key: string]: any
 }
