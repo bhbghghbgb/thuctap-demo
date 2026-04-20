@@ -12,11 +12,17 @@ export interface QuizTabProps {
   projectDir: string
   onAddQuestion: (initialImage?: string) => void
   onAddQuestionFromDrop: (filePath: string) => void
-  onUpdateQuestion: (id: string, patch: Partial<QuizQuestion>) => void
+  onUpdateQuestion: (id: string, patch: Partial<QuizQuestion>, shouldCommit?: boolean) => void
   onDeleteQuestion: (id: string) => void
   onAddAnswer: (qid: string) => void
-  onUpdateAnswer: (qid: string, aid: string, patch: Partial<QuizAnswer>) => void
+  onUpdateAnswer: (
+    qid: string,
+    aid: string,
+    patch: Partial<QuizAnswer>,
+    shouldCommit?: boolean
+  ) => void
   onDeleteAnswer: (qid: string, aid: string) => void
+  onCommit: () => void
 }
 
 /**
@@ -93,6 +99,7 @@ export function QuizTab({
               onAddAnswer={onAddAnswer}
               onUpdateAnswer={onUpdateAnswer}
               onDeleteAnswer={onDeleteAnswer}
+              onCommit={onCommit}
             />
           ))}
         </Box>

@@ -7,38 +7,45 @@ import { useEntityCreateShortcut } from '@renderer/hooks/useEntityCreateShortcut
 import { useSettings } from '@renderer/hooks/useSettings'
 import { QuizAnswer, QuizAppData, QuizQuestion } from '@renderer/types'
 import { toBb26 } from '@renderer/utils'
+import { FormApi } from '@tanstack/react-form'
 import { useCallback } from 'react'
+import { insert, remove, replace } from 'travels'
 
 interface UsePlaneQuizCrudReturn {
   questions: QuizQuestion[]
   addQuestion: (initialImage?: string) => void
   addQuestionFromDrop: (filePath: string) => Promise<void>
-  updateQuestion: (id: string, patch: Partial<QuizQuestion>) => void
+  updateQuestion: (id: string, patch: Partial<QuizQuestion>, shouldCommit?: boolean) => void
   deleteQuestion: (id: string) => void
   addAnswer: (qid: string) => void
-  updateAnswer: (qid: string, aid: string, patch: Partial<QuizAnswer>) => void
+  updateAnswer: (
+    qid: string,
+    aid: string,
+    patch: Partial<QuizAnswer>,
+    shouldCommit?: boolean
+  ) => void
   deleteAnswer: (qid: string, aid: string) => void
 }
 
 /**
  * Provides CRUD operations for plane quiz questions and answers.
  *
- * @param data - Normalized appData
+ * @param form - Tanstack Form instance
  * @param projectDir - Project directory path for image imports
- * @param onChange - State update callback
+ * @param onCommit - History commit callback
  */
 export function usePlaneQuizCrud(
-  data: QuizAppData,
+  form: FormApi<QuizAppData, any>,
   projectDir: string,
-  onChange: (data: QuizAppData) => void
+  onCommit: (data: QuizAppData) => void
 ): UsePlaneQuizCrudReturn {
   const { resolved } = useSettings()
-  const { questions } = data
+  const questions = form.state.values.questions
 
   // ── Question CRUD ─────────────────────────────────────────────────────────
   const addQuestion = useCallback(
     (initialImage?: string) => {
-      const qc = data._questionCounter + 1
+      const qc = form.state.values._questionCounter + 1
       const qid = `q-${qc}`
       const q: QuizQuestion = {
         id: qid,
@@ -51,14 +58,16 @@ export function usePlaneQuizCrud(
           { id: `${qid}-a-2`, text: resolved.prefillNames ? 'Answer B' : '', isCorrect: false }
         ]
       }
-      onChange({ ...data, _questionCounter: qc, questions: [...questions, q] })
+      form.setFieldValue('_questionCounter', qc)
+      form.setFieldValue('questions', insert(questions, questions.length, q))
+      onCommit(form.state.values)
     },
-    [data, questions, resolved.prefillNames, onChange]
+    [form, questions, resolved.prefillNames, onCommit]
   )
 
   const addQuestionFromDrop = useCallback(
     async (filePath: string) => {
-      const qc = data._questionCounter + 1
+      const qc = form.state.values._questionCounter + 1
       const qid = `q-${qc}`
       const imagePath = await window.electronAPI.importImage(filePath, projectDir, qid)
       const q: QuizQuestion = {
@@ -72,72 +81,93 @@ export function usePlaneQuizCrud(
           { id: `${qid}-a-2`, text: resolved.prefillNames ? 'Answer B' : '', isCorrect: false }
         ]
       }
-      onChange({ ...data, _questionCounter: qc, questions: [...questions, q] })
+      form.setFieldValue('_questionCounter', qc)
+      form.setFieldValue('questions', insert(questions, questions.length, q))
+      onCommit(form.state.values)
     },
-    [data, questions, projectDir, resolved.prefillNames, onChange]
+    [form, questions, projectDir, resolved.prefillNames, onCommit]
   )
 
   const updateQuestion = useCallback(
-    (id: string, patch: Partial<QuizQuestion>) => {
-      onChange({ ...data, questions: questions.map((q) => (q.id === id ? { ...q, ...patch } : q)) })
+    (id: string, patch: Partial<QuizQuestion>, shouldCommit = true) => {
+      const idx = questions.findIndex((q) => q.id === id)
+      if (idx === -1) return
+      const next = replace(questions, idx, { ...questions[idx], ...patch })
+      form.setFieldValue('questions', next)
+      if (shouldCommit) onCommit(form.state.values)
     },
-    [data, questions, onChange]
+    [form, questions, onCommit]
   )
 
   const deleteQuestion = useCallback(
     (id: string) => {
-      onChange({ ...data, questions: questions.filter((q) => q.id !== id) })
+      const idx = questions.findIndex((q) => q.id === id)
+      if (idx === -1) return
+      form.setFieldValue('questions', remove(questions, idx))
+      onCommit(form.state.values)
     },
-    [data, questions, onChange]
+    [form, questions, onCommit]
   )
 
   // ── Answer CRUD (nested within questions) ─────────────────────────────────
   const addAnswer = useCallback(
     (qid: string) => {
-      onChange({
-        ...data,
-        questions: questions.map((q) => {
-          if (q.id !== qid) return q
-          const ac = q._answerCounter + 1
-          const newAnswer: QuizAnswer = {
-            id: `${qid}-a-${ac}`,
-            text: resolved.prefillNames ? `Answer ${toBb26(ac)}` : '',
-            isCorrect: false
-          }
-          return { ...q, _answerCounter: ac, answers: [...q.answers, newAnswer] }
+      const qidx = questions.findIndex((q) => q.id === qid)
+      if (qidx === -1) return
+      const q = questions[qidx]
+      const ac = q._answerCounter + 1
+      const newAnswer: QuizAnswer = {
+        id: `${qid}-a-${ac}`,
+        text: resolved.prefillNames ? `Answer ${toBb26(ac)}` : '',
+        isCorrect: false
+      }
+      form.setFieldValue(
+        'questions',
+        replace(questions, qidx, {
+          ...q,
+          _answerCounter: ac,
+          answers: insert(q.answers, q.answers.length, newAnswer)
         })
-      })
+      )
+      onCommit(form.state.values)
     },
-    [data, questions, resolved.prefillNames, onChange]
+    [form, questions, resolved.prefillNames, onCommit]
   )
 
   const updateAnswer = useCallback(
-    (qid: string, aid: string, patch: Partial<QuizAnswer>) => {
-      onChange({
-        ...data,
-        questions: questions.map((q) => {
-          if (q.id !== qid) return q
-          let answers = q.answers.map((a) => (a.id === aid ? { ...a, ...patch } : a))
-          if (patch.isCorrect && !q.multipleCorrect) {
-            answers = answers.map((a) => (a.id === aid ? a : { ...a, isCorrect: false }))
-          }
-          return { ...q, answers }
-        })
-      })
+    (qid: string, aid: string, patch: Partial<QuizAnswer>, shouldCommit = true) => {
+      const qidx = questions.findIndex((q) => q.id === qid)
+      if (qidx === -1) return
+      const q = questions[qidx]
+      const aidx = q.answers.findIndex((a) => a.id === aid)
+      if (aidx === -1) return
+
+      let nextAnswers = replace(q.answers, aidx, { ...q.answers[aidx], ...patch })
+      if (patch.isCorrect && !q.multipleCorrect) {
+        nextAnswers = nextAnswers.map((a) => (a.id === aid ? a : { ...a, isCorrect: false }))
+      }
+
+      form.setFieldValue('questions', replace(questions, qidx, { ...q, answers: nextAnswers }))
+      if (shouldCommit) onCommit(form.state.values)
     },
-    [data, questions, onChange]
+    [form, questions, onCommit]
   )
 
   const deleteAnswer = useCallback(
     (qid: string, aid: string) => {
-      onChange({
-        ...data,
-        questions: questions.map((q) =>
-          q.id !== qid ? q : { ...q, answers: q.answers.filter((a) => a.id !== aid) }
-        )
-      })
+      const qidx = questions.findIndex((q) => q.id === qid)
+      if (qidx === -1) return
+      const q = questions[qidx]
+      const aidx = q.answers.findIndex((a) => a.id === aid)
+      if (aidx === -1) return
+
+      form.setFieldValue(
+        'questions',
+        replace(questions, qidx, { ...q, answers: remove(q.answers, aidx) })
+      )
+      onCommit(form.state.values)
     },
-    [data, questions, onChange]
+    [form, questions, onCommit]
   )
 
   // ── Keyboard shortcuts ──────────────────────────────────────────────────

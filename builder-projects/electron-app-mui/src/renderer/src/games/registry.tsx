@@ -22,21 +22,41 @@ import QuizEditor from './plane-quiz/QuizEditor'
 import WhackAMoleEditor from './whack-a-mole/WhackAMoleEditor'
 import WordSearchEditor from './word-search/WordSearchEditor'
 
+export interface EditorRef {
+  getValue: () => AnyAppData
+  setValue: (data: AnyAppData) => void
+}
+
+export interface EditorProps {
+  initialData: AnyAppData
+  projectDir: string
+  onCommit: (data: AnyAppData) => void
+}
+
+export type OldEditorProps = {
+  appData: AnyAppData
+  projectDir: string
+  onChange: (data: AnyAppData) => void
+}
+
 export interface GameRegistryEntry {
   /** Editor component rendered on the ProjectPage */
-  Editor: ComponentType<{
-    appData: AnyAppData
-    projectDir: string
-    onChange: (data: AnyAppData) => void
-  }>
+  Editor: ComponentType<EditorProps & { ref?: React.Ref<EditorRef> }>
+  /** Alternative for legacy editors */
+  OldEditor?: ComponentType<OldEditorProps>
   /** Returns a fresh, empty appData object for new projects */
   createInitialData: () => AnyAppData
 }
 
+import { EditorWrapper } from '@renderer/components/EditorWrapper'
+import { forwardRef } from 'react'
+
 // ── Add new games here ────────────────────────────────────────────────────────
 export const GAME_REGISTRY: Record<string, GameRegistryEntry> = {
   'group-sort': {
-    Editor: GroupSortEditor as GameRegistryEntry['Editor'],
+    Editor: forwardRef((props, ref) => (
+      <EditorWrapper {...props} ref={ref} OldEditor={GroupSortEditor} />
+    )),
     createInitialData: () => ({
       groups: [],
       items: [],
@@ -54,7 +74,9 @@ export const GAME_REGISTRY: Record<string, GameRegistryEntry> = {
   },
 
   'balloon-letter-picker': {
-    Editor: BalloonLetterPickerEditor as GameRegistryEntry['Editor'],
+    Editor: forwardRef((props, ref) => (
+      <EditorWrapper {...props} ref={ref} OldEditor={BalloonLetterPickerEditor} />
+    )),
     createInitialData: () => ({
       words: [],
       _wordCounter: 0
@@ -62,7 +84,9 @@ export const GAME_REGISTRY: Record<string, GameRegistryEntry> = {
   },
 
   'pair-matching': {
-    Editor: PairMatchingEditor as GameRegistryEntry['Editor'],
+    Editor: forwardRef((props, ref) => (
+      <EditorWrapper {...props} ref={ref} OldEditor={PairMatchingEditor} />
+    )),
     createInitialData: () => ({
       items: [],
       minTotalPairs: 2,
@@ -71,7 +95,9 @@ export const GAME_REGISTRY: Record<string, GameRegistryEntry> = {
   },
 
   'word-search': {
-    Editor: WordSearchEditor as GameRegistryEntry['Editor'],
+    Editor: forwardRef((props, ref) => (
+      <EditorWrapper {...props} ref={ref} OldEditor={WordSearchEditor} />
+    )),
     createInitialData: () => ({
       items: [],
       _itemCounter: 0
@@ -79,7 +105,9 @@ export const GAME_REGISTRY: Record<string, GameRegistryEntry> = {
   },
 
   'whack-a-mole': {
-    Editor: WhackAMoleEditor as GameRegistryEntry['Editor'],
+    Editor: forwardRef((props, ref) => (
+      <EditorWrapper {...props} ref={ref} OldEditor={WhackAMoleEditor} />
+    )),
     createInitialData: () => ({
       title: '',
       grade: '',
@@ -89,7 +117,9 @@ export const GAME_REGISTRY: Record<string, GameRegistryEntry> = {
   },
 
   'labelled-diagram': {
-    Editor: LabelledDiagramEditor as GameRegistryEntry['Editor'],
+    Editor: forwardRef((props, ref) => (
+      <EditorWrapper {...props} ref={ref} OldEditor={LabelledDiagramEditor} />
+    )),
     createInitialData: () => ({
       imagePath: null,
       points: [],
@@ -98,7 +128,9 @@ export const GAME_REGISTRY: Record<string, GameRegistryEntry> = {
   },
 
   'find-the-treasure': {
-    Editor: FindTheTreasureEditor as GameRegistryEntry['Editor'],
+    Editor: forwardRef((props, ref) => (
+      <EditorWrapper {...props} ref={ref} OldEditor={FindTheTreasureEditor} />
+    )),
     createInitialData: () => ({
       stages: [],
       _stageCounter: 0,
@@ -107,7 +139,9 @@ export const GAME_REGISTRY: Record<string, GameRegistryEntry> = {
   },
 
   'jumping-frog': {
-    Editor: JumpingFrogEditor as GameRegistryEntry['Editor'],
+    Editor: forwardRef((props, ref) => (
+      <EditorWrapper {...props} ref={ref} OldEditor={JumpingFrogEditor} />
+    )),
     createInitialData: () => ({
       questions: [],
       _questionCounter: 0,

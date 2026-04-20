@@ -14,8 +14,14 @@ export interface AnswerListProps {
   projectDir: string
   isSingle: boolean
   onAddAnswer: (qid: string) => void
-  onUpdateAnswer: (qid: string, aid: string, patch: Partial<QuizAnswer>) => void
+  onUpdateAnswer: (
+    qid: string,
+    aid: string,
+    patch: Partial<QuizAnswer>,
+    shouldCommit?: boolean
+  ) => void
   onDeleteAnswer: (qid: string, aid: string) => void
+  onCommit: () => void
 }
 
 /**
@@ -27,7 +33,8 @@ export function AnswerList({
   isSingle,
   onAddAnswer,
   onUpdateAnswer,
-  onDeleteAnswer
+  onDeleteAnswer,
+  onCommit
 }: AnswerListProps): React.ReactElement {
   return (
     <Box sx={{ px: 2, pb: 2, pl: '88px', display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -64,8 +71,11 @@ export function AnswerList({
               size="small"
               fullWidth
               value={answer.text}
-              onChange={(e) => onUpdateAnswer(question.id, answer.id, { text: e.target.value })}
-              placeholder={`Answer ${toBb26(aIdx)}…`}
+              onChange={(e) =>
+                onUpdateAnswer(question.id, answer.id, { text: e.target.value }, false)
+              }
+              onBlur={onCommit}
+              placeholder={`Answer ${toBb26(aIdx + 1)}…`}
               error={!answer.text.trim()}
               sx={{
                 '& .MuiOutlinedInput-root': {
