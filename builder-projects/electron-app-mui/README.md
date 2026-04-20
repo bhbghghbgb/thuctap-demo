@@ -22,9 +22,7 @@ This document provides a comprehensive guide to the builder's **architecture, co
 
 ## Current Status
 
-### Available Games
-
-The builder currently supports **6 game templates**:
+The builder currently supports **9 game templates**:
 
 | Game ID                 | Name                  | Description                                                   |
 | ----------------------- | --------------------- | ------------------------------------------------------------- |
@@ -34,12 +32,14 @@ The builder currently supports **6 game templates**:
 | `pair-matching`         | Pair Matching         | Match keywords with images in a memory-style game             |
 | `word-search`           | Word Search           | Find hidden words in a grid with image clues                  |
 | `whack-a-mole`          | Whack-a-Mole          | Hit the correct answer to questions in a mole-hitting game    |
+| `labelled-diagram`      | Labelled Diagram      | Identify parts of a diagram with labels and points            |
+| `find-the-treasure`     | Find the Treasure     | Multi-stage treasure hunt with riddles and answers            |
+| `jumping-frog`          | Jumping Frog          | Answer correctly to help the frog jump across lily pads       |
 
-### Tech Stack
-
-- **Runtime**: Electron 41, Node.js 20+
-- **Frontend**: React 19, TypeScript 5, Material-UI 7, Framer Motion
+- **Runtime**: Electron 41, Node.js 25
+- **Frontend**: React 19, TypeScript 6, Material-UI 7, Framer Motion
 - **State Management**: Zustand 5 with Zustand-Travel for time-travel debugging (undo/redo)
+- **Form Management**: TanStack Form (Uncontrolled architecture)
 - **Styling**: Tailwind CSS 4, Emotion
 - **Build Tooling**: Vite 8, Electron-Vite, Electron Builder 26
 - **Package Manager**: Yarn 4
@@ -120,7 +120,10 @@ electron-app-mui/
 │       │   ├── balloon-letter-picker/ # Balloon Letter Picker editor
 │       │   ├── pair-matching/         # Pair Matching editor
 │       │   ├── word-search/           # Word Search editor
-│       │   └── whack-a-mole/          # Whack-a-Mole editor
+│       │   ├── whack-a-mole/          # Whack-a-Mole editor
+│       │   ├── labelled-diagram/      # Labelled Diagram editor
+│       │   ├── find-the-treasure/     # Find the Treasure editor
+│       │   └── jumping-frog/          # Jumping Frog editor
 │       ├── components/                # Shared UI components
 │       │   ├── EditorShared/          # Shared editor components (tabs, lists, counters)
 │       │   ├── ImagePicker/           # Image selection and preview
@@ -359,7 +362,7 @@ This section focuses on the **builder app code changes** required when adding a 
 
 ### Current Game Implementations
 
-The builder currently has **6 game editors** implemented:
+The builder currently has **9 game editors** implemented:
 
 1. **Group Sort** (`group-sort/`) — Categorize items into groups with images
 2. **Plane Quiz** (`plane-quiz/`) — Multiple-choice questions with image support
@@ -367,6 +370,9 @@ The builder currently has **6 game editors** implemented:
 4. **Pair Matching** (`pair-matching/`) — Memory-style card matching
 5. **Word Search** (`word-search/`) — Find words in a grid
 6. **Whack-a-Mole** (`whack-a-mole/`) — Hit-the-answer quiz game
+7. **Labelled Diagram** (`labelled-diagram/`) — Point-and-label diagram builder
+8. **Find the Treasure** (`find-the-treasure/`) — Multi-stage riddle game
+9. **Jumping Frog** (`jumping-frog/`) — Question-based jumping game
 
 Study these existing editors for implementation patterns and best practices.
 
