@@ -18,13 +18,11 @@ type EditorWrapperProps = {
   // The actual editor component to render (expects props defined by LegacyEditorProps)
   EditorComponent: React.ComponentType<LegacyEditorProps>
   // Initial data passed from the parent/editor container
-  initialData?: AnyAppData
+  initialData: AnyAppData
   // Project directory for assets, images, etc.
   projectDir: string
   // Callback used by the parent to persist changes (archive/history)
   onCommit: (data: AnyAppData) => void
-  // Forwarded props to the inner editor (e.g., appData for the initial render, etc.)
-  [key: string]: any
 }
 
 /**

@@ -22,11 +22,13 @@ import QuizEditor from './plane-quiz/QuizEditor'
 import WhackAMoleEditor from './whack-a-mole/WhackAMoleEditor'
 import WordSearchEditor from './word-search/WordSearchEditor'
 import { wrapEditor } from '@renderer/components/wrapEditor'
+import { EditorWrapperHandle } from '@renderer/components/EditorWrapper'
 
 export interface GameRegistryEntry {
   /** Editor component rendered on the ProjectPage */
   Editor: ComponentType<{
-    appData: AnyAppData
+    ref: React.ForwardedRef<EditorWrapperHandle>
+    initialData: AnyAppData
     projectDir: string
     onCommit: (data: AnyAppData) => void
   }>

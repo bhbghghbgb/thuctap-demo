@@ -1,4 +1,5 @@
 import { Box, Button, Typography } from '@mui/material'
+import { EditorWrapperHandle } from '@renderer/components/EditorWrapper'
 import { MoreActionsMenu } from '@renderer/components/project/MoreActionsMenu'
 import {
   BackConfirmDialog,
@@ -69,6 +70,7 @@ function ProjectPageInner({ templateId, locationState }: ProjectPageInnerProps):
     canUndo,
     canRedo
   } = useProjectHistory()
+  // Reference to wrapped editor instance for imperative getValue/setValue
 
   // Snackbar hook
   const { message: snackMsg, severity: snackSeverity, showSnack, hideSnack } = useSnackbar()
@@ -86,10 +88,17 @@ function ProjectPageInner({ templateId, locationState }: ProjectPageInnerProps):
   useAppDocumentTitle(documentTitle)
 
   // Wrapped undo/redo that marks document as dirty
+  const editorWrapperRef = useRef<EditorWrapperHandle>(null)
+  // Expose a typed handle for Get/Set value on the wrapped editor
+  // The Editor component (wrapped) will forward its ref here when mounted
   const handleUndo = useCallback(() => {
+    const current = editorWrapperRef.current?.getValue?.()
+    if (current) {
+      setPresent(current as AnyAppData)
+    }
     historyUndo()
     setIsDirty(true)
-  }, [historyUndo])
+  }, [historyUndo, setPresent])
 
   const handleRedo = useCallback(() => {
     historyRedo()
@@ -138,15 +147,23 @@ function ProjectPageInner({ templateId, locationState }: ProjectPageInnerProps):
     isDirtyRef.current = isDirty
   }, [meta, appData, isDirty])
 
+  // Keep Editor in sync with current appData present (initial data is static)
+  useEffect(() => {
+    if (editorWrapperRef.current?.setValue) {
+      editorWrapperRef.current.setValue(appData as AnyAppData)
+    }
+  }, [appData])
+
   // ── Save ─────────────────────────────────────────────────────────────────
   const doSave = useCallback(
-    async (currentMeta: ProjectMeta, appDataToSave: AnyAppData) => {
-      const file = buildProjectFile(currentMeta, appDataToSave)
+    async (currentMeta: ProjectMeta, appDataToSave?: AnyAppData) => {
+      const dataToSave = appDataToSave ?? appData
+      const file = buildProjectFile(currentMeta, dataToSave)
       const history = getHistoryArray(getHistory())
       await window.electronAPI.saveProject(file, currentMeta.filePath, history)
       setIsDirty(false)
     },
-    [getHistory]
+    [appData, getHistory]
   )
 
   const performSaveAs = useCallback(
@@ -216,8 +233,8 @@ function ProjectPageInner({ templateId, locationState }: ProjectPageInnerProps):
     }
   })
 
-  // ── App data change (from editor) ─────────────────────────────────────────
-  const handleAppDataChange = useCallback(
+  // ── App data commit (from editor) ─────────────────────────────────────────
+  const handleEditorCommit = useCallback(
     (newData: AnyAppData) => {
       // Update history state (for undo/redo)
       setPresent(newData)
@@ -272,7 +289,8 @@ function ProjectPageInner({ templateId, locationState }: ProjectPageInnerProps):
     }
 
     try {
-      await doSave(meta, appData)
+      const current = editorWrapperRef.current?.getValue?.() ?? appData
+      await doSave(meta, current)
       showSnack('Project saved!')
     } catch (e) {
       showSnack(`Save failed: ${e}`, 'error')
@@ -284,9 +302,10 @@ function ProjectPageInner({ templateId, locationState }: ProjectPageInnerProps):
     setExportAnchor(null)
     if (!meta) return
     try {
+      const current = editorWrapperRef.current?.getValue?.() ?? appData
       const result = await window.electronAPI.exportProject({
         templateId: meta.templateId,
-        appData: appData,
+        appData: current,
         projectDir: meta.projectDir,
         mode
       })
@@ -300,9 +319,10 @@ function ProjectPageInner({ templateId, locationState }: ProjectPageInnerProps):
   const handlePreview = async (): Promise<void> => {
     if (!meta) return
     try {
+      const current = editorWrapperRef.current?.getValue?.() ?? appData
       await window.electronAPI.previewProject({
         templateId: meta.templateId,
-        appData: appData,
+        appData: current,
         projectDir: meta.projectDir
       })
       showSnack('Preview opened')
@@ -319,7 +339,8 @@ function ProjectPageInner({ templateId, locationState }: ProjectPageInnerProps):
     setIsDirty(true)
     renameOpen.setFalse()
     try {
-      await doSave(updated, appData)
+      const current = editorWrapperRef.current?.getValue?.() ?? appData
+      await doSave(updated, current)
     } catch (e) {
       setMeta(meta)
       showSnack(`Rename failed: ${e}`, 'error')
@@ -399,7 +420,13 @@ function ProjectPageInner({ templateId, locationState }: ProjectPageInnerProps):
             )
           const { Editor } = entry
           return (
-            <Editor appData={appData} projectDir={meta.projectDir} onChange={handleAppDataChange} />
+            // Use the new uncontrolled wrapper pattern. Pass onCommit instead of onChange
+            <Editor
+              ref={editorWrapperRef}
+              initialData={appData}
+              projectDir={meta.projectDir}
+              onCommit={handleEditorCommit}
+            />
           )
         })()}
       </Box>

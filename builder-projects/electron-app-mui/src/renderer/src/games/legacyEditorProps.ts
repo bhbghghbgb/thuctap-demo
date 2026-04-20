@@ -1,8 +1,8 @@
 import { AnyAppData } from '@shared'
 
-// Generic base for legacy editors. Editors can specify a concrete T that extends AnyAppData.
-export type LegacyEditorProps<T extends AnyAppData = AnyAppData> = {
-  appData: T
+// Generic base for legacy editors.
+export type LegacyEditorProps = {
+  appData: AnyAppData
   projectDir: string
-  onChange: (data: T) => void
+  onChange: (data: AnyAppData) => void
 }

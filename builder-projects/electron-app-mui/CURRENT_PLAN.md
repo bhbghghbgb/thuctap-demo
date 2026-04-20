@@ -9,7 +9,7 @@ Summary
 - Phase 3: Refactor ProjectPage to leverage getValue/setValue/onCommit for editor interactions; no onChange usage by the parent after full migration.
 
 Assumptions and constraints
-- Commit is not a explicit action in the wrapper; the parent will call onCommit at appropriate times. getValue will be used to retrieve current internal values when needed (e.g., undo/save).
+- Commit is not a explicit action in the wrapper; the editor will call onCommit at appropriate times. getValue will be used to retrieve current internal values when needed (e.g., undo/save).
 - The wrapper’s job is to minimize changes to editor internals and avoid broad rewrites.
 - Plane-quiz remains unmodified in code; it will be wrapped by EditorWrapper to align with new API in the migration plan, but we are not reworking its internals in this phase.
 
