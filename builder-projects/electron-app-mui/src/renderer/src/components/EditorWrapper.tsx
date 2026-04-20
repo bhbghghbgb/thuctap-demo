@@ -1,3 +1,4 @@
+import { AnyAppData } from '@shared'
 import React, { forwardRef, useImperativeHandle, useState } from 'react'
 
 // Lightweight wrapper to adapt existing editors to a new API surface
@@ -12,7 +13,6 @@ export type EditorWrapperHandle = {
   getValue: () => any
   setValue: (data: any) => void
 }
-
 type EditorWrapperProps = {
   // The actual editor component to render (expects props: appData, projectDir, onChange)
   EditorComponent: React.ComponentType<any>
@@ -29,22 +29,23 @@ type EditorWrapperProps = {
 /**
  * EditorWrapper component
  * Wraps an existing editor to provide getValue/setValue and to forward onChange to onCommit.
+ * This wrapper is part of Phase 1 bridging to the new API surface.
  */
-const EditorWrapper = forwardRef<EditorWrapperHandle, EditorWrapperProps>(
+export const EditorWrapper = forwardRef<EditorWrapperHandle, EditorWrapperProps>(
   ({ EditorComponent, initialData, projectDir, onCommit, ...rest }, ref) => {
-    const [localData, setLocalData] = useState<any>(initialData)
+    const [localData, setLocalData] = useState<AnyAppData>(initialData)
 
     useImperativeHandle(
       ref,
       () => ({
         getValue: () => localData,
-        setValue: (data: any) => setLocalData(data)
+        setValue: (data: AnyAppData) => setLocalData(data)
       }),
       [localData]
     )
 
     // When the inner editor notifies a change, forward it to the parent via onCommit
-    const handleChange = (data: any) => {
+    const handleChange = (data: AnyAppData): void => {
       // Forward to parent as a commit for archival/history purposes
       if (typeof onCommit === 'function') {
         onCommit(data)
@@ -66,17 +67,3 @@ const EditorWrapper = forwardRef<EditorWrapperHandle, EditorWrapperProps>(
 )
 
 export default EditorWrapper
-
-// Helper to obtain a wrapped editor from an existing editor component
-// This is a thin adapter that can be used by the registry to migrate editors progressively
-export function wrapEditor(EditorComponent: React.ComponentType<any>) {
-  return (props: any) => (
-    <EditorWrapper
-      EditorComponent={EditorComponent}
-      initialData={props.appData}
-      projectDir={props.projectDir}
-      onCommit={props.onChange ?? props.onCommit}
-      {...props}
-    />
-  )
-}

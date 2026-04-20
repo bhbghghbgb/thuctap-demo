@@ -21,14 +21,14 @@ import PairMatchingEditor from './pair-matching/PairMatchingEditor'
 import QuizEditor from './plane-quiz/QuizEditor'
 import WhackAMoleEditor from './whack-a-mole/WhackAMoleEditor'
 import WordSearchEditor from './word-search/WordSearchEditor'
-import { wrapEditor } from '../components/EditorWrapper'
+import { wrapEditor } from '@renderer/components/wrapEditor'
 
 export interface GameRegistryEntry {
   /** Editor component rendered on the ProjectPage */
   Editor: ComponentType<{
     appData: AnyAppData
     projectDir: string
-    onChange: (data: AnyAppData) => void
+    onCommit: (data: AnyAppData) => void
   }>
   /** Returns a fresh, empty appData object for new projects */
   createInitialData: () => AnyAppData
