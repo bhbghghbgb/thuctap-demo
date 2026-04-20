@@ -1,5 +1,5 @@
 import { AnyAppData } from '@shared'
-import { forwardRef, useImperativeHandle, useState } from 'react'
+import { forwardRef, JSX, useImperativeHandle, useState } from 'react'
 import { LegacyEditorProps } from '../games/legacyEditorProps'
 
 // Lightweight wrapper to adapt existing editors to a new API surface
@@ -30,7 +30,7 @@ type EditorWrapperProps<T extends AnyAppData> = {
 export function EditorWrapperInner<T extends AnyAppData>(
   { EditorComponent, initialData, projectDir, onCommit, ...rest }: EditorWrapperProps<T>,
   ref: React.ForwardedRef<EditorWrapperHandle<T>>
-) {
+): JSX.Element {
   const [localData, setLocalData] = useState<T>(initialData)
 
   useImperativeHandle(

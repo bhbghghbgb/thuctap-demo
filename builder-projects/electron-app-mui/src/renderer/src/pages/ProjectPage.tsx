@@ -24,7 +24,6 @@ import type { AnyAppData, ProjectFile, ProjectMeta } from '@shared/types'
 import { JSX, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useBoolean, useInterval, useUnmount } from 'usehooks-ts'
-import { GAME_REGISTRY } from '@renderer/games/registry'
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const AUTO_SAVE_DEBOUNCE_MS = 1000
@@ -419,12 +418,14 @@ function ProjectPageInner({ templateId, locationState }: ProjectPageInnerProps):
                 </Typography>
               </Box>
             )
-          const { Editor } = entry
+          // Using ComponentType<any> here is a controlled 'loose' cast for the dynamic dispatch.
+          // Since TemplateManager.normalize ensures the data is correct for this specific Editor,
+          // it is safe at runtime and satisfies the heterogeneous registry lookup.
+          const Editor = entry.Editor as React.ComponentType<any>
           return (
-            // Use the new uncontrolled wrapper pattern. Pass onCommit instead of onChange
             <Editor
               ref={editorWrapperRef}
-              initialData={appData}
+              initialData={manager.normalize(templateId, appData)}
               projectDir={meta.projectDir}
               onCommit={handleEditorCommit}
             />
@@ -495,17 +496,13 @@ export default function ProjectPage(): JSX.Element {
     data: ProjectFile
   } | null
 
+  const manager = useTemplateManager()
+
   const initialData = useMemo(() => {
     const rawData = locationState?.data.appData ?? ({} as AnyAppData)
-    if (!templateId) {
-      return rawData
-    }
-    const entry = GAME_REGISTRY[templateId]
-    if (entry) {
-      return entry.normalize(rawData)
-    }
-    return rawData
-  }, [locationState, templateId])
+    if (!templateId) return rawData
+    return manager.normalize(templateId, rawData)
+  }, [locationState, templateId, manager])
 
   if (!templateId) {
     return (

@@ -7,7 +7,7 @@
  * Uses the registry from ../games/registry for Editor components and initial data factories.
  */
 
-import { GAME_REGISTRY, type GameRegistryEntry } from '@renderer/games/registry'
+import { GAME_REGISTRY, type GameRegistry } from '@renderer/games/registry'
 import type { AnyAppData, GameTemplate } from '@shared/types'
 
 /**
@@ -68,7 +68,7 @@ export class TemplateManager {
    * @param templateId - The template ID
    * @returns The registry entry with Editor and createInitialData, or undefined
    */
-  getRegistryEntry(templateId: string): GameRegistryEntry | undefined {
+  getRegistryEntry(templateId: string): GameRegistry[keyof GameRegistry] | undefined {
     return GAME_REGISTRY[templateId]
   }
 
@@ -78,7 +78,7 @@ export class TemplateManager {
    * @returns The registry entry with Editor and createInitialData
    * @throws Error if template not found
    */
-  getRegistryEntryOrThrow(templateId: string): GameRegistryEntry {
+  getRegistryEntryOrThrow(templateId: string): GameRegistry[keyof GameRegistry] {
     const entry = GAME_REGISTRY[templateId]
     if (!entry) {
       throw new Error(`No editor registered for template: ${templateId}`)
@@ -93,6 +93,18 @@ export class TemplateManager {
    */
   createInitialData(templateId: string): AnyAppData {
     return GAME_REGISTRY[templateId]?.createInitialData() ?? ({} as AnyAppData)
+  }
+
+  /**
+   * Normalizes possibly partial or old data into a complete, current-version AppData object.
+   * @param templateId - The template ID
+   * @param data - The raw app data to normalize
+   * @returns Complete, normalized AppData object
+   */
+  normalize(templateId: string, data: AnyAppData): AnyAppData {
+    const entry = GAME_REGISTRY[templateId]
+    if (!entry) return data
+    return entry.normalize(data)
   }
 
   /**

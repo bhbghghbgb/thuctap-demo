@@ -15,12 +15,13 @@ import { EditorWrapperHandle } from '@renderer/components/EditorWrapper'
 
 export interface GameRegistryEntry<T extends AnyAppData> {
   /** Editor component rendered on the ProjectPage */
-  Editor: ComponentType<{
-    ref: React.ForwardedRef<EditorWrapperHandle<T>>
-    initialData: T
-    projectDir: string
-    onCommit: (data: T) => void
-  }>
+  Editor: ComponentType<
+    {
+      initialData: T
+      projectDir: string
+      onCommit: (data: T) => void
+    } & React.RefAttributes<EditorWrapperHandle<T>>
+  >
   /** Returns a fresh, empty appData object for new projects */
   createInitialData: () => T
   /**
