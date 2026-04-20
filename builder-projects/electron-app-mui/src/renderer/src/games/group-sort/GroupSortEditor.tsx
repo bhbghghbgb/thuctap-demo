@@ -1,69 +1,47 @@
-/**
- * Group Sort Editor with uncontrolled architecture.
- * Uses TanStack Form for internal state management.
- *
- * API (uncontrolled):
- * - initialData: Initial data for first render only
- * - projectDir: Project directory for image imports
- * - getValue: Synchronous pull for current data (called by parent on save)
- * - setValue: Reset editor state (called by parent on undo)
- * - onCommit: Callback when editor commits changes
- */
-
 import CategoryIcon from '@mui/icons-material/Category'
 import ExtensionIcon from '@mui/icons-material/Extension'
 import ViewQuiltIcon from '@mui/icons-material/ViewQuilt'
 import WarningAmberIcon from '@mui/icons-material/WarningAmber'
 import { Alert, Box, Chip, Collapse, Divider, Typography } from '@mui/material'
 import { SidebarTab } from '@renderer/components/editors'
-import type { GroupSortAppData } from '@shared/types'
-import { JSX, useEffect, useRef, useState } from 'react'
+import { GroupSortAppData } from '@shared/types'
+import { JSX, useState } from 'react'
 import { GroupsTab, ItemsTab, OverviewTab } from './components'
-import { useGroupSortForm } from './hooks/useGroupSortForm'
+import { useGroupSortCrud } from './hooks/useGroupSortCrud'
 
 interface Props {
-  initialData: GroupSortAppData
+  appData: GroupSortAppData
   projectDir: string
-  getValue: () => GroupSortAppData
-  setValue: (data: GroupSortAppData) => void
-  onCommit: (data: GroupSortAppData) => void
+  onChange: (data: GroupSortAppData) => void
 }
 
 type Tab = 'groups' | 'items' | 'overview'
 
+function normalize(d: GroupSortAppData): GroupSortAppData {
+  return { ...d, _groupCounter: d._groupCounter ?? 0, _itemCounter: d._itemCounter ?? 0 }
+}
+
 export default function GroupSortEditor({
-  initialData,
+  appData: raw,
   projectDir,
-  getValue,
-  setValue,
-  onCommit
+  onChange
 }: Props): JSX.Element {
+  const data = normalize(raw)
   const [tab, setTab] = useState<Tab>('groups')
+  const {
+    groups,
+    items,
+    addGroup,
+    addGroupFromDrop,
+    updateGroup,
+    deleteGroup,
+    addItem,
+    addItemFromDrop,
+    updateItem,
+    deleteItem
+  } = useGroupSortCrud(data, projectDir, onChange)
 
-  const getValueRef = useRef(getValue)
-  const setValueRef = useRef(setValue)
-
-  useEffect(() => {
-    getValueRef.current = getValue
-    setValueRef.current = setValue
-  }, [getValue, setValue])
-
-  const { form, crud } = useGroupSortForm({
-    initialData,
-    onCommit,
-    registerMethods: (methods) => {
-      getValueRef.current = methods.getValue
-      setValueRef.current = methods.setValue
-    }
-  })
-
-  useEffect(() => {
-    crud.setProjectDir(projectDir)
-  }, [projectDir, crud])
-
-  const groups = form.state.values.groups
-  const items = form.state.values.items
-
+  // ── Validation ──────────────────────────────────────────────────────────
   const unassigned = items.filter((i) => !i.groupId || !groups.find((g) => g.id === i.groupId))
   const unnamedG = groups.filter((g) => !g.name.trim())
   const unnamedI = items.filter((i) => !i.name.trim())
@@ -75,6 +53,7 @@ export default function GroupSortEditor({
 
   return (
     <Box sx={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
+      {/* ── Sidebar ── */}
       <Box
         sx={{
           width: 220,
@@ -175,6 +154,7 @@ export default function GroupSortEditor({
         )}
       </Box>
 
+      {/* ── Main ── */}
       <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
         <Collapse in={hasIssues}>
           <Alert severity="warning" sx={{ mb: 2, fontSize: '0.8rem' }}>
@@ -192,10 +172,10 @@ export default function GroupSortEditor({
           <GroupsTab
             groups={groups}
             projectDir={projectDir}
-            onAdd={crud.addGroup}
-            onAddFromDrop={crud.addGroupFromDrop}
-            onUpdate={crud.updateGroup}
-            onDelete={crud.deleteGroup}
+            onAdd={addGroup}
+            onAddFromDrop={addGroupFromDrop}
+            onUpdate={updateGroup}
+            onDelete={deleteGroup}
           />
         )}
         {tab === 'items' && (
@@ -203,10 +183,10 @@ export default function GroupSortEditor({
             items={items}
             groups={groups}
             projectDir={projectDir}
-            onAdd={crud.addItem}
-            onAddFromDrop={crud.addItemFromDrop}
-            onUpdate={crud.updateItem}
-            onDelete={crud.deleteItem}
+            onAdd={addItem}
+            onAddFromDrop={addItemFromDrop}
+            onUpdate={updateItem}
+            onDelete={deleteItem}
           />
         )}
         {tab === 'overview' && (
@@ -214,14 +194,14 @@ export default function GroupSortEditor({
             groups={groups}
             items={items}
             projectDir={projectDir}
-            onAddGroup={crud.addGroup}
-            onAddGroupFromDrop={crud.addGroupFromDrop}
-            onAddItem={crud.addItem}
-            onAddItemFromDrop={crud.addItemFromDrop}
-            onUpdateGroup={crud.updateGroup}
-            onUpdateItem={crud.updateItem}
-            onDeleteGroup={crud.deleteGroup}
-            onDeleteItem={crud.deleteItem}
+            onAddGroup={addGroup}
+            onAddGroupFromDrop={addGroupFromDrop}
+            onAddItem={addItem}
+            onAddItemFromDrop={addItemFromDrop}
+            onUpdateGroup={updateGroup}
+            onUpdateItem={updateItem}
+            onDeleteGroup={deleteGroup}
+            onDeleteItem={deleteItem}
             unassigned={unassigned}
           />
         )}
