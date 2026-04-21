@@ -11,12 +11,7 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { AnimatePresence, motion } from "framer-motion";
-import React, {
-  useCallback,
-  useMemo,
-  useRef,
-  useState
-} from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
   TransformComponent,
   TransformWrapper,
