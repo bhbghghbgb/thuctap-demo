@@ -1,4 +1,5 @@
 import {
+  defaultDropAnimationSideEffects,
   DndContext,
   DragOverlay,
   MouseSensor,
@@ -11,7 +12,13 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { AnimatePresence, motion } from "framer-motion";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   TransformComponent,
   TransformWrapper,
@@ -165,7 +172,11 @@ const DraggableLabel: React.FC<{
       {...listeners}
       {...attributes}
       className={`label-item ${isActive ? "active" : ""} ${isPinned ? "pinned" : ""} ${isDragging ? "dragging" : ""}`}
-      onClick={onClick}
+      onClick={(e) => {
+        // Prevent click if we're in drag mode and just dropped or something
+        // But for selection mode, we need this
+        onClick();
+      }}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
     >
@@ -209,15 +220,18 @@ const DroppablePoint: React.FC<{
       style={{
         ...style,
         pointerEvents: "auto",
-        background: isOver ? "rgba(245, 158, 11, 0.4)" : "transparent", // Visual feedback like group-sort
-        borderRadius: "50%",
-        transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         zIndex: isOver ? 200 : 100,
-        width: 44, // Match CSS
-        height: 44,
       }}
     >
-      <div className="target-marker" />
+      <div
+        className="target-marker"
+        style={{
+          background: isOver ? "var(--color-warning)" : "",
+          transform: isOver ? "scale(1.4)" : "scale(1)",
+          boxShadow: isOver ? "0 0 20px var(--color-warning)" : "",
+        }}
+      />
       <AnimatePresence>
         {placedLabelText && (
           <motion.div
@@ -281,25 +295,39 @@ const DiagramGame: React.FC = () => {
 
   const handleTargetClick = (pointId: string) => {
     if (gameState.isReviewMode) return;
-    if (activeLabelId) {
-      setGameState((prev) => {
-        const newPlaced = { ...prev.placedPoints };
-        Object.keys(newPlaced).forEach((tid) => {
-          if (newPlaced[tid] === activeLabelId) delete newPlaced[tid];
+
+    if (gameState.interactionMode === "click") {
+      if (activeLabelId) {
+        setGameState((prev) => {
+          const newPlaced = { ...prev.placedPoints };
+          Object.keys(newPlaced).forEach((tid) => {
+            if (newPlaced[tid] === activeLabelId) delete newPlaced[tid];
+          });
+          newPlaced[pointId] = activeLabelId;
+          return { ...prev, placedPoints: newPlaced };
         });
-        newPlaced[pointId] = activeLabelId;
-        return { ...prev, placedPoints: newPlaced };
-      });
-      setActiveLabelId(null);
+        setActiveLabelId(null);
+      } else {
+        const existingLabelId = gameState.placedPoints[pointId];
+        if (existingLabelId) {
+          setActiveLabelId(existingLabelId);
+          setGameState((prev) => {
+            const newPlaced = { ...prev.placedPoints };
+            delete newPlaced[pointId];
+            return { ...prev, placedPoints: newPlaced };
+          });
+        }
+      }
     } else {
+      // Drag Mode: clicking a target with a label just removes it and sends back to rack
       const existingLabelId = gameState.placedPoints[pointId];
       if (existingLabelId) {
-        setActiveLabelId(existingLabelId);
         setGameState((prev) => {
           const newPlaced = { ...prev.placedPoints };
           delete newPlaced[pointId];
           return { ...prev, placedPoints: newPlaced };
         });
+        // Important: DO NOT setActiveLabelId in Drag mode
       }
     }
   };
@@ -327,6 +355,14 @@ const DiagramGame: React.FC = () => {
     }
   };
 
+  const pointingModifier = useCallback(({ transform }: any) => {
+    return {
+      ...transform,
+      x: transform.x + 15,
+      y: transform.y + 35,
+    };
+  }, []);
+
   return (
     <div className="game-container">
       <GameHeader
@@ -339,14 +375,15 @@ const DiagramGame: React.FC = () => {
             tutorialStep: 0,
           }))
         }
-        onReset={() =>
+        onReset={() => {
           setGameState((prev) => ({
             ...prev,
             placedPoints: {},
             isReviewMode: false,
             showCongratulation: false,
-          }))
-        }
+          }));
+          setActiveLabelId(null);
+        }}
       />
 
       <DndContext
@@ -473,13 +510,14 @@ const DiagramGame: React.FC = () => {
               <h2 className="rack-title">Labels</h2>
               <button
                 className="mode-toggle-icon"
-                onClick={() =>
+                onClick={() => {
                   setGameState((prev) => ({
                     ...prev,
                     interactionMode:
                       prev.interactionMode === "click" ? "drag" : "click",
-                  }))
-                }
+                  }));
+                  setActiveLabelId(null); // Clear selection when switching modes
+                }}
               >
                 {gameState.interactionMode === "click" ? "🖱️" : "🖐️"}
               </button>
@@ -541,9 +579,17 @@ const DiagramGame: React.FC = () => {
         </main>
 
         <DragOverlay
+          modifiers={[pointingModifier]}
           dropAnimation={{
-            duration: 300,
+            duration: 250,
             easing: "cubic-bezier(0.18, 0.89, 0.32, 1.28)",
+            sideEffects: defaultDropAnimationSideEffects({
+              styles: {
+                active: {
+                  opacity: "0.4",
+                },
+              },
+            }),
           }}
         >
           {activeLabelId && gameState.interactionMode === "drag" ? (
