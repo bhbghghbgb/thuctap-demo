@@ -5,8 +5,6 @@ export interface NameFieldProps {
   label: string
   value: string
   onChange: (v: string) => void
-  /** Called when the field loses focus. Useful for uncontrolled/form-based editors to commit. */
-  onBlur?: () => void
   placeholder?: string
   autoFocus?: boolean
   multiline?: boolean
@@ -23,7 +21,6 @@ export function NameField({
   label,
   value,
   onChange,
-  onBlur,
   placeholder,
   autoFocus,
   multiline,
@@ -49,7 +46,6 @@ export function NameField({
       label={label}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      onBlur={onBlur}
       placeholder={placeholder}
       multiline={multiline}
       minRows={multiline ? 2 : undefined}
