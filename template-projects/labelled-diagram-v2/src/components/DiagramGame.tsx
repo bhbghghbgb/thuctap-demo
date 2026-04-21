@@ -1,9 +1,9 @@
-import React, { useState, useCallback, useMemo } from 'react';
-import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
-import { motion, AnimatePresence } from 'framer-motion';
-import { APP_DATA, resolveAssetUrl } from '../data';
-import { LabelledDiagramPoint, GameState } from '../types';
-import './DiagramGame.css';
+import { AnimatePresence, motion } from "framer-motion";
+import React, { useMemo, useState } from "react";
+import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
+import { APP_DATA, resolveAssetUrl } from "../data";
+import type { GameState } from "../types";
+import "./DiagramGame.css";
 
 const DiagramGame: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>({
@@ -17,7 +17,7 @@ const DiagramGame: React.FC = () => {
   // Points that have NOT been placed yet
   const availableLabels = useMemo(() => {
     const placedLabelIds = Object.values(gameState.placedPoints);
-    return APP_DATA.points.filter(p => !placedLabelIds.includes(p.id));
+    return APP_DATA.points.filter((p) => !placedLabelIds.includes(p.id));
   }, [gameState.placedPoints]);
 
   const handleTargetClick = (pointId: string) => {
@@ -25,10 +25,10 @@ const DiagramGame: React.FC = () => {
 
     if (activeLabelId) {
       // Place the active label on this target
-      setGameState(prev => {
+      setGameState((prev) => {
         const newPlaced = { ...prev.placedPoints };
         // If this label was already placed somewhere else, remove it
-        Object.keys(newPlaced).forEach(pid => {
+        Object.keys(newPlaced).forEach((pid) => {
           if (newPlaced[pid] === activeLabelId) delete newPlaced[pid];
         });
         newPlaced[pointId] = activeLabelId;
@@ -40,7 +40,7 @@ const DiagramGame: React.FC = () => {
       const existingLabelId = gameState.placedPoints[pointId];
       if (existingLabelId) {
         setActiveLabelId(existingLabelId);
-        setGameState(prev => {
+        setGameState((prev) => {
           const newPlaced = { ...prev.placedPoints };
           delete newPlaced[pointId];
           return { ...prev, placedPoints: newPlaced };
@@ -51,25 +51,25 @@ const DiagramGame: React.FC = () => {
 
   const handleLabelClick = (labelId: string) => {
     if (gameState.isReviewMode) return;
-    setActiveLabelId(prev => (prev === labelId ? null : labelId));
+    setActiveLabelId((prev) => (prev === labelId ? null : labelId));
   };
 
   const checkResults = () => {
     if (gameState.isReviewMode) {
-      setGameState(prev => ({ ...prev, isReviewMode: false }));
+      setGameState((prev) => ({ ...prev, isReviewMode: false }));
       return;
     }
 
     const correctCount = Object.keys(gameState.placedPoints).filter(
-      targetId => gameState.placedPoints[targetId] === targetId
+      (targetId) => gameState.placedPoints[targetId] === targetId,
     ).length;
 
     const isAllCorrect = correctCount === APP_DATA.points.length;
 
-    setGameState(prev => ({
+    setGameState((prev) => ({
       ...prev,
       isReviewMode: true,
-      showCongratulation: isAllCorrect
+      showCongratulation: isAllCorrect,
     }));
   };
 
@@ -88,7 +88,8 @@ const DiagramGame: React.FC = () => {
         <h1 className="game-title">Labelled Diagram</h1>
         <div className="game-stats">
           <span className="stats-badge">
-            Progress: {Object.keys(gameState.placedPoints).length} / {APP_DATA.points.length}
+            Progress: {Object.keys(gameState.placedPoints).length} /{" "}
+            {APP_DATA.points.length}
           </span>
         </div>
       </div>
@@ -111,29 +112,37 @@ const DiagramGame: React.FC = () => {
                   <button onClick={() => zoomOut()}>-</button>
                   <button onClick={() => resetTransform()}>Reset View</button>
                 </div>
-                <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
+                <TransformComponent
+                  wrapperStyle={{ width: "100%", height: "100%" }}
+                >
                   <div className="diagram-wrapper">
                     {APP_DATA.imagePath ? (
-                      <img 
-                        src={resolveAssetUrl(APP_DATA.imagePath)} 
-                        alt="Diagram" 
+                      <img
+                        src={resolveAssetUrl(APP_DATA.imagePath)}
+                        alt="Diagram"
                         className="diagram-image"
                         draggable={false}
                       />
                     ) : (
                       <div className="image-placeholder">No Image Selected</div>
                     )}
-                    
-                    {APP_DATA.points.map(point => {
+
+                    {APP_DATA.points.map((point) => {
                       const placedLabelId = gameState.placedPoints[point.id];
-                      const placedLabel = APP_DATA.points.find(p => p.id === placedLabelId);
-                      const isCorrect = gameState.isReviewMode && placedLabelId === point.id;
-                      const isWrong = gameState.isReviewMode && placedLabelId && placedLabelId !== point.id;
+                      const placedLabel = APP_DATA.points.find(
+                        (p) => p.id === placedLabelId,
+                      );
+                      const isCorrect =
+                        gameState.isReviewMode && placedLabelId === point.id;
+                      const isWrong =
+                        gameState.isReviewMode &&
+                        placedLabelId &&
+                        placedLabelId !== point.id;
 
                       return (
                         <div
                           key={point.id}
-                          className={`target-point ${activeLabelId ? 'can-drop' : ''} ${placedLabelId ? 'has-label' : ''} ${isCorrect ? 'correct' : ''} ${isWrong ? 'wrong' : ''}`}
+                          className={`target-point ${activeLabelId ? "can-drop" : ""} ${placedLabelId ? "has-label" : ""} ${isCorrect ? "correct" : ""} ${isWrong ? "wrong" : ""}`}
                           style={{
                             left: `${point.xPercent}%`,
                             top: `${point.yPercent}%`,
@@ -167,14 +176,14 @@ const DiagramGame: React.FC = () => {
           <div className="rack-title">Labels</div>
           <div className="labels-list">
             <AnimatePresence>
-              {availableLabels.map(label => (
+              {availableLabels.map((label) => (
                 <motion.div
                   key={label.id}
                   layout
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.8, opacity: 0 }}
-                  className={`label-item ${activeLabelId === label.id ? 'active' : ''}`}
+                  className={`label-item ${activeLabelId === label.id ? "active" : ""}`}
                   onClick={() => handleLabelClick(label.id)}
                 >
                   {label.text}
@@ -189,38 +198,60 @@ const DiagramGame: React.FC = () => {
       </div>
 
       <footer className="game-footer">
-        <button className="btn-help" onClick={() => alert("Drag labels from the rack to the matching points on the diagram!")}>Help</button>
-        <button className="btn-reset" onClick={resetGame}>Reset</button>
-        <button 
-          className={`btn-submit ${gameState.isReviewMode ? 'active' : ''}`} 
+        <button
+          className="btn-help"
+          onClick={() =>
+            alert(
+              "Drag labels from the rack to the matching points on the diagram!",
+            )
+          }
+        >
+          Help
+        </button>
+        <button className="btn-reset" onClick={resetGame}>
+          Reset
+        </button>
+        <button
+          className={`btn-submit ${gameState.isReviewMode ? "active" : ""}`}
           onClick={checkResults}
           disabled={Object.keys(gameState.placedPoints).length === 0}
         >
-          {gameState.isReviewMode ? 'Continue' : 'Check'}
+          {gameState.isReviewMode ? "Continue" : "Check"}
         </button>
       </footer>
 
       {/* Congratulation Popup */}
       <AnimatePresence>
         {gameState.showCongratulation && (
-          <motion.div 
+          <motion.div
             className="popup-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setGameState(prev => ({ ...prev, showCongratulation: false }))}
+            onClick={() =>
+              setGameState((prev) => ({ ...prev, showCongratulation: false }))
+            }
           >
-            <motion.div 
+            <motion.div
               className="popup-content"
               initial={{ scale: 0.5, y: 50 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.5, y: 50 }}
-              onClick={e => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
             >
               <div className="popup-icon">🎉</div>
               <h2>Excellent!</h2>
               <p>You correctly labelled everything!</p>
-              <button onClick={() => setGameState(prev => ({ ...prev, showCongratulation: false }))}>View Diagram</button>
+              <button
+                onClick={() =>
+                  setGameState((prev) => ({
+                    ...prev,
+                    showCongratulation: false,
+                  }))
+                }
+              >
+                View Diagram
+              </button>
             </motion.div>
           </motion.div>
         )}
