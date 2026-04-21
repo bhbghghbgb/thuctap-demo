@@ -63,7 +63,7 @@ export const GAME_REGISTRY: GameRegistry = {
   },
 
   'plane-quiz': {
-    Editor: wrapEditor(QuizEditor),
+    Editor: QuizEditor,
     createInitialData: () => ({
       questions: [],
       _questionCounter: 0

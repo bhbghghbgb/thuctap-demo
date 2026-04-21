@@ -1,17 +1,10 @@
 import DeleteIcon from '@mui/icons-material/Delete'
 import WarningAmberIcon from '@mui/icons-material/WarningAmber'
-import {
-  Box,
-  Chip,
-  FormControlLabel,
-  IconButton,
-  Paper,
-  Switch,
-  Tooltip,
-  Typography
-} from '@mui/material'
-import { FileDropTarget, ImagePicker, IndexBadge, NameField } from '@renderer/components'
-import { QuizAnswer, QuizQuestion } from '@shared/types'
+import { Box, Chip, IconButton, Paper, Tooltip, Typography } from '@mui/material'
+import { FileDropTarget, IndexBadge } from '@renderer/components'
+import { FormImagePicker, FormNameField, FormSwitch } from '@renderer/components/editors/FormFields'
+import { useFormContext } from '@renderer/utils/formStore'
+import { QuizAnswer, QuizAppData, QuizQuestion } from '@shared/types'
 import React from 'react'
 import { AnswerList } from './AnswerList'
 
@@ -25,6 +18,7 @@ export interface QuestionCardProps {
   onAddAnswer: (qid: string) => void
   onUpdateAnswer: (qid: string, aid: string, patch: Partial<QuizAnswer>) => void
   onDeleteAnswer: (qid: string, aid: string) => void
+  onCommit: () => void
 }
 
 /**
@@ -40,8 +34,10 @@ export function QuestionCard({
   onDelete,
   onAddAnswer,
   onUpdateAnswer,
-  onDeleteAnswer
+  onDeleteAnswer,
+  onCommit
 }: QuestionCardProps): React.ReactElement {
+  const form = useFormContext<QuizAppData>()
   const hasNoCorrect = !question.answers.some((a) => a.isCorrect)
   const isSingle = !question.multipleCorrect
 
@@ -62,45 +58,45 @@ export function QuestionCard({
           overflow: 'hidden'
         }}
       >
-        {/* Question header */}
         <Box sx={{ p: 2, display: 'flex', alignItems: 'flex-start', gap: 2 }}>
           <IndexBadge index={index} color="primary" />
 
-          <ImagePicker
-            projectDir={projectDir}
-            desiredNamePrefix={question.id}
-            value={question.imagePath}
-            onChange={(p) => onUpdate(question.id, { imagePath: p })}
-            label="Question image"
-            size={80}
-          />
+          <form.Field name={`questions[${index}].imagePath`}>
+            {() => (
+              <FormImagePicker
+                projectDir={projectDir}
+                desiredNamePrefix={question.id}
+                label="Question image"
+                size={80}
+              />
+            )}
+          </form.Field>
 
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <NameField
-              label="Question text"
-              value={question.question}
-              onChange={(v) => onUpdate(question.id, { question: v })}
-              placeholder="e.g. Which animal is the largest?"
-              autoFocus={autoFocus}
-              multiline
-              required
-            />
+            <form.Field name={`questions[${index}].question`}>
+              {() => (
+                <FormNameField
+                  label="Question text"
+                  placeholder="e.g. Which animal is the largest?"
+                  autoFocus={autoFocus}
+                  multiline
+                  required
+                  onBlur={onCommit}
+                />
+              )}
+            </form.Field>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    size="small"
-                    checked={question.multipleCorrect}
-                    onChange={(_, v) => onUpdate(question.id, { multipleCorrect: v })}
+              <form.Field name={`questions[${index}].multipleCorrect`}>
+                {() => (
+                  <FormSwitch
+                    label={
+                      <Typography variant="caption" color="text.secondary">
+                        Multiple correct answers
+                      </Typography>
+                    }
                   />
-                }
-                label={
-                  <Typography variant="caption" color="text.secondary">
-                    Multiple correct answers
-                  </Typography>
-                }
-                sx={{ m: 0 }}
-              />
+                )}
+              </form.Field>
               {hasNoCorrect && (
                 <Chip
                   icon={<WarningAmberIcon sx={{ fontSize: 14 }} />}
@@ -132,6 +128,7 @@ export function QuestionCard({
           onAddAnswer={onAddAnswer}
           onUpdateAnswer={onUpdateAnswer}
           onDeleteAnswer={onDeleteAnswer}
+          onCommit={onCommit}
         />
       </Paper>
     </FileDropTarget>

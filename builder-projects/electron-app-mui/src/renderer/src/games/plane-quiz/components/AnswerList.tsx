@@ -4,9 +4,11 @@ import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import DeleteIcon from '@mui/icons-material/Delete'
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
-import { Box, Button, IconButton, TextField, Tooltip, Typography } from '@mui/material'
+import { Box, Button, IconButton, Tooltip, Typography } from '@mui/material'
 import { toBb26 } from '@renderer/utils'
-import { QuizAnswer, QuizQuestion } from '@shared/types'
+import { FormNameField } from '@renderer/components/editors/FormFields'
+import { useFormContext } from '@renderer/utils/formStore'
+import { QuizAnswer, QuizAppData, QuizQuestion } from '@shared/types'
 import React from 'react'
 
 export interface AnswerListProps {
@@ -16,6 +18,7 @@ export interface AnswerListProps {
   onAddAnswer: (qid: string) => void
   onUpdateAnswer: (qid: string, aid: string, patch: Partial<QuizAnswer>) => void
   onDeleteAnswer: (qid: string, aid: string) => void
+  onCommit: () => void
 }
 
 /**
@@ -27,8 +30,10 @@ export function AnswerList({
   isSingle,
   onAddAnswer,
   onUpdateAnswer,
-  onDeleteAnswer
+  onDeleteAnswer,
+  onCommit
 }: AnswerListProps): React.ReactElement {
+  const form = useFormContext<QuizAppData>()
   return (
     <Box sx={{ px: 2, pb: 2, pl: '88px', display: 'flex', flexDirection: 'column', gap: 1 }}>
       <Typography
@@ -60,20 +65,24 @@ export function AnswerList({
               </IconButton>
             </Tooltip>
 
-            <TextField
-              size="small"
-              fullWidth
-              value={answer.text}
-              onChange={(e) => onUpdateAnswer(question.id, answer.id, { text: e.target.value })}
-              placeholder={`Answer ${toBb26(aIdx)}…`}
-              error={!answer.text.trim()}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderColor: isCorrect ? 'success.main' : undefined,
-                  '& fieldset': { borderColor: isCorrect ? 'rgba(52,211,153,0.4)' : undefined }
-                }
-              }}
-            />
+            <form.Field
+              name={`questions[${form.state.values.questions.findIndex((q) => q.id === question.id)}].answers[${aIdx}].text`}
+            >
+              {() => (
+                <FormNameField
+                  label=""
+                  placeholder={`Answer ${toBb26(aIdx + 1)}…`}
+                  sx={{
+                    flex: 1,
+                    '& .MuiOutlinedInput-root': {
+                      borderColor: isCorrect ? 'success.main' : undefined,
+                      '& fieldset': { borderColor: isCorrect ? 'rgba(52,211,153,0.4)' : undefined }
+                    }
+                  }}
+                  onBlur={onCommit}
+                />
+              )}
+            </form.Field>
 
             <Tooltip title="Remove answer">
               <span>
