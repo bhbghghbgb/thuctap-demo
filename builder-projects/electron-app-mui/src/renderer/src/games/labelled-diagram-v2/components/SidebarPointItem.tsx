@@ -1,14 +1,14 @@
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import { Box, IconButton, Paper, TextField, Typography } from '@mui/material'
-import { LabelledDiagramPoint } from '@shared/types'
+import { LabelledDiagramPointV2 } from '@shared/types'
 import React from 'react'
 import { getBadgeColor } from '../styles'
 
 interface SidebarPointItemProps {
-  point: LabelledDiagramPoint
+  point: LabelledDiagramPointV2
   index: number
   isSelected: boolean
-  onSelect: (point: LabelledDiagramPoint) => void
+  onSelect: (point: LabelledDiagramPointV2) => void
   onUpdateText: (id: string, text: string) => void
   onDelete: (id: string) => void
 }

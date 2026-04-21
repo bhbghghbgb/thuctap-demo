@@ -1,18 +1,18 @@
-import { LabelledDiagramAppData, LabelledDiagramPoint } from '@renderer/types'
+import { LabelledDiagramAppDataV2, LabelledDiagramPointV2 } from '@renderer/types'
 import { useCallback, useState } from 'react'
 
 interface UseLabelledDiagramPointsProps {
-  appData: LabelledDiagramAppData
+  appData: LabelledDiagramAppDataV2
   draggingPointId: string | null
   setDraggingPointId: (id: string | null) => void
-  onChange: (data: LabelledDiagramAppData) => void
+  onChange: (data: LabelledDiagramAppDataV2) => void
 }
 
 export interface UseLabelledDiagramPointsReturn {
-  localPoints: LabelledDiagramPoint[]
-  setLocalPoints: (points: LabelledDiagramPoint[]) => void
+  localPoints: LabelledDiagramPointV2[]
+  setLocalPoints: (points: LabelledDiagramPointV2[]) => void
   addPoint: (xPercent: number, yPercent: number, setSelectedPointId: (id: string) => void) => void
-  updatePoint: (id: string, patch: Partial<LabelledDiagramPoint>, commit?: boolean) => void
+  updatePoint: (id: string, patch: Partial<LabelledDiagramPointV2>, commit?: boolean) => void
   deletePoint: (
     id: string,
     selectedPointId: string | null,
@@ -31,7 +31,7 @@ export function useLabelledDiagramPoints({
   onChange
 }: UseLabelledDiagramPointsProps): UseLabelledDiagramPointsReturn {
   const { points } = appData
-  const [localPoints, setLocalPoints] = useState<LabelledDiagramPoint[]>(points)
+  const [localPoints, setLocalPoints] = useState<LabelledDiagramPointV2[]>(points)
   const [prevPoints, setPrevPoints] = useState(points)
 
   // Sync localPoints with prop points when external changes occur (e.g. Undo/Redo)
@@ -50,7 +50,7 @@ export function useLabelledDiagramPoints({
   const addPoint = useCallback(
     (xPercent: number, yPercent: number, setSelectedPointId: (id: string) => void) => {
       const id = `point-${Date.now()}`
-      const newPoint: LabelledDiagramPoint = {
+      const newPoint: LabelledDiagramPointV2 = {
         id,
         text: `Point ${appData._pointCounter + 1}`,
         xPercent,
@@ -75,7 +75,7 @@ export function useLabelledDiagramPoints({
    * @param commit If true, saves the change to project history.
    */
   const updatePoint = useCallback(
-    (id: string, patch: Partial<LabelledDiagramPoint>, commit = true) => {
+    (id: string, patch: Partial<LabelledDiagramPointV2>, commit = true) => {
       setLocalPoints((prev) => {
         const nextPoints = prev.map((p) => (p.id === id ? { ...p, ...patch } : p))
         if (commit) {

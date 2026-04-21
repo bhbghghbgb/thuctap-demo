@@ -1,10 +1,10 @@
 import { Box } from '@mui/material'
-import { LabelledDiagramPoint } from '@shared/types'
+import { LabelledDiagramPointV2 } from '@shared/types'
 import React from 'react'
 import { DIAGRAM_PADDING, getBadgeColor, hoverBadgePulse, SelectedBadgeOutline } from '../styles'
 
 interface DiagramBadgeProps {
-  point: LabelledDiagramPoint
+  point: LabelledDiagramPointV2
   index: number
   isSelected: boolean
   isHovered: boolean

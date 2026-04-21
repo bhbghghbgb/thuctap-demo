@@ -2,14 +2,14 @@ import AddIcon from '@mui/icons-material/Add'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { Box, Button, IconButton, Typography } from '@mui/material'
-import { LabelledDiagramPoint } from '@shared/types'
+import { LabelledDiagramPointV2 } from '@shared/types'
 import React, { useState } from 'react'
 import { SidebarPointItem } from './SidebarPointItem'
 
 interface DiagramSidebarProps {
-  points: LabelledDiagramPoint[]
+  points: LabelledDiagramPointV2[]
   selectedPointId: string | null
-  onSelectPoint: (point: LabelledDiagramPoint) => void
+  onSelectPoint: (point: LabelledDiagramPointV2) => void
   onUpdatePointText: (id: string, text: string) => void
   onDeletePoint: (id: string) => void
   onAddPointAtCenter: () => void

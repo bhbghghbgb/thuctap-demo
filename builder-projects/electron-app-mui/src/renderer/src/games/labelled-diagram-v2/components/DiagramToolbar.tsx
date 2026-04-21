@@ -1,12 +1,12 @@
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import { Box, Divider, IconButton, Typography } from '@mui/material'
-import { LabelledDiagramAppData } from '@shared/types'
+import { LabelledDiagramAppDataV2 } from '@shared/types'
 import React from 'react'
 
 interface DiagramToolbarProps {
-  appData: LabelledDiagramAppData
+  appData: LabelledDiagramAppDataV2
   pointsCount: number
-  onChange: (data: LabelledDiagramAppData) => void
+  onChange: (data: LabelledDiagramAppDataV2) => void
 }
 
 /**

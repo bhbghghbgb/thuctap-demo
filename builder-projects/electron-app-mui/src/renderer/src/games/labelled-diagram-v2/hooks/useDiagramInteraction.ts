@@ -1,19 +1,19 @@
-import { LabelledDiagramAppData, LabelledDiagramPoint } from '@shared/types'
+import { LabelledDiagramAppDataV2, LabelledDiagramPointV2 } from '@shared/types'
 import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { ReactZoomPanPinchRef } from 'react-zoom-pan-pinch'
 import { DIAGRAM_PADDING } from '../styles'
 
 interface UseDiagramInteractionProps {
-  appData: LabelledDiagramAppData
-  localPoints: LabelledDiagramPoint[]
+  appData: LabelledDiagramAppDataV2
+  localPoints: LabelledDiagramPointV2[]
   imgSize: { width: number; height: number } | null
   selectedPointId: string | null
   setSelectedPointId: (id: string | null) => void
   draggingPointId: string | null
   setDraggingPointId: (id: string | null) => void
   addPoint: (xPercent: number, yPercent: number, onComplete: (id: string) => void) => void
-  updatePoint: (id: string, patch: Partial<LabelledDiagramPoint>, commit?: boolean) => void
-  onChange: (data: LabelledDiagramAppData) => void
+  updatePoint: (id: string, patch: Partial<LabelledDiagramPointV2>, commit?: boolean) => void
+  onChange: (data: LabelledDiagramAppDataV2) => void
 }
 
 export interface UseDiagramInteractionReturn {
@@ -23,7 +23,7 @@ export interface UseDiagramInteractionReturn {
   transformRef: React.RefObject<ReactZoomPanPinchRef | null>
   imgRef: React.RefObject<HTMLImageElement | null>
   wrapperRef: React.RefObject<HTMLDivElement | null>
-  moveToPoint: (point: LabelledDiagramPoint) => void
+  moveToPoint: (point: LabelledDiagramPointV2) => void
   handleInteraction: (e: MouseEvent, type: 'click' | 'doubleClick' | 'mouseDown') => void
 }
 
@@ -84,7 +84,7 @@ export function useDiagramInteraction({
   )
 
   const moveToPoint = useCallback(
-    (point: LabelledDiagramPoint) => {
+    (point: LabelledDiagramPointV2) => {
       if (!transformRef.current || !imgRef.current) return
 
       const { scale } = transformRef.current.instance.transformState

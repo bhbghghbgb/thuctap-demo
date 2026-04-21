@@ -1,12 +1,12 @@
 import { Box, Typography } from '@mui/material'
 import ImagePicker from '@renderer/components/ImagePicker'
-import { LabelledDiagramAppData } from '@shared/types'
+import { LabelledDiagramAppDataV2 } from '@shared/types'
 import React from 'react'
 
 interface DiagramEmptyStateProps {
-  appData: LabelledDiagramAppData
+  appData: LabelledDiagramAppDataV2
   projectDir: string
-  onChange: (data: LabelledDiagramAppData) => void
+  onChange: (data: LabelledDiagramAppDataV2) => void
 }
 
 /**
