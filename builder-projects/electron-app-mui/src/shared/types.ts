@@ -135,6 +135,19 @@ export interface LabelledDiagramAppData {
   _pointCounter: number
 }
 
+// Labelled Diagram V2
+export interface LabelledDiagramPointV2 {
+  id: string
+  text: string
+  xPercent: number
+  yPercent: number
+}
+export interface LabelledDiagramAppDataV2 {
+  imagePath: string | null
+  points: LabelledDiagramPointV2[]
+  _pointCounter: number
+}
+
 // Find the Treasure
 export interface FindTheTreasureAnswer {
   id: string
@@ -186,6 +199,7 @@ export type AnyAppData =
   | LabelledDiagramAppData
   | FindTheTreasureAppData
   | JumpingFrogAppData
+  | LabelledDiagramAppDataV2
 
 // Map of game type to its AppData type (for generic lookups)
 export interface GameAppDataMap {
@@ -198,6 +212,7 @@ export interface GameAppDataMap {
   'labelled-diagram': LabelledDiagramAppData
   'find-the-treasure': FindTheTreasureAppData
   'jumping-frog': JumpingFrogAppData
+  'labelled-diagram-v2': LabelledDiagramAppDataV2
 }
 
 // ── Other Shared Types ────────────────────────────────────────────────────────

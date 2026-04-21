@@ -2388,6 +2388,41 @@ __metadata:
   languageName: node
   linkType: hard
 
+"labelled-diagram-v2@workspace:labelled-diagram-v2":
+  version: 0.0.0-use.local
+  resolution: "labelled-diagram-v2@workspace:labelled-diagram-v2"
+  dependencies:
+    "@babel/core": "npm:^7.29.0"
+    "@dnd-kit/core": "npm:^6.3.1"
+    "@dnd-kit/utilities": "npm:^3.2.2"
+    "@eslint/js": "npm:^10.0.1"
+    "@minigame/tutorial-viewer": "workspace:*"
+    "@rolldown/plugin-babel": "npm:^0.2.2"
+    "@tailwindcss/vite": "npm:^4.2.2"
+    "@types/babel__core": "npm:^7.20.5"
+    "@types/node": "npm:^25.5.2"
+    "@types/react": "npm:^19.2.14"
+    "@types/react-dom": "npm:^19.2.3"
+    "@vitejs/plugin-react": "npm:^6.0.1"
+    babel-plugin-react-compiler: "npm:^1.0.0"
+    clsx: "npm:^2.1.1"
+    eslint: "npm:^10.2.0"
+    eslint-plugin-react-hooks: "npm:^7.0.1"
+    eslint-plugin-react-refresh: "npm:^0.5.2"
+    framer-motion: "npm:^12.38.0"
+    globals: "npm:^17.4.0"
+    react: "npm:^19.2.4"
+    react-dom: "npm:^19.2.4"
+    react-sounds: "npm:^1.0.30"
+    react-zoom-pan-pinch: "npm:^3.4.4"
+    tailwindcss: "npm:^4.2.2"
+    typescript: "npm:~6.0.2"
+    typescript-eslint: "npm:^8.58.0"
+    vite: "npm:^8.0.6"
+    vite-plugin-singlefile: "npm:^2.3.2"
+  languageName: unknown
+  linkType: soft
+
 "labelled-diagram@workspace:labelled-diagram":
   version: 0.0.0-use.local
   resolution: "labelled-diagram@workspace:labelled-diagram"
@@ -3190,6 +3225,16 @@ __metadata:
     react: ^15.0.0 || ^16.0.0
     react-dom: ^15.0.0 || ^16.0.0
   checksum: 10c0/6dc8eb8d27a1c6e6c7bffd5c8c3bbe5394eaa733b7b7bc52334c59709e38577b6877006f56762a783a2bab80b073752771a045fb570b901aebd42b9e58930e2a
+  languageName: node
+  linkType: hard
+
+"react-zoom-pan-pinch@npm:^3.4.4":
+  version: 3.7.0
+  resolution: "react-zoom-pan-pinch@npm:3.7.0"
+  peerDependencies:
+    react: "*"
+    react-dom: "*"
+  checksum: 10c0/96889849800a953128fe7f9e42bed0d5cbc48d03024995b136f5e972146236688efb24d7381d8e6f09598f5512b4897d2420f62d828a665fdf24b745b7d55911
   languageName: node
   linkType: hard
 

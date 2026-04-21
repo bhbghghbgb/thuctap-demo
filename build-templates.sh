@@ -27,6 +27,7 @@ GAMES=(
   "labelled-diagram"
   "find-the-treasure"
   "jumping-frog"
+  "labelled-diagram-v2"
   # "my-new-game"
 )
 

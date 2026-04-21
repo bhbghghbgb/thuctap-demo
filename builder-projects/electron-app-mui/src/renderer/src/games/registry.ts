@@ -6,6 +6,7 @@ import FindTheTreasureEditor from './find-the-treasure/FindTheTreasureEditor'
 import GroupSortEditor from './group-sort/GroupSortEditor'
 import JumpingFrogEditor from './jumping-frog/JumpingFrogEditor'
 import LabelledDiagramEditor from './labelled-diagram/LabelledDiagramEditor'
+import LabelledDiagramEditorV2 from './labelled-diagram-v2/LabelledDiagramEditor'
 import PairMatchingEditor from './pair-matching/PairMatchingEditor'
 import QuizEditor from './plane-quiz/QuizEditor'
 import WhackAMoleEditor from './whack-a-mole/WhackAMoleEditor'
@@ -167,6 +168,15 @@ export const GAME_REGISTRY: GameRegistry = {
         _pointCounter: l._pointCounter ?? 0
       }
     }
+  },
+
+  'labelled-diagram-v2': {
+    Editor: LabelledDiagramEditorV2 as GameRegistryEntry['Editor'],
+    createInitialData: () => ({
+      imagePath: null,
+      points: [],
+      _pointCounter: 0
+    })
   },
 
   'find-the-treasure': {
