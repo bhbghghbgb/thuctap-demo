@@ -31,7 +31,7 @@ import {
 import { FileDropTarget, ImagePicker, IndexBadge, NameField } from '@renderer/components'
 import { withForm } from '@renderer/lib/form'
 import { toBb26 } from '@renderer/utils'
-import type { QuizAnswer, QuizQuestion } from '@shared/types'
+import type { QuizAnswer } from '@shared/types'
 import { quizFormOptions } from '../quizFormOptions'
 
 export const QuestionCard = withForm({
@@ -65,7 +65,7 @@ export const QuestionCard = withForm({
           <FileDropTarget
             onFileDrop={async (fp) => {
               const rel = await window.electronAPI.importImage(fp, projectDir, idField.state.value)
-              form.setFieldValue(`${qPrefix}.imagePath`, rel, { touch: false })
+              form.setFieldValue(`${qPrefix}.imagePath`, rel, { dontUpdateMeta: true })
               onCommit()
             }}
           >
@@ -149,7 +149,7 @@ export const QuestionCard = withForm({
                                             form.setFieldValue(
                                               `${qPrefix}.answers[${i}].isCorrect`,
                                               false,
-                                              { touch: false }
+                                              { dontUpdateMeta: true }
                                             )
                                           }
                                         })
