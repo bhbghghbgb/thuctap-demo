@@ -15,7 +15,15 @@ import { wrapEditor } from '@renderer/components/wrapEditor'
 import { EditorWrapperHandle } from '@renderer/components/EditorWrapper'
 
 export interface GameRegistryEntry<T extends AnyAppData> {
-  /** Editor component rendered on the ProjectPage */
+  /**
+   * Editor component rendered on the ProjectPage.
+   *
+   * This can be either:
+   * - A legacy editor wrapped with `wrapEditor()` (uses EditorWrapper shim internally)
+   * - A natively migrated TanStack Form editor that implements getValue/setValue itself
+   *
+   * Both expose the same external contract: initialData / projectDir / onCommit / ref.
+   */
   Editor: ComponentType<
     {
       initialData: T
@@ -63,7 +71,7 @@ export const GAME_REGISTRY: GameRegistry = {
   },
 
   'plane-quiz': {
-    Editor: wrapEditor(QuizEditor),
+    Editor: QuizEditor,
     createInitialData: () => ({
       questions: [],
       _questionCounter: 0
