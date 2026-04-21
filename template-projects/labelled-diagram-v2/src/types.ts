@@ -15,4 +15,5 @@ export interface GameState {
   placedPoints: Record<string, string>; // targetId -> labelId
   isReviewMode: boolean;
   showCongratulation: boolean;
+  interactionMode: "click" | "drag";
 }
