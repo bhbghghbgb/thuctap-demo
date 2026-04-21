@@ -5,6 +5,7 @@ export interface NameFieldProps {
   label: string
   value: string
   onChange: (v: string) => void
+  onBlur?: () => void
   placeholder?: string
   autoFocus?: boolean
   multiline?: boolean
@@ -21,6 +22,7 @@ export function NameField({
   label,
   value,
   onChange,
+  onBlur,
   placeholder,
   autoFocus,
   multiline,
@@ -46,6 +48,7 @@ export function NameField({
       label={label}
       value={value}
       onChange={(e) => onChange(e.target.value)}
+      onBlur={onBlur}
       placeholder={placeholder}
       multiline={multiline}
       minRows={multiline ? 2 : undefined}
