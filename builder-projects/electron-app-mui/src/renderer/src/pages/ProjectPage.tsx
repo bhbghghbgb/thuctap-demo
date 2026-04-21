@@ -144,6 +144,7 @@ function ProjectPageInner({
   const metaRef = useRef(meta)
   const appDataRef = useRef(appData)
   const isDirtyRef = useRef(isDirty)
+  const skipNextSyncRef = useRef(false)
 
   // Keep refs in sync - update synchronously to avoid stale closures
   useEffect(() => {
@@ -154,6 +155,12 @@ function ProjectPageInner({
 
   // Keep Editor in sync with current appData present (initial data is static)
   useEffect(() => {
+    // If the change originated from the editor, skip the sync to avoid an 'echo'
+    if (skipNextSyncRef.current) {
+      skipNextSyncRef.current = false
+      return
+    }
+
     if (editorWrapperRef.current?.setValue) {
       editorWrapperRef.current.setValue(appData as AnyAppData)
     }
@@ -244,6 +251,9 @@ function ProjectPageInner({
   // ── App data commit (from editor) ─────────────────────────────────────────
   const handleEditorCommit = useCallback(
     (newData: AnyAppData) => {
+      // Mark this change as originating from the editor to avoid echoing it back
+      skipNextSyncRef.current = true
+
       // Update history state (for undo/redo)
       setPresent(newData)
 
