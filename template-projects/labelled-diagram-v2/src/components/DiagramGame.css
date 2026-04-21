@@ -461,7 +461,6 @@ html,
   font-size: 14px;
 }
 
-/* Placeholder */
 .image-placeholder {
   width: 800px; /* Bigger */
   height: 500px;
@@ -473,13 +472,21 @@ html,
   border: 3px dashed rgba(255, 255, 255, 0.1);
   border-radius: 40px;
   color: var(--text-muted);
-  gap: 20px;
+  gap: 30px;
 }
 
 .placeholder-icon {
-  font-size: 80px;
+  font-size: 140px;
   opacity: 0.5;
 }
+
+.placeholder-text {
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+  max-width: 500px;
+}
+
 
 /* Modal Design */
 .tutorial-overlay {

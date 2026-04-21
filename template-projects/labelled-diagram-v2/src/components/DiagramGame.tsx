@@ -98,10 +98,15 @@ const TutorialModal: React.FC<{
               e.currentTarget.style.display = "none";
               const parent = e.currentTarget.parentElement;
               if (parent) {
-                const placeholder = document.createElement("div");
-                placeholder.className = "tutorial-placeholder";
-                placeholder.innerHTML = `<span>🖼️</span><span>Tutorial Image ${step + 1}</span>`;
-                parent.appendChild(placeholder);
+                const existingPlaceholder = parent.querySelector(
+                  ".tutorial-placeholder",
+                );
+                if (!existingPlaceholder) {
+                  const placeholder = document.createElement("div");
+                  placeholder.className = "tutorial-placeholder";
+                  placeholder.innerHTML = `<span>🖼️</span><span>Tutorial Image ${step + 1}</span>`;
+                  parent.appendChild(placeholder);
+                }
               }
             }}
           />
@@ -224,11 +229,19 @@ const DiagramGame: React.FC = () => {
   const [imgSize, setImgSize] = useState<{
     width: number;
     height: number;
-  } | null>(null);
+  } | null>(APP_DATA.imagePath ? null : { width: 800, height: 500 });
   const [transform, setTransform] = useState({
     scale: 1,
     positionX: 0,
     positionY: 0,
+  });
+
+  // Debug log to help identify why the layer might be empty
+  console.log("DiagramGame Render:", {
+    hasImage: !!APP_DATA.imagePath,
+    pointsCount: APP_DATA.points.length,
+    imgSizeReady: !!imgSize,
+    transform,
   });
 
   const transformRef = useRef<ReactZoomPanPinchRef>(null);
@@ -332,8 +345,8 @@ const DiagramGame: React.FC = () => {
             <TransformWrapper
               ref={transformRef}
               initialScale={1}
-              minScale={0.3}
-              maxScale={5}
+              minScale={0.1}
+              maxScale={8}
               centerOnInit
               doubleClick={{ disabled: true }}
               onTransformed={(ref) => setTransform({ ...ref.state })}
@@ -369,11 +382,14 @@ const DiagramGame: React.FC = () => {
                           draggable={false}
                           onLoad={(e) => {
                             const img = e.currentTarget;
+                            console.log("Image Loaded Callback:", {
+                              w: img.offsetWidth,
+                              h: img.offsetHeight,
+                            });
                             setImgSize({
                               width: img.offsetWidth,
                               height: img.offsetHeight,
                             });
-                            // Force initial transform sync after load
                             if (transformRef.current) {
                               setTransform({
                                 ...transformRef.current.instance.transformState,
@@ -384,7 +400,9 @@ const DiagramGame: React.FC = () => {
                       ) : (
                         <div className="image-placeholder">
                           <span className="placeholder-icon">🖼️</span>
-                          <span>Select a diagram in the editor to begin</span>
+                          <span className="placeholder-text">
+                            Select a diagram in the editor to begin
+                          </span>
                         </div>
                       )}
                     </div>
@@ -421,7 +439,7 @@ const DiagramGame: React.FC = () => {
                             id={point.id}
                             point={point}
                             isCorrect={isCorrect}
-                            isWrong={Boolean(isWrong)}
+                            isWrong={isWrong}
                             hasLabel={!!placedLabelId}
                             placedLabelText={labelItem?.text}
                             canDrop={!!activeLabelId}
@@ -593,7 +611,7 @@ const AnnotationPointWrapper: React.FC<{
   onClick: () => void;
   interactionMode: "click" | "drag";
   style: React.CSSProperties;
-}> = ({ id, interactionMode, style, canDrop, point, ...props }) => {
+}> = ({ id, interactionMode, style, canDrop, ...props }) => {
   const { setNodeRef, isOver } = useDroppable({
     id,
     disabled: interactionMode !== "drag",
@@ -601,7 +619,7 @@ const AnnotationPointWrapper: React.FC<{
   return (
     <div ref={setNodeRef} style={style}>
       <AnnotationPoint
-        point={point}
+        point={props.point}
         canDrop={canDrop || isOver}
         style={{}}
         {...props}
