@@ -166,7 +166,4 @@ vite.config.ts.timestamp-*
 templates/**
 !templates/*/meta*.*
 *PLAN*.md
-!FORM_LIBRARY_MIGRATION_PLAN.md
-!PROJECT_CONTEXT.md
-!CURRENT_PLAN.md
 asar/

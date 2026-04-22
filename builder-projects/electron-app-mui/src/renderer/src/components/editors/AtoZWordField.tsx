@@ -5,6 +5,7 @@ export interface AtoZWordFieldProps {
   label: string
   value: string
   onChange: (v: string) => void
+  onBlur?: () => void
   placeholder?: string
   autoFocus?: boolean
   sx?: SxProps
@@ -22,6 +23,7 @@ export function AtoZWordField({
   label,
   value,
   onChange,
+  onBlur,
   placeholder,
   autoFocus,
   sx,
@@ -61,6 +63,7 @@ export function AtoZWordField({
         label={label}
         value={value}
         onChange={(e) => onChange(e.target.value.toUpperCase())}
+        onBlur={onBlur}
         placeholder={placeholder}
         size="small"
         required={required}
