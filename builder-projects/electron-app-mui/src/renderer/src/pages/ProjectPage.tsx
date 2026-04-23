@@ -25,7 +25,6 @@ import isDeepEqual from 'react-fast-compare'
 import React, { JSX, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useBoolean, useInterval, useUnmount } from 'usehooks-ts'
-import { useReadProjectFile } from '@renderer/hooks/useReadProjectFile'
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const AUTO_SAVE_DEBOUNCE_MS = 1000
@@ -512,41 +511,16 @@ export default function ProjectPage(): JSX.Element {
 
   const manager = useTemplateManager()
 
-  // Path-based read setup (fallback path via query string if present)
-  const queryPath = new URLSearchParams(location.search).get('filePath')
-  const effectivePath = locationState?.filePath ?? queryPath ?? null
-  const readDoc = useReadProjectFile(effectivePath)
-  // If located purely from state, compute initial data directly
-  const initialDataFromState = useMemo(() => {
-    if (!locationState?.data) return null
-    const rawData = locationState.data.appData
-    if (!templateId) return rawData as unknown as AnyAppData
+  const initialData = useMemo(() => {
+    const rawData = locationState?.data.appData ?? ({} as AnyAppData)
+    if (!templateId) return rawData
     return manager.normalize(templateId, rawData)
   }, [locationState, templateId, manager])
 
-  // When reading by path, we rely on Suspense to suspend until data is loaded
-  const initialDataFromPath =
-    templateId && effectivePath && readDoc ? manager.normalize(templateId, readDoc.appData) : null
-
-  const initialData = locationState?.data ? initialDataFromState : initialDataFromPath
-
-  // If no templateId, show an error as before
-  if (!templateId || !initialData) {
+  if (!templateId) {
     return (
       <Box sx={{ p: 4, textAlign: 'center' }}>
         <Typography color="error">No project data. Go back and try again.</Typography>
-        <Button onClick={() => navigate('/')}>Go Home</Button>
-      </Box>
-    )
-  }
-
-  // If we have no data source at all (no location state and no path), show error
-  if (!locationState?.data && !effectivePath) {
-    return (
-      <Box sx={{ p: 4, textAlign: 'center' }}>
-        <Typography color="error">
-          No project path provided. Open a project from Home or provide a path.
-        </Typography>
         <Button onClick={() => navigate('/')}>Go Home</Button>
       </Box>
     )

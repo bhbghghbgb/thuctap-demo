@@ -46,7 +46,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     typedIpcRenderer.invoke('check-folder-status', folderPath),
   chooseProjectFolder: () => typedIpcRenderer.invoke('choose-project-folder'),
   openProjectFile: (filePath?: string) => typedIpcRenderer.invoke('open-project-file', filePath),
-  readProjectFile: (filePath: string) => typedIpcRenderer.invoke('open-project-file', filePath),
   saveProject: (data: object, projectPath: string, history?: object[]) =>
     typedIpcRenderer.invoke('save-project', data, projectPath, history),
   saveProjectAs: (opts: { projectData: object; oldProjectDir: string }) =>
