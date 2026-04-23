@@ -82,7 +82,10 @@ export default function HomePage(): JSX.Element {
         projectName: data.name,
         lastOpened: new Date().toISOString()
       })
-      navigate(`/project/${data.templateId}`, { state: { filePath, projectDir, data } })
+      // Pass path via query string; do not pass full data via location state
+      navigate(
+        `/project/${data.templateId}?filePath=${encodeURIComponent(filePath)}&projectDir=${encodeURIComponent(projectDir)}`
+      )
     },
     [manager, navigate, addRecentProject]
   )
@@ -115,14 +118,9 @@ export default function HomePage(): JSX.Element {
     await window.electronAPI.saveProject(newProject, projectPath)
 
     // Navigate to project with isTemporary flag
-    navigate(`/project/${template.id}`, {
-      state: {
-        filePath: projectPath,
-        projectDir: tempFolder,
-        data: newProject,
-        isTemporary: true
-      }
-    })
+    navigate(
+      `/project/${template.id}?filePath=${encodeURIComponent(projectPath)}&projectDir=${encodeURIComponent(tempFolder)}&isTemporary=true`
+    )
   }
 
   const handleOpenFromFolder = async (folder: string): Promise<void> => {
