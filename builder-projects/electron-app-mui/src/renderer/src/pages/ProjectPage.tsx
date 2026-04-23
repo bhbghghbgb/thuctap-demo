@@ -25,7 +25,6 @@ import isDeepEqual from 'react-fast-compare'
 import React, { JSX, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useBoolean, useInterval, useUnmount } from 'usehooks-ts'
-import { useQueryClient } from '@tanstack/react-query'
 import { useReadProjectFile } from '@renderer/hooks/useReadProjectFile'
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -34,15 +33,17 @@ const AUTO_SAVE_DEBOUNCE_MS = 1000
 interface ProjectPageInnerProps {
   templateId: string
   initialData: AnyAppData
-  pathMeta?: { filePath: string; projectDir: string; isTemporary?: boolean }
-  loadedProjectFile?: ProjectFile
+  locationState: {
+    filePath: string
+    projectDir: string
+    data: ProjectFile
+  } | null
 }
 
 function ProjectPageInner({
   templateId,
   initialData: staticInitialData,
-  pathMeta,
-  loadedProjectFile
+  locationState
 }: ProjectPageInnerProps): JSX.Element {
   const navigate = useNavigate()
   const { resolved, projectSettings, setProjectSettings } = useSettings()
@@ -50,7 +51,20 @@ function ProjectPageInner({
   const addRecentProject = useSettingsStore((s) => s.addRecentProject)
 
   // Split project state: meta (file location, name) is separate from app data (game content)
-  const [meta, setMeta] = useState<ProjectMeta | null>(null)
+  const [meta, setMeta] = useState<ProjectMeta | null>(
+    locationState
+      ? {
+          filePath: locationState.filePath,
+          projectDir: locationState.projectDir,
+          templateId: locationState.data.templateId,
+          name: locationState.data.name,
+          createdAt: locationState.data.createdAt,
+          updatedAt: locationState.data.updatedAt,
+          settings: locationState.data.settings,
+          isTemporary: (locationState as { isTemporary?: boolean }).isTemporary ?? false
+        }
+      : null
+  )
   const [isDirty, setIsDirty] = useState(false)
 
   const {
@@ -66,25 +80,6 @@ function ProjectPageInner({
 
   // Snackbar hook
   const { message: snackMsg, severity: snackSeverity, showSnack, hideSnack } = useSnackbar()
-
-  // Initialize meta from path or loaded project file when available
-  useEffect(() => {
-    if (meta) return
-    const filePath = pathMeta?.filePath ?? ''
-    const projectDir =
-      pathMeta?.projectDir ?? (filePath ? filePath.replace(/[/\\][^/\\]+$/, '') : '')
-    const m: ProjectMeta = {
-      filePath,
-      projectDir,
-      templateId,
-      name: loadedProjectFile?.name ?? '',
-      createdAt: loadedProjectFile?.createdAt ?? '',
-      updatedAt: loadedProjectFile?.updatedAt ?? '',
-      settings: loadedProjectFile?.settings ?? null,
-      isTemporary: pathMeta?.isTemporary ?? false
-    }
-    setMeta(m)
-  }, [pathMeta, loadedProjectFile, templateId, meta])
 
   // Update window title whenever meta or appData changes
   const documentTitle = useMemo(() => {
@@ -118,9 +113,9 @@ function ProjectPageInner({
 
   // Sync project settings to context
   useEffect(() => {
-    setProjectSettings(meta?.settings ?? null)
+    setProjectSettings(locationState?.data?.settings ?? null)
     return () => setProjectSettings(null)
-  }, [meta?.settings, setProjectSettings])
+  }, [locationState?.data?.settings, setProjectSettings])
 
   // Track previous projectSettings to detect changes
   const [prevProjectSettings, setPrevProjectSettings] = useState(projectSettings)
@@ -169,7 +164,6 @@ function ProjectPageInner({
   }, [appData])
 
   // ── Save ─────────────────────────────────────────────────────────────────
-  const queryClient = useQueryClient()
   const doSave = useCallback(
     async (currentMeta: ProjectMeta, appDataToSave?: AnyAppData) => {
       const dataToSave = appDataToSave ?? appDataRef.current
@@ -178,16 +172,8 @@ function ProjectPageInner({
       const history = getHistoryArray(getHistory())
       await window.electronAPI.saveProject(file, currentMeta.filePath, history)
       setIsDirty(false)
-      // Invalidate cached path-based read for this file
-      try {
-        await Promise.resolve(
-          queryClient.invalidateQueries({ queryKey: ['project-file', currentMeta.filePath] })
-        )
-      } catch {
-        // no-op if cache key not found
-      }
     },
-    [getHistory, queryClient]
+    [getHistory]
   )
 
   const performSaveAs = useCallback(
@@ -226,14 +212,6 @@ function ProjectPageInner({
           projectName: currentMeta.name,
           lastOpened: new Date().toISOString()
         })
-        // Invalidate old path cache and (optionally) new path cache
-        try {
-          await queryClient.invalidateQueries({ queryKey: ['project-file', currentMeta.filePath] })
-          if (newLoc.filePath)
-            await queryClient.invalidateQueries({ queryKey: ['project-file', newLoc.filePath] })
-        } catch {
-          // ignore cache errors
-        }
 
         setIsDirty(false)
         setSaveAsConfirmFolder(null)
@@ -242,7 +220,7 @@ function ProjectPageInner({
         showSnack(`Save As failed: ${e}`, 'error')
       }
     },
-    [getHistory, manager, addRecentProject, showSnack, queryClient]
+    [getHistory, showSnack, addRecentProject, manager]
   )
 
   // ── Auto-save: interval mode ───────────────────────────────────────────────
@@ -526,7 +504,6 @@ export default function ProjectPage(): JSX.Element {
   const location = useLocation()
   const navigate = useNavigate()
 
-  // location state no longer carries data; only path-based navigation is used
   const locationState = location.state as {
     filePath: string
     projectDir: string
@@ -539,7 +516,7 @@ export default function ProjectPage(): JSX.Element {
   const queryPath = new URLSearchParams(location.search).get('filePath')
   const effectivePath = locationState?.filePath ?? queryPath ?? null
   const readDoc = useReadProjectFile(effectivePath)
-  // If located purely from state, compute initial data directly (legacy path, optional)
+  // If located purely from state, compute initial data directly
   const initialDataFromState = useMemo(() => {
     if (!locationState?.data) return null
     const rawData = locationState.data.appData
@@ -554,7 +531,7 @@ export default function ProjectPage(): JSX.Element {
   const initialData = locationState?.data ? initialDataFromState : initialDataFromPath
 
   // If no templateId, show an error as before
-  if (!templateId) {
+  if (!templateId || !initialData) {
     return (
       <Box sx={{ p: 4, textAlign: 'center' }}>
         <Typography color="error">No project data. Go back and try again.</Typography>
@@ -562,12 +539,9 @@ export default function ProjectPage(): JSX.Element {
       </Box>
     )
   }
-  // If initialData is not yet loaded (Suspense will kick in), render nothing to allow fallback
-  if (initialData == null) {
-    return <></>
-  }
-  // If we have no data source at all (no path), show error
-  if (!effectivePath) {
+
+  // If we have no data source at all (no location state and no path), show error
+  if (!locationState?.data && !effectivePath) {
     return (
       <Box sx={{ p: 4, textAlign: 'center' }}>
         <Typography color="error">
@@ -577,20 +551,13 @@ export default function ProjectPage(): JSX.Element {
       </Box>
     )
   }
-  const pathMeta = effectivePath
-    ? {
-        filePath: effectivePath,
-        projectDir: effectivePath!.replace(/[/\\][^/\\]+$/, '')
-      }
-    : undefined
 
   return (
     <ProjectHistoryProvider initialState={initialData}>
       <ProjectPageInner
         templateId={templateId}
         initialData={initialData}
-        pathMeta={pathMeta}
-        loadedProjectFile={readDoc}
+        locationState={locationState}
       />
     </ProjectHistoryProvider>
   )
