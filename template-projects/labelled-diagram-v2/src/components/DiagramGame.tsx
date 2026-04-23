@@ -21,6 +21,15 @@ import { APP_DATA, resolveAssetUrl } from "../data";
 import type { GameState, LabelledDiagramPoint } from "../types";
 import "./DiagramGame.css";
 
+// Safe type for transform state (independent from library types)
+type SafeTransformRef = {
+  state: {
+    scale: number;
+    positionX: number;
+    positionY: number;
+  };
+};
+
 // --- Sub-components ---
 
 const GameHeader: React.FC<{
@@ -63,29 +72,39 @@ const TutorialModal: React.FC<{
 
   const steps = [
     {
-      title: "Welcome! 👋",
-      desc: "Let's learn how to label this diagram correctly.",
+      title: "Step 1: Select Label 🏷️",
+      desc: "Click and hold the label you want to place.",
       img: "tutorial-1.png",
     },
     {
-      title: "Move and Zoom 🔍",
-      desc: "Scroll to zoom, LEFT click and drag to move the diagram.",
+      title: "Step 2: Drag to Position 🎯",
+      desc: "Drag the label to the correct position on the image.",
       img: "tutorial-2.png",
     },
     {
-      title: "Modes 🖱️",
-      desc: "Toggle between Click and Drag modes using the sidebar icon.",
+      title: "Step 3: Change Mode 🖱️",
+      desc: "You can switch between Click mode and Drag mode using the toggle button.",
       img: "tutorial-3.png",
     },
     {
-      title: "Labeling 🏷️",
-      desc: "Drag labels to targets or select then click. Easy!",
+      title: "Step 4: Place All Labels 📌",
+      desc: "Place all labels onto the diagram. Click a placed point to change your selection.",
       img: "tutorial-4.png",
     },
     {
-      title: "Results ✅",
-      desc: "Check your work at any time using the button.",
+      title: "Step 5: Check Results ✅",
+      desc: "Click the 'Check Results' button to see your answers.",
       img: "tutorial-5.png",
+    },
+    {
+      title: "Step 6: Fix Mistakes 🔄",
+      desc: "If your answers are incorrect, click 'Back to Edit' to make changes.",
+      img: "tutorial-6.png",
+    },
+    {
+      title: "Step 7: Perfect Score! 🏆",
+      desc: "If all answers are correct, a 'Perfect Score!' screen will appear.",
+      img: "tutorial-7.png",
     },
   ];
 
@@ -413,8 +432,14 @@ const DiagramGame: React.FC = () => {
               maxScale={8}
               centerOnInit
               doubleClick={{ disabled: true }}
-              onTransformed={(ref) => setTransform({ ...ref.state })}
-              onInit={(ref) => setTransform({ ...ref.state })}
+              onTransformed={(ref: SafeTransformRef) => {
+                if (!ref?.state) return;
+                setTransform({ ...ref.state });
+              }}
+              onInit={(ref: SafeTransformRef) => {
+                if (!ref?.state) return;
+                setTransform({ ...ref.state });
+              }}
               panning={{
                 disabled:
                   gameState.interactionMode === "drag" && !!activeLabelId,
@@ -449,14 +474,20 @@ const DiagramGame: React.FC = () => {
                         draggable={false}
                         onLoad={(e) => {
                           const img = e.currentTarget;
+
                           setImgSize({
                             width: img.offsetWidth,
                             height: img.offsetHeight,
                           });
-                          if (transformRef.current)
+
+                          const state = transformRef.current?.state;
+                          if (state) {
                             setTransform({
-                              ...transformRef.current.instance.transformState,
+                              scale: state.scale,
+                              positionX: state.positionX,
+                              positionY: state.positionY,
                             });
+                          }
                         }}
                       />
                     ) : (
