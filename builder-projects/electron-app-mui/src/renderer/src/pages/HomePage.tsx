@@ -82,7 +82,9 @@ export default function HomePage(): JSX.Element {
         projectName: data.name,
         lastOpened: new Date().toISOString()
       })
-      navigate(`/project/${data.templateId}?filePath=${encodeURIComponent(filePath)}`)
+      navigate(
+        `/project/${data.templateId}?filePath=${encodeURIComponent(filePath)}&projectDir=${encodeURIComponent(projectDir)}`
+      )
     },
     [manager, navigate, addRecentProject]
   )
@@ -115,7 +117,9 @@ export default function HomePage(): JSX.Element {
     await window.electronAPI.saveProject(newProject, projectPath)
 
     // Navigate to project with query params
-    navigate(`/project/${template.id}?filePath=${encodeURIComponent(projectPath)}&isTemporary=true`)
+    navigate(
+      `/project/${template.id}?filePath=${encodeURIComponent(projectPath)}&projectDir=${encodeURIComponent(tempFolder)}&isTemporary=true`
+    )
   }
 
   const handleOpenFromFolder = async (folder: string): Promise<void> => {

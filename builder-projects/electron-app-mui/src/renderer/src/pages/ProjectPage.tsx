@@ -34,6 +34,7 @@ interface ProjectPageInnerProps {
   templateId: string
   initialData: AnyAppData
   filePath: string
+  projectDir: string
   isTemporary: boolean
   projectData: ProjectFile
   invalidateProject: (filePath: string) => void
@@ -43,6 +44,7 @@ function ProjectPageInner({
   templateId,
   initialData: staticInitialData,
   filePath,
+  projectDir,
   isTemporary: initialIsTemporary,
   projectData,
   invalidateProject
@@ -55,7 +57,7 @@ function ProjectPageInner({
   // Split project state: meta (file location, name) is separate from app data (game content)
   const [meta, setMeta] = useState<ProjectMeta | null>({
     filePath,
-    projectDir: filePath.replace(/[/\\][^/\\]+$/, ''),
+    projectDir,
     templateId: projectData.templateId,
     name: projectData.name,
     createdAt: projectData.createdAt,
@@ -205,9 +207,9 @@ function ProjectPageInner({
             : prev
         )
 
-        // Navigate to new URL
+        // Navigate to new URL with updated projectDir
         navigate(
-          `/project/${currentMeta.templateId}?filePath=${encodeURIComponent(newLoc.filePath)}`,
+          `/project/${currentMeta.templateId}?filePath=${encodeURIComponent(newLoc.filePath)}&projectDir=${encodeURIComponent(newLoc.projectDir)}`,
           { replace: true }
         )
 
@@ -514,9 +516,10 @@ export default function ProjectPage(): JSX.Element {
   const navigate = useNavigate()
 
   const filePath = searchParams.get('filePath')
+  const projectDir = searchParams.get('projectDir')
   const isTemporary = searchParams.get('isTemporary') === 'true'
 
-  if (!templateId || !filePath) {
+  if (!templateId || !filePath || !projectDir) {
     return (
       <Box sx={{ p: 4, textAlign: 'center' }}>
         <Typography color="error">No project data. Go back and try again.</Typography>
@@ -526,17 +529,24 @@ export default function ProjectPage(): JSX.Element {
   }
 
   return (
-    <ProjectPageContent templateId={templateId} filePath={filePath} isTemporary={isTemporary} />
+    <ProjectPageContent
+      templateId={templateId}
+      filePath={filePath}
+      projectDir={projectDir}
+      isTemporary={isTemporary}
+    />
   )
 }
 
 function ProjectPageContent({
   templateId,
   filePath,
+  projectDir,
   isTemporary
 }: {
   templateId: string
   filePath: string
+  projectDir: string
   isTemporary: boolean
 }): JSX.Element {
   const invalidateProject = useInvalidateProjectFile()
@@ -562,6 +572,7 @@ function ProjectPageContent({
         templateId={templateId}
         initialData={initialData}
         filePath={filePath}
+        projectDir={projectDir}
         isTemporary={isTemporary}
         projectData={projectData}
         invalidateProject={invalidateProject}
