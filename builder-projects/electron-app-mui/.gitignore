@@ -166,4 +166,6 @@ vite.config.ts.timestamp-*
 templates/**
 !templates/*/meta*.*
 *PLAN*.md
+!TanstackFormEvalPlan.md
+!MigrationPlan.md
 asar/
