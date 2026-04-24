@@ -31,12 +31,14 @@ export default function ImagePicker({
 }: Props): React.ReactElement {
   const [loading, setLoading] = useState(false)
   const [imageError, setImageError] = useState(false)
+  const [prevValue, setPrevValue] = useState(value)
   const { data: url } = useAssetUrl(projectDir, value)
 
   // Reset error state when value changes
-  React.useEffect(() => {
+  if (value !== prevValue) {
+    setPrevValue(value)
     setImageError(false)
-  }, [value])
+  }
 
   const importFile = async (filePath: string): Promise<void> => {
     setLoading(true)
