@@ -251,7 +251,9 @@ export function StageCard({
             const val = Math.max(0, parseInt(e.target.value, 10) || 0)
             onUpdateStage(stage.id, { stageValue: val })
           }}
-          inputProps={{ min: 0 }}
+          slotProps={{
+            htmlInput: { min: 0 }
+          }}
           sx={{ maxWidth: 140 }}
         />
       </Box>

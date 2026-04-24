@@ -1,18 +1,17 @@
 import type { AnyAppData, GameAppDataMap } from '@shared/types'
 import type { ComponentType } from 'react'
 
+import { EditorWrapperHandle } from '@renderer/components/EditorWrapper'
+import { wrapEditor } from '@renderer/components/wrapEditor'
 import BalloonLetterPickerEditor from './balloon-letter-picker/BalloonLetterPickerEditor'
 import FindTheTreasureEditor from './find-the-treasure/FindTheTreasureEditor'
 import GroupSortEditor from './group-sort/GroupSortEditor'
 import JumpingFrogEditor from './jumping-frog/JumpingFrogEditor'
 import LabelledDiagramEditor from './labelled-diagram/LabelledDiagramEditor'
-import LabelledDiagramEditorV2 from './labelled-diagram-v2/LabelledDiagramEditor'
 import PairMatchingEditor from './pair-matching/PairMatchingEditor'
 import QuizEditor from './plane-quiz/QuizEditor'
 import WhackAMoleEditor from './whack-a-mole/WhackAMoleEditor'
 import WordSearchEditor from './word-search/WordSearchEditor'
-import { wrapEditor } from '@renderer/components/wrapEditor'
-import { EditorWrapperHandle } from '@renderer/components/EditorWrapper'
 
 export interface GameRegistryEntry<T extends AnyAppData> {
   /** Editor component rendered on the ProjectPage */
@@ -161,24 +160,6 @@ export const GAME_REGISTRY: GameRegistry = {
     }),
     normalize: (d) => {
       const l = d as GameAppDataMap['labelled-diagram']
-      return {
-        ...l,
-        imagePath: l.imagePath ?? null,
-        points: l.points ?? [],
-        _pointCounter: l._pointCounter ?? 0
-      }
-    }
-  },
-
-  'labelled-diagram-v2': {
-    Editor: wrapEditor(LabelledDiagramEditorV2),
-    createInitialData: () => ({
-      imagePath: null,
-      points: [],
-      _pointCounter: 0
-    }),
-    normalize: (d) => {
-      const l = d as GameAppDataMap['labelled-diagram-v2']
       return {
         ...l,
         imagePath: l.imagePath ?? null,

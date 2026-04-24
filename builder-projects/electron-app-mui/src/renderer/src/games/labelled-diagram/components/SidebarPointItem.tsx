@@ -1,4 +1,4 @@
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
+import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined'
 import { Box, IconButton, Paper, TextField, Typography } from '@mui/material'
 import { LabelledDiagramPoint } from '@shared/types'
 import React from 'react'
@@ -72,9 +72,11 @@ export const SidebarPointItem: React.FC<SidebarPointItemProps> = ({
           onChange={(e) => onUpdateText(point.id, e.target.value)}
           fullWidth
           placeholder="Enter point label..."
-          InputProps={{
-            disableUnderline: true,
-            sx: { fontSize: '0.875rem' }
+          slotProps={{
+            input: {
+              disableUnderline: true,
+              sx: { fontSize: '0.875rem' }
+            }
           }}
         />
         <IconButton
@@ -83,7 +85,7 @@ export const SidebarPointItem: React.FC<SidebarPointItemProps> = ({
           onClick={() => onDelete(point.id)}
           sx={{ opacity: 0.6, '&:hover': { opacity: 1 } }}
         >
-          <DeleteOutlineIcon fontSize="small" />
+          <DeleteOutlinedIcon fontSize="small" />
         </IconButton>
       </Box>
       <Box sx={{ display: 'flex', gap: 1 }}>

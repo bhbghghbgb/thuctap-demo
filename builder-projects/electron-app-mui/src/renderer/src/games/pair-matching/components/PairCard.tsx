@@ -72,6 +72,7 @@ export function PairCard({
             const val = e.target.value === '' ? null : Number(e.target.value)
             onUpdate(item.id, { minPairs: val })
           }}
+          slotProps={{ htmlInput: { min: 1 } }}
           sx={{ width: 100 }}
           placeholder="Default"
         />

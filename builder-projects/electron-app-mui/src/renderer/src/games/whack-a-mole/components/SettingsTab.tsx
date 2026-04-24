@@ -49,9 +49,8 @@ export function SettingsTab({ data, onChange }: SettingsTabProps): React.ReactEl
               fullWidth
               placeholder="e.g., 1, 2, 3, 4, 5"
               helperText="The grade level this game is for (1-5)."
-              inputProps={{
-                min: 1,
-                max: 5
+              slotProps={{
+                htmlInput: { min: 1, max: 5 }
               }}
             />
           </Box>

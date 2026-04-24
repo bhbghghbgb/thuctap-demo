@@ -1,5 +1,5 @@
 import AddIcon from '@mui/icons-material/Add'
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
+import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import FilterListIcon from '@mui/icons-material/FilterList'
@@ -386,7 +386,7 @@ function RecentProjectItem({
             onClick={onRemove}
             sx={{ opacity: 0.4, '&:hover': { opacity: 1, color: 'error.main' } }}
           >
-            <DeleteOutlineIcon sx={{ fontSize: 16 }} />
+            <DeleteOutlinedIcon sx={{ fontSize: 16 }} />
           </IconButton>
         </Tooltip>
       </Box>

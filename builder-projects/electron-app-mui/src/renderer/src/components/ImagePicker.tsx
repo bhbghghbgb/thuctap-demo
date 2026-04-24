@@ -1,6 +1,6 @@
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
 import ClearIcon from '@mui/icons-material/Clear'
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'
+import ErrorOutlinedIcon from '@mui/icons-material/ErrorOutlined'
 import WarningAmberIcon from '@mui/icons-material/WarningAmber'
 import { Box, CircularProgress, IconButton, SxProps, Tooltip, Typography } from '@mui/material'
 import { useAssetUrl } from '@renderer/hooks/useAssetUrl'
@@ -168,7 +168,7 @@ export default function ImagePicker({
           </>
         ) : value && imageError ? (
           <>
-            <ErrorOutlineIcon
+            <ErrorOutlinedIcon
               sx={{
                 fontSize: size * 0.4,
                 color: 'error.main'

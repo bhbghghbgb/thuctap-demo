@@ -46,12 +46,14 @@ export default function SettingsPanel({ open, onClose, hasProject }: Props): Rea
       anchor="right"
       open={open}
       onClose={onClose}
-      PaperProps={{
-        sx: {
-          width: 380,
-          background: '#13161f',
-          borderLeft: '1px solid rgba(255,255,255,0.06)',
-          p: 0
+      slotProps={{
+        paper: {
+          sx: {
+            width: 380,
+            background: '#13161f',
+            borderLeft: '1px solid rgba(255,255,255,0.06)',
+            p: 0
+          }
         }
       }}
     >

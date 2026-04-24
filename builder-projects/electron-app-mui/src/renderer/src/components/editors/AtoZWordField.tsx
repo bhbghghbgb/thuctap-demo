@@ -69,7 +69,9 @@ export function AtoZWordField({
         required={required}
         error={!!isInvalid || (required && isEmpty)}
         helperText={required && isEmpty ? 'Required' : isInvalid ? 'Only A–Z letters allowed' : ''}
-        inputProps={{ style: { fontFamily: 'monospace', letterSpacing: 4, fontWeight: 700 } }}
+        slotProps={{
+          input: { style: { fontFamily: 'monospace', letterSpacing: 4, fontWeight: 700 } }
+        }}
         inputRef={handleRef}
         sx={{ width: 220 }}
       />

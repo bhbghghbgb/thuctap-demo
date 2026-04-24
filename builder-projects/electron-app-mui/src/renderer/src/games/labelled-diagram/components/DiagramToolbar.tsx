@@ -1,4 +1,4 @@
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
+import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined'
 import { Box, Divider, IconButton, Typography } from '@mui/material'
 import { LabelledDiagramAppData } from '@shared/types'
 import React from 'react'
@@ -48,7 +48,7 @@ export const DiagramToolbar: React.FC<DiagramToolbarProps> = ({
         color="inherit"
         sx={{ ml: 1, opacity: 0.7, '&:hover': { opacity: 1 } }}
       >
-        <DeleteOutlineIcon fontSize="small" />
+        <DeleteOutlinedIcon fontSize="small" />
       </IconButton>
     </Box>
   )

@@ -1,6 +1,6 @@
 {
-  "name": "Diagram Labeling Game",
-  "description": "[GAME CHUA XONG] Drag labels to correct positions on image\n GAME DA NHAN VA HIEN THI DC DATA DE TEST EDITOR",
-  "gameType": "diagram-labeling",
+  "name": "Labelled Diagram",
+  "description": "A fun and interactive game for kids to learn English by matching labels to the correct parts of an image.",
+  "gameType": "labelled-diagram",
   "version": "0.0.1"
 }
