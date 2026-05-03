@@ -177,13 +177,15 @@ export function RecentProjectsSection({
         anchorEl={filterAnchorEl}
         open={filterAnchorEl !== null}
         onClose={handleFilterClose}
-        PaperProps={{
-          sx: {
-            maxWidth: 320,
-            maxHeight: 400,
-            overflow: 'auto',
-            background: '#1a1d27',
-            border: '1px solid rgba(255,255,255,0.1)'
+        slotProps={{
+          paper: {
+            sx: {
+              maxWidth: 320,
+              maxHeight: 400,
+              overflow: 'auto',
+              background: '#1a1d27',
+              border: '1px solid rgba(255,255,255,0.1)'
+            }
           }
         }}
       >
