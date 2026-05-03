@@ -14,7 +14,6 @@ import {
   CardActionArea,
   CardContent,
   Chip,
-  ClickAwayListener,
   Collapse,
   Dialog,
   DialogActions,
@@ -22,8 +21,8 @@ import {
   DialogContentText,
   DialogTitle,
   IconButton,
+  Menu,
   MenuItem,
-  Paper,
   Tooltip,
   Typography
 } from '@mui/material'
@@ -174,79 +173,76 @@ export function RecentProjectsSection({
       </Box>
 
       {/* Filter Menu */}
-      <ClickAwayListener onClickAway={handleFilterClose}>
-        <Collapse in={filterAnchorEl !== null} mountOnEnter unmountOnExit>
-          <Paper
+      <Menu
+        anchorEl={filterAnchorEl}
+        open={filterAnchorEl !== null}
+        onClose={handleFilterClose}
+        PaperProps={{
+          sx: {
+            maxWidth: 320,
+            maxHeight: 400,
+            overflow: 'auto',
+            background: '#1a1d27',
+            border: '1px solid rgba(255,255,255,0.1)'
+          }
+        }}
+      >
+        <MenuItem
+          selected={filterTemplateId === null}
+          onClick={() => handleSelectFilter(null)}
+          sx={{
+            fontSize: '0.85rem',
+            py: 1
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+            <SportsEsportsIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+            <Typography>All templates</Typography>
+          </Box>
+        </MenuItem>
+        {allTemplates.map((template) => (
+          <MenuItem
+            key={template.id}
+            selected={filterTemplateId === template.id}
+            onClick={() => handleSelectFilter(template.id)}
             sx={{
-              position: 'absolute',
-              right: 0,
-              zIndex: 1000,
-              mt: 1,
-              maxWidth: 320,
-              maxHeight: 400,
-              overflow: 'auto',
-              background: '#1a1d27',
-              border: '1px solid rgba(255,255,255,0.1)'
+              fontSize: '0.85rem',
+              py: 1
             }}
           >
-            <MenuItem
-              selected={filterTemplateId === null}
-              onClick={() => handleSelectFilter(null)}
-              sx={{
-                fontSize: '0.85rem',
-                py: 1
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+              {template.iconUrl ? (
+                <Box
+                  component="img"
+                  src={template.iconUrl}
+                  alt={template.name}
+                  sx={{
+                    width: 18,
+                    height: 18,
+                    borderRadius: 0.5,
+                    objectFit: 'cover'
+                  }}
+                />
+              ) : (
                 <SportsEsportsIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-                <Typography>All templates</Typography>
-              </Box>
-            </MenuItem>
-            {allTemplates.map((template) => (
-              <MenuItem
-                key={template.id}
-                selected={filterTemplateId === template.id}
-                onClick={() => handleSelectFilter(template.id)}
+              )}
+              <Typography
                 sx={{
-                  fontSize: '0.85rem',
-                  py: 1
+                  flex: 1,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
                 }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
-                  {template.iconUrl ? (
-                    <Box
-                      component="img"
-                      src={template.iconUrl}
-                      alt={template.name}
-                      sx={{
-                        width: 18,
-                        height: 18,
-                        borderRadius: 0.5,
-                        objectFit: 'cover'
-                      }}
-                    />
-                  ) : (
-                    <SportsEsportsIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-                  )}
-                  <Typography
-                    sx={{
-                      flex: 1,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
-                    {template.name}
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.7rem' }}>
-                    {recent.filter((rp) => rp.templateId === template.id).length}
-                  </Typography>
-                </Box>
-              </MenuItem>
-            ))}
-          </Paper>
-        </Collapse>
-      </ClickAwayListener>
+                {template.name}
+              </Typography>
+              <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.7rem' }}>
+                {recent.filter((rp) => rp.templateId === template.id).length}
+              </Typography>
+            </Box>
+          </MenuItem>
+        ))}
+      </Menu>
 
       <Collapse in={showRecent}>
         {filteredRecent.length === 0 ? (
